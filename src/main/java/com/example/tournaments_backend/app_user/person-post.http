@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/v1/person HTTP/1.1
+content-type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "jdoe@gmail.com",
+    "password": "djfkdaof"
+}
