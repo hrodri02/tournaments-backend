@@ -18,13 +18,13 @@ public class EmailService implements EmailSender {
 
     @Override
     @Async
-    public void send(String to, String email) {
+    public void send(String subject, String to, String email) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
             helper.setText(email, true);
             helper.setTo(to);
-            helper.setSubject("Confirm email");
+            helper.setSubject(subject);
             helper.setFrom("hrodriguez1821@gmail.com");
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
