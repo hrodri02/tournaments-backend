@@ -93,14 +93,14 @@ public class RegistrationController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
-        registrationService.sendForgotPasswordEmail(email);
+        registrationService.sendResetPasswordEmail(email);
         Map<String, String> resBody = Map.of("message", "We've sent password reset instruction to your email.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @GetMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
-        registrationService.isResetTokenValid(resetToken, email);
+        registrationService.validateResetToken(resetToken, email);
         Map<String, String> resBody = Map.of("message", "Redirect user to reset password form.");
         return ResponseEntity.ok().body(resBody);
     }
@@ -109,7 +109,7 @@ public class RegistrationController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
         String token = resetPwdRequest.getToken();
         String email = resetPwdRequest.getEmail();
-        registrationService.isResetTokenValid(token, email);
+        registrationService.validateResetToken(token, email);
         String newPassword = resetPwdRequest.getNewPassword();
         registrationService.saveUsersNewPassword(token, email, newPassword);
         Map<String, String> resBody = Map.of("message", "Password has been successfully reset.");

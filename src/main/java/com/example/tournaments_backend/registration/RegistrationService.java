@@ -111,7 +111,7 @@ public class RegistrationService {
         }
     }
 
-    public void sendForgotPasswordEmail(String email) {
+    public void sendResetPasswordEmail(String email) {
         try {
             AppUser appUser = appUserService.getAppUserByEmail(email);
             String resetToken = appUserService.generateNewResetTokenForUser(appUser);
@@ -129,7 +129,7 @@ public class RegistrationService {
     }
 
     @Transactional
-    public void isResetTokenValid(String token, String email) throws TokenNotFoundException, PasswordAlreadyResetException,TokenExpiredException {
+    public void validateResetToken(String token, String email) throws TokenNotFoundException, PasswordAlreadyResetException,TokenExpiredException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
