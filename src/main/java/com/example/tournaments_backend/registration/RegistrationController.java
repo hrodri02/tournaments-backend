@@ -8,6 +8,7 @@ import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.UserDTO;
 import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
+import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.TokenExpiredException;
 import com.example.tournaments_backend.exception.TokenNotFoundException;
 import com.example.tournaments_backend.exception.UserAlreadyExistException;
@@ -90,6 +91,31 @@ public class RegistrationController {
         return ResponseEntity.ok().body(resBody);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        registrationService.sendForgotPasswordEmail(email);
+        Map<String, String> resBody = Map.of("message", "We've sent password reset instruction to your email.");
+        return ResponseEntity.ok().body(resBody);
+    }
+
+    @GetMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
+        registrationService.isResetTokenValid(resetToken, email);
+        Map<String, String> resBody = Map.of("message", "Redirect user to reset password form.");
+        return ResponseEntity.ok().body(resBody);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
+        String token = resetPwdRequest.getToken();
+        String email = resetPwdRequest.getEmail();
+        registrationService.isResetTokenValid(token, email);
+        String newPassword = resetPwdRequest.getNewPassword();
+        registrationService.saveUsersNewPassword(token, email, newPassword);
+        Map<String, String> resBody = Map.of("message", "Password has been successfully reset.");
+        return ResponseEntity.ok().body(resBody);
+    }
+
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
@@ -113,5 +139,10 @@ public class RegistrationController {
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<?> handleTokenExpired(TokenExpiredException ex) {
         return ResponseEntity.status(HttpStatus.GONE).body(new ErrorDetails(new Date(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(PasswordAlreadyResetException.class)
+    public ResponseEntity<?> handlePasswordAlreadyReset(PasswordAlreadyResetException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
 }
