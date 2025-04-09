@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.example.tournaments_backend.app_user.AppUser;
-import com.example.tournaments_backend.registration.token.ConfirmationToken;
 
 import lombok.AllArgsConstructor;
 
