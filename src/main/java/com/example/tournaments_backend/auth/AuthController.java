@@ -36,22 +36,22 @@ import lombok.AllArgsConstructor;
 @RequestMapping(path="api/v1/auth")
 @AllArgsConstructor
 public class AuthController {
-    private RegistrationService registrationService;
+    private AuthService authService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws UserAlreadyExistException {
-        registrationService.signUp(request);
+        authService.signUp(request);
         Map<String, String> resBody = Map.of("message", "A confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest authRequest) {
-        AppUser authenticatedUser = registrationService.authenticate(authRequest);
+        AppUser authenticatedUser = authService.authenticate(authRequest);
 
         // if user's account is verified
         if (authenticatedUser.getEnabled()) {
-            String jws = registrationService.generateJWS(authenticatedUser);
+            String jws = authService.generateJWS(authenticatedUser);
 
             UserDTO resBody = new UserDTO(
                 authenticatedUser.getId(), 
@@ -75,7 +75,7 @@ public class AuthController {
 
     @GetMapping("/confirm")
     public ResponseEntity<?> confirm(@RequestParam("token") String token) throws TokenNotFoundException, EmailAlreadyConfirmedException, TokenExpiredException {
-        String jws = registrationService.confirmToken(token);
+        String jws = authService.confirmToken(token);
 
         Map<String, String> resBody = Map.of("message", "Account verified!");
         return ResponseEntity
@@ -86,21 +86,21 @@ public class AuthController {
 
     @PostMapping("/resend")
     public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, EmailAlreadyConfirmedException {
-        registrationService.resendEmail(email);
+        authService.resendEmail(email);
         Map<String, String> resBody = Map.of("message", "A new confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
-        registrationService.sendResetPasswordEmail(email);
+        authService.sendResetPasswordEmail(email);
         Map<String, String> resBody = Map.of("message", "We've sent password reset instruction to your email.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @GetMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
-        registrationService.validateResetToken(resetToken, email);
+        authService.validateResetToken(resetToken, email);
         Map<String, String> resBody = Map.of("message", "Redirect user to reset password form.");
         return ResponseEntity.ok().body(resBody);
     }
@@ -109,9 +109,9 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
         String token = resetPwdRequest.getToken();
         String email = resetPwdRequest.getEmail();
-        registrationService.validateResetToken(token, email);
+        authService.validateResetToken(token, email);
         String newPassword = resetPwdRequest.getNewPassword();
-        registrationService.saveUsersNewPassword(token, email, newPassword);
+        authService.saveUsersNewPassword(token, email, newPassword);
         Map<String, String> resBody = Map.of("message", "Password has been successfully reset.");
         return ResponseEntity.ok().body(resBody);
     }
