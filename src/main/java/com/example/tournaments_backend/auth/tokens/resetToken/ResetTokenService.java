@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.auth.resetToken;
+package com.example.tournaments_backend.auth.tokens.resetToken;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.auth.confirmationToken;
+package com.example.tournaments_backend.auth.tokens.confirmationToken;
 
 import java.time.LocalDateTime;
 

@@ -13,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserService;
-import com.example.tournaments_backend.auth.confirmationToken.ConfirmationToken;
-import com.example.tournaments_backend.auth.confirmationToken.ConfirmationTokenService;
-import com.example.tournaments_backend.auth.resetToken.ResetToken;
-import com.example.tournaments_backend.auth.resetToken.ResetTokenService;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
