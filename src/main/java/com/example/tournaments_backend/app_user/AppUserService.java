@@ -7,9 +7,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.exception.UserAlreadyExistException;
-import com.example.tournaments_backend.registration.token.ConfirmationToken;
-import com.example.tournaments_backend.registration.token.ConfirmationTokenService;
 
 import lombok.AllArgsConstructor;
 
@@ -26,6 +28,7 @@ public class AppUserService implements UserDetailsService {
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
+    private final ResetTokenService resetTokenService;
 
     public List<AppUser> getAppUsers() {
         return appUserRepository.findAll();
@@ -112,12 +115,35 @@ public class AppUserService implements UserDetailsService {
         return token;
     }
 
+    public String generateNewResetTokenForUser(AppUser appUser) {
+        resetTokenService.invalidateUnconfirmedTokens(appUser);
+
+        String token = UUID.randomUUID().toString();
+        ResetToken resetToken = new ResetToken(token, 
+                                                LocalDateTime.now(), 
+                                                LocalDateTime.now().plusMinutes(15),
+                                                appUser);
+        resetTokenService.saveResetToken(resetToken);
+
+        return token;
+    }
+
     public void enableAppUser(String email) {
         AppUser user = appUserRepository
                 .findAppUserByEmail(email)
                 .orElseThrow(() -> 
                     new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
         user.setEnabled(true);
+        appUserRepository.save(user);
+    }
+
+    public void saveNewPassword(String email, String password) {
+        AppUser user = appUserRepository
+                .findAppUserByEmail(email)
+                .orElseThrow(() -> 
+                    new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
+        String encodedPassword = bCryptPasswordEncoder.encode(password);
+        user.setPassword(encodedPassword);
         appUserRepository.save(user);
     }
 }

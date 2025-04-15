@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.registration;
+package com.example.tournaments_backend.auth;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
