@@ -35,7 +35,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping(path="api/v1/auth")
 @AllArgsConstructor
-public class RegistrationController {
+public class AuthController {
     private RegistrationService registrationService;
 
     @PostMapping("/signup")

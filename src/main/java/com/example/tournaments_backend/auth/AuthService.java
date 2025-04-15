@@ -30,7 +30,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class RegistrationService {
+public class AuthService {
     private final AppUserService appUserService;
     private final ConfirmationTokenService confirmationTokenService;
     private final ResetTokenService resetTokenService;
