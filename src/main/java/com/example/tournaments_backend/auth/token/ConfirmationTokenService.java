@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.registration.token;
+package com.example.tournaments_backend.auth.token;
 
 import org.springframework.stereotype.Service;
 

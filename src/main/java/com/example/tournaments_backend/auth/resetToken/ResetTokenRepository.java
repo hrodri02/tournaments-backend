@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.registration.resetToken;
+package com.example.tournaments_backend.auth.resetToken;
 
 import java.util.List;
 import java.util.Optional;

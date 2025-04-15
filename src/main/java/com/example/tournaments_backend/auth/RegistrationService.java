@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.registration;
+package com.example.tournaments_backend.auth;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserService;
+import com.example.tournaments_backend.auth.resetToken.ResetToken;
+import com.example.tournaments_backend.auth.resetToken.ResetTokenService;
+import com.example.tournaments_backend.auth.token.ConfirmationToken;
+import com.example.tournaments_backend.auth.token.ConfirmationTokenService;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
@@ -20,10 +24,6 @@ import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.TokenExpiredException;
 import com.example.tournaments_backend.exception.TokenNotFoundException;
 import com.example.tournaments_backend.exception.UserAlreadyExistException;
-import com.example.tournaments_backend.registration.resetToken.ResetToken;
-import com.example.tournaments_backend.registration.resetToken.ResetTokenService;
-import com.example.tournaments_backend.registration.token.ConfirmationToken;
-import com.example.tournaments_backend.registration.token.ConfirmationTokenService;
 import com.example.tournaments_backend.security.JwtService;
 
 import lombok.AllArgsConstructor;

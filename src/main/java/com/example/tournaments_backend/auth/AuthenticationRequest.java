@@ -1,4 +1,4 @@
-package com.example.tournaments_backend.registration;
+package com.example.tournaments_backend.auth;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -10,16 +10,12 @@ import lombok.ToString;
 @EqualsAndHashCode
 @AllArgsConstructor 
 @ToString
-public class ResetPasswordRequest {
-    @NotNull
-    @NotEmpty
-    private final String token;
+public class AuthenticationRequest {
     @ValidEmail
     @NotNull
     @NotEmpty
     private final String email;
     @NotNull
     @NotEmpty
-    private final String newPassword;
+    private final String password;
 }
-
