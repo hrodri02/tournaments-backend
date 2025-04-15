@@ -7,10 +7,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.tournaments_backend.auth.resetToken.ResetToken;
-import com.example.tournaments_backend.auth.resetToken.ResetTokenService;
-import com.example.tournaments_backend.auth.token.ConfirmationToken;
-import com.example.tournaments_backend.auth.token.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
+import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.exception.UserAlreadyExistException;
 
 import lombok.AllArgsConstructor;
