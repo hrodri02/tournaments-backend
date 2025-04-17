@@ -3,6 +3,11 @@ package com.example.tournaments_backend.app_user;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,13 +18,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path="/api/v1/person")
+@RequestMapping(path="/api/v1/users")
 public class AppUserController {
     private final AppUserService appUserService;
 
     @Autowired
     public AppUserController(AppUserService appUserService) {
         this.appUserService = appUserService;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        AppUser appUser = appUserService.getAppUserByEmail(userDetails.getUsername());
+        UserDTO resBody = new UserDTO(
+            appUser.getId(), 
+            appUser.getFirstName(),
+            appUser.getLastName(),
+            appUser.getEmail(),
+            appUser.getAppUserRole());
+
+        return ResponseEntity.ok(resBody);
     }
 
     @GetMapping
