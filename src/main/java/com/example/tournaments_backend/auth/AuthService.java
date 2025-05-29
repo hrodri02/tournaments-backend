@@ -23,7 +23,7 @@ import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.TokenExpiredException;
 import com.example.tournaments_backend.exception.TokenNotFoundException;
-import com.example.tournaments_backend.exception.UserAlreadyExistException;
+import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 import com.example.tournaments_backend.security.JwtService;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class AuthService {
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
 
-    public String signUp(RegistrationRequest request) throws UserAlreadyExistException {
+    public String signUp(RegistrationRequest request) throws UserAlreadyExistsException {
         String token = appUserService.signUp(
             new AppUser(request.getFirstName(), 
                         request.getLastName(),

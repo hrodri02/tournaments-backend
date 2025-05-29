@@ -11,7 +11,7 @@ import com.example.tournaments_backend.auth.tokens.confirmationToken.Confirmatio
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
-import com.example.tournaments_backend.exception.UserAlreadyExistException;
+import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 
 import lombok.AllArgsConstructor;
 
@@ -78,13 +78,13 @@ public class AppUserService implements UserDetailsService {
                 new UsernameNotFoundException(String.format(USER_NOT_FOUND_MSG, email)));
     }
 
-    public String signUp(AppUser appUser) throws UserAlreadyExistException {
+    public String signUp(AppUser appUser) throws UserAlreadyExistsException {
         boolean userExists = appUserRepository
             .findAppUserByEmail(appUser.getEmail())
             .isPresent();
         
         if (userExists) {
-            throw new UserAlreadyExistException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
