@@ -1,14 +1,21 @@
 package com.example.tournaments_backend.league;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.tournaments_backend.exception.ErrorDetails;
+import com.example.tournaments_backend.exception.LeagueNotFoundException;
 
 @RestController
 @RequestMapping(path="/api/v1/leagues")
@@ -30,5 +37,16 @@ public class LeagueController {
     public ResponseEntity<List<League>> getLeagues() {
         List<League> leagues = leagueService.getLeagues();
         return ResponseEntity.ok().body(leagues);
+    }
+
+    @GetMapping("{leagueId}")
+    public ResponseEntity<League> getLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
+        League league = leagueService.getLeagueById(leagueId);
+        return ResponseEntity.ok().body(league);
+    }
+
+    @ExceptionHandler(LeagueNotFoundException.class)
+    public ResponseEntity<ErrorDetails> handleLeagueNotFoundException(LeagueNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
 }

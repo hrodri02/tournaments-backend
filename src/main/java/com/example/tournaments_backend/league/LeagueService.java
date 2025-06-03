@@ -3,6 +3,9 @@ package com.example.tournaments_backend.league;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+
+import com.example.tournaments_backend.exception.LeagueNotFoundException;
+
 import lombok.AllArgsConstructor;
 
 @Service
@@ -17,5 +20,12 @@ public class LeagueService {
     
     public List<League> getLeagues() {
         return leagueRepository.findAll();
+    }
+
+    public League getLeagueById(Long id) throws LeagueNotFoundException {
+        League league = leagueRepository
+                            .findById(id)
+                            .orElseThrow(() -> new LeagueNotFoundException("League not found."));
+        return league;
     }
 }
