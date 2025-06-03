@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Period;
-import java.util.Date;
+import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
 
@@ -34,12 +34,13 @@ public class League {
     private Long id;
     private String name;
     @Column(name = "start_date")
-    private Date startDate;
-    private Period duration;
+    private LocalDate startDate;
+    @Column(name = "duration_in_weeks")
+    private Integer durationInWeeks;
 
-    public League(String name, Date startDate, Period duration) {
+    public League(String name, LocalDate startDate, Integer durationInWeeks) {
         this.name = name;
         this.startDate = startDate;
-        this.duration = duration;
+        this.durationInWeeks = durationInWeeks;
     }
 }
