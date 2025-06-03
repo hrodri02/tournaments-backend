@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +44,12 @@ public class LeagueController {
     public ResponseEntity<League> getLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
         League league = leagueService.getLeagueById(leagueId);
         return ResponseEntity.ok().body(league);
+    }
+
+    @DeleteMapping("{leagueId}")
+    public ResponseEntity<String> deleteLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
+        leagueService.deleteLeagueById(leagueId);
+        return ResponseEntity.ok().body("League successfully deleted.");
     }
 
     @ExceptionHandler(LeagueNotFoundException.class)

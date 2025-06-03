@@ -28,4 +28,13 @@ public class LeagueService {
                             .orElseThrow(() -> new LeagueNotFoundException("League not found."));
         return league;
     }
+
+    public void deleteLeagueById(Long id) throws LeagueNotFoundException {
+        boolean leagueExists = leagueRepository.existsById(id);
+        if (!leagueExists) {
+            throw new LeagueNotFoundException("League not found.");
+        }
+
+        leagueRepository.deleteById(id);
+    }
 }
