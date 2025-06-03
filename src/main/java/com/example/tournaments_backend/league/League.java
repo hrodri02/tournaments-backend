@@ -4,10 +4,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Column;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.Period;
+import java.util.Date;
+
 import jakarta.persistence.Entity;
 
 @Entity
@@ -28,8 +33,13 @@ public class League {
     )
     private Long id;
     private String name;
+    @Column(name = "start_date")
+    private Date startDate;
+    private Period duration;
 
-    public League(String name) {
+    public League(String name, Date startDate, Period duration) {
         this.name = name;
+        this.startDate = startDate;
+        this.duration = duration;
     }
 }
