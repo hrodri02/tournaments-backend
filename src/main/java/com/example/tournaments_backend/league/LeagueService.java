@@ -25,14 +25,14 @@ public class LeagueService {
     public League getLeagueById(Long id) throws LeagueNotFoundException {
         League league = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new LeagueNotFoundException("League not found."));
+                            .orElseThrow(() -> new LeagueNotFoundException("The league with the given id was not found."));
         return league;
     }
 
     public void deleteLeagueById(Long id) throws LeagueNotFoundException {
         boolean leagueExists = leagueRepository.existsById(id);
         if (!leagueExists) {
-            throw new LeagueNotFoundException("League not found.");
+            throw new LeagueNotFoundException("The league with the given id was not found.");
         }
 
         leagueRepository.deleteById(id);
@@ -41,7 +41,7 @@ public class LeagueService {
     public League updateLeague(Long id, League updatedLeauge) throws LeagueNotFoundException {
         League oldLeague = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new LeagueNotFoundException("League not found."));
+                            .orElseThrow(() -> new LeagueNotFoundException("The league with the given id was not found."));
         oldLeague.setName(updatedLeauge.getName());
         oldLeague.setStartDate(updatedLeauge.getStartDate());
         oldLeague.setDurationInWeeks(updatedLeauge.getDurationInWeeks());
