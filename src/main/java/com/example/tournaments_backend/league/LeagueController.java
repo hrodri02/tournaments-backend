@@ -20,6 +20,8 @@ import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.LeagueNotFoundException;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping(path="/api/v1/leagues")
 public class LeagueController {
@@ -31,7 +33,7 @@ public class LeagueController {
     }
 
     @PostMapping
-    public ResponseEntity<League> addLeague(@RequestBody League league) {
+    public ResponseEntity<League> addLeague(@RequestBody @Valid League league) {
         League leagueInDB =leagueService.addLeague(league);
         return ResponseEntity.ok().body(leagueInDB);
     }
@@ -55,7 +57,7 @@ public class LeagueController {
     }
 
     @PutMapping("{leagueId}")
-    public ResponseEntity<League> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody League updatedLeauge) throws LeagueNotFoundException {
+    public ResponseEntity<League> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody @Valid League updatedLeauge) throws LeagueNotFoundException {
         League leagueInDB = leagueService.updateLeague(leagueId, updatedLeauge);
         return ResponseEntity.ok().body(leagueInDB);
     }
