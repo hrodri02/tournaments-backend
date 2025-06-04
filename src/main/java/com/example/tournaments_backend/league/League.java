@@ -4,6 +4,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import jakarta.persistence.Column;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,9 +36,16 @@ public class League {
         generator = "league_sequence"
     )
     private Long id;
+    @NotNull
+    @NotEmpty
+    @Size(min = 2, max = 255, message = "League name must be between 2 and 255 characters.")
     private String name;
+    @NotNull
+    @Future
     @Column(name = "start_date")
     private LocalDate startDate;
+    @NotNull
+    @Min(value = 4, message = "League duration must be at least 4 weeks long.")
     @Column(name = "duration_in_weeks")
     private Integer durationInWeeks;
 
