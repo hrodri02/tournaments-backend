@@ -1,9 +1,15 @@
 package com.example.tournaments_backend.team;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import com.example.tournaments_backend.league.League;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -34,6 +40,8 @@ public class Team {
     @NotEmpty
     @Size(min = 2, max = 255, message = "Team name must be between 2 and 255 characters.")
     private String name;
+    @ManyToMany(mappedBy = "teams")
+    private Set<League> leagues = new HashSet<>();
 
     public Team(String name) {
         this.name = name;
