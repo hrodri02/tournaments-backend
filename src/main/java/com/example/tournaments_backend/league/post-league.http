@@ -2,7 +2,7 @@ POST http://localhost:8080/api/v1/leagues HTTP/1.1
 content-type: application/json
 
 {
-    "name": "San Matias League",
+    "name": "Liga de San Matias",
     "startDate": "2025-06-10",
-    "durationInWeeks": 10
+    "durationInWeeks": 4
 }
