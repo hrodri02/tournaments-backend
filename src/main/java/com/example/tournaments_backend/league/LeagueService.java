@@ -30,11 +30,6 @@ public class LeagueService {
     }
 
     public void deleteLeagueById(Long id) throws LeagueNotFoundException {
-        boolean leagueExists = leagueRepository.existsById(id);
-        if (!leagueExists) {
-            throw new LeagueNotFoundException("The league with the given id was not found.");
-        }
-
         leagueRepository.deleteById(id);
     }
 

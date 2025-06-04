@@ -51,9 +51,10 @@ public class LeagueController {
     }
 
     @DeleteMapping("{leagueId}")
-    public ResponseEntity<String> deleteLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
+    public ResponseEntity<League> deleteLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
+        League deletedLeague = leagueService.getLeagueById(leagueId);
         leagueService.deleteLeagueById(leagueId);
-        return ResponseEntity.ok().body("League successfully deleted.");
+        return ResponseEntity.ok().body(deletedLeague);
     }
 
     @PutMapping("{leagueId}")
