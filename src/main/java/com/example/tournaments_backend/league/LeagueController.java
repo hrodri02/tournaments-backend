@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.LeagueNotFoundException;
 
@@ -50,6 +52,12 @@ public class LeagueController {
     public ResponseEntity<String> deleteLeague(@PathVariable("leagueId") Long leagueId) throws LeagueNotFoundException {
         leagueService.deleteLeagueById(leagueId);
         return ResponseEntity.ok().body("League successfully deleted.");
+    }
+
+    @PutMapping("{leagueId}")
+    public ResponseEntity<League> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody League updatedLeauge) throws LeagueNotFoundException {
+        League leagueInDB = leagueService.updateLeague(leagueId, updatedLeauge);
+        return ResponseEntity.ok().body(leagueInDB);
     }
 
     @ExceptionHandler(LeagueNotFoundException.class)

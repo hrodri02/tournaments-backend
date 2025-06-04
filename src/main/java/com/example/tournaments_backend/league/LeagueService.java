@@ -37,4 +37,16 @@ public class LeagueService {
 
         leagueRepository.deleteById(id);
     }
+
+    public League updateLeague(Long id, League updatedLeauge) throws LeagueNotFoundException {
+        League oldLeague = leagueRepository
+                            .findById(id)
+                            .orElseThrow(() -> new LeagueNotFoundException("League not found."));
+        oldLeague.setName(updatedLeauge.getName());
+        oldLeague.setStartDate(updatedLeauge.getStartDate());
+        oldLeague.setDurationInWeeks(updatedLeauge.getDurationInWeeks());
+        
+        League leagueInDB = leagueRepository.save(oldLeague);
+        return leagueInDB;
+    }
 }
