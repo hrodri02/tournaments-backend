@@ -26,4 +26,14 @@ public class TeamService {
     public void deleteTeamById(Long id) throws TeamNotFoundException {
         teamRepository.deleteById(id);
     }
+
+    public Team updateTeam(Long id, Team updatedTeam) throws TeamNotFoundException {
+        Team oldTeam = teamRepository
+                        .findById(id)
+                        .orElseThrow(() -> new TeamNotFoundException("Team with given id not found."));
+        oldTeam.setName(updatedTeam.getName());
+        
+        Team teamInDB = teamRepository.save(oldTeam);
+        return teamInDB;
+    }
 }

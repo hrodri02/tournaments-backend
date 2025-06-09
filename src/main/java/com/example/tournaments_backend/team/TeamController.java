@@ -2,6 +2,7 @@ package com.example.tournaments_backend.team;
 
 import java.util.Date;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,5 +48,11 @@ public class TeamController {
         Team deletedTeam = teamService.getTeamById(teamId);
         teamService.deleteTeamById(teamId);
         return ResponseEntity.ok().body(deletedTeam);
+    }
+
+    @PutMapping(("{teamId}"))
+    public ResponseEntity<Team> updateTeam(@PathVariable("teamId") Long teamId, @RequestBody @Valid Team updatedTeam) throws TeamNotFoundException {
+        Team team = teamService.updateTeam(teamId, updatedTeam);
+        return ResponseEntity.ok().body(team);
     }
 }
