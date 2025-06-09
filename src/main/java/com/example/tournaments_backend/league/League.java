@@ -1,5 +1,8 @@
 package com.example.tournaments_backend.league;
 
+import com.example.tournaments_backend.team.Team;
+
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,14 +25,10 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.example.tournaments_backend.team.Team;
-
-import jakarta.persistence.Entity;
-
 @Entity
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 public class League {
     @Id
@@ -42,6 +41,7 @@ public class League {
         strategy = GenerationType.SEQUENCE,
         generator = "league_sequence"
     )
+    @EqualsAndHashCode.Include
     private Long id;
     @NotNull
     @NotEmpty
@@ -67,5 +67,10 @@ public class League {
         this.name = name;
         this.startDate = startDate;
         this.durationInWeeks = durationInWeeks;
+    }
+
+    public void addTeam(Team team) {
+        teams.add(team);
+        team.getLeagues().add(this);
     }
 }
