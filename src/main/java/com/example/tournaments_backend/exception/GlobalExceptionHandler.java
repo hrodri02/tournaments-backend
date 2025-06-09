@@ -36,4 +36,9 @@ public class GlobalExceptionHandler {
                         .status(HttpStatus.BAD_REQUEST)
                         .body(new ErrorDetails(new Date(), ex.getMessage()));
     }
+
+    @ExceptionHandler(TeamNotFoundException.class)
+    public ResponseEntity<ErrorDetails> handleTeamNotFoundException(TeamNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
+    }
 }

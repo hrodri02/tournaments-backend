@@ -5,15 +5,31 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.tournaments_backend.exception.LeagueNotFoundException;
+import com.example.tournaments_backend.exception.TeamNotFoundException;
+import com.example.tournaments_backend.team.Team;
+import com.example.tournaments_backend.team.TeamService;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class LeagueService {
+    private final TeamService teamService;
     private final LeagueRepository leagueRepository;
 
     public League addLeague(League league) {
+        League leagueInDB = leagueRepository.save(league);
+        return leagueInDB;
+    }
+
+    @Transactional
+    public League addTeamToLeague(Long leagueId, Long teamId) throws LeagueNotFoundException, TeamNotFoundException {
+        League league = leagueRepository
+                            .findById(leagueId)
+                            .orElseThrow(() -> new LeagueNotFoundException("League with given id was not found."));
+        Team team = teamService.getTeamById(teamId);
+        league.addTeam(team);
         League leagueInDB = leagueRepository.save(league);
         return leagueInDB;
     }

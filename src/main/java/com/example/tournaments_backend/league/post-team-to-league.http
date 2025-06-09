@@ -1,0 +1,2 @@
+POST http://localhost:8080/api/v1/leagues/2/teams/1 HTTP/1.1
+content-type: application/json
