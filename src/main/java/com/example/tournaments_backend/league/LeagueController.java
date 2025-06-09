@@ -73,9 +73,4 @@ public class LeagueController {
     public ResponseEntity<ErrorDetails> handleLeagueNotFoundException(LeagueNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
-
-    @ExceptionHandler(TeamNotFoundException.class)
-    public ResponseEntity<ErrorDetails> handleTeamNotFoundException(TeamNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
 }
