@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.example.tournaments_backend.league.League;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +23,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 public class Team {
     @Id
@@ -35,11 +36,13 @@ public class Team {
         strategy = GenerationType.SEQUENCE,
         generator = "team_sequence"
     )
+    @EqualsAndHashCode.Include
     private Long id;
     @NotNull
     @NotEmpty
     @Size(min = 2, max = 255, message = "Team name must be between 2 and 255 characters.")
     private String name;
+    @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<League> leagues = new HashSet<>();
 
