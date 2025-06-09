@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.LeagueNotFoundException;
-import com.example.tournaments_backend.exception.TeamNotFoundException;
+import com.example.tournaments_backend.exception.ServiceException;
 
 import jakarta.validation.Valid;
 
@@ -39,7 +39,7 @@ public class LeagueController {
     }
 
     @PostMapping("{leagueId}/teams/{teamId}")
-    public ResponseEntity<League> addTeamToLeague(@PathVariable("leagueId") Long leagueId, @PathVariable("teamId") Long teamId) throws LeagueNotFoundException, TeamNotFoundException {
+    public ResponseEntity<League> addTeamToLeague(@PathVariable("leagueId") Long leagueId, @PathVariable("teamId") Long teamId) throws LeagueNotFoundException, ServiceException {
         League league = leagueService.addTeamToLeague(leagueId, teamId);
         return ResponseEntity.ok().body(league);
     }

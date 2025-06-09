@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.tournaments_backend.exception.TeamNotFoundException;
+import com.example.tournaments_backend.exception.ServiceException;
 
 import jakarta.validation.Valid;
 
@@ -32,20 +32,20 @@ public class TeamController {
     }
 
     @GetMapping("{teamId}")
-    public ResponseEntity<Team> getTeam(@PathVariable("teamId") Long teamId) throws TeamNotFoundException {
+    public ResponseEntity<Team> getTeam(@PathVariable("teamId") Long teamId) throws ServiceException {
         Team team = teamService.getTeamById(teamId);
         return ResponseEntity.ok().body(team);
     }
 
     @DeleteMapping("{teamId}")
-    public ResponseEntity<Team> deleteTeam(@PathVariable("teamId") Long teamId) throws TeamNotFoundException {
+    public ResponseEntity<Team> deleteTeam(@PathVariable("teamId") Long teamId) throws ServiceException {
         Team deletedTeam = teamService.getTeamById(teamId);
         teamService.deleteTeamById(teamId);
         return ResponseEntity.ok().body(deletedTeam);
     }
 
     @PutMapping(("{teamId}"))
-    public ResponseEntity<Team> updateTeam(@PathVariable("teamId") Long teamId, @RequestBody @Valid Team updatedTeam) throws TeamNotFoundException {
+    public ResponseEntity<Team> updateTeam(@PathVariable("teamId") Long teamId, @RequestBody @Valid Team updatedTeam) throws ServiceException {
         Team team = teamService.updateTeam(teamId, updatedTeam);
         return ResponseEntity.ok().body(team);
     }

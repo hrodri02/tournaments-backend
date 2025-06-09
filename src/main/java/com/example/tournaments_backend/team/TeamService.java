@@ -1,10 +1,11 @@
 package com.example.tournaments_backend.team;
 
+import lombok.AllArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
-import com.example.tournaments_backend.exception.TeamNotFoundException;
-
-import lombok.AllArgsConstructor;
+import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.exception.ErrorType;
 
 @Service
 @AllArgsConstructor
@@ -16,21 +17,21 @@ public class TeamService {
         return teamInDB;
     }
 
-    public Team getTeamById(Long id) throws TeamNotFoundException {
+    public Team getTeamById(Long id) throws ServiceException {
         Team team = teamRepository
                         .findById(id)
-                        .orElseThrow(() -> new TeamNotFoundException("Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
         return team;
     }
 
-    public void deleteTeamById(Long id) throws TeamNotFoundException {
+    public void deleteTeamById(Long id) {
         teamRepository.deleteById(id);
     }
 
-    public Team updateTeam(Long id, Team updatedTeam) throws TeamNotFoundException {
+    public Team updateTeam(Long id, Team updatedTeam) throws ServiceException {
         Team oldTeam = teamRepository
                         .findById(id)
-                        .orElseThrow(() -> new TeamNotFoundException("Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
         oldTeam.setName(updatedTeam.getName());
         
         Team teamInDB = teamRepository.save(oldTeam);
