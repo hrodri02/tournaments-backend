@@ -5,6 +5,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,5 +39,12 @@ public class TeamController {
     public ResponseEntity<Team> getTeam(@PathVariable("teamId") Long teamId) throws TeamNotFoundException {
         Team team = teamService.getTeamById(teamId);
         return ResponseEntity.ok().body(team);
+    }
+
+    @DeleteMapping("{teamId}")
+    public ResponseEntity<Team> deleteTeam(@PathVariable("teamId") Long teamId) throws TeamNotFoundException {
+        Team deletedTeam = teamService.getTeamById(teamId);
+        teamService.deleteTeamById(teamId);
+        return ResponseEntity.ok().body(deletedTeam);
     }
 }
