@@ -9,7 +9,6 @@ import com.example.tournaments_backend.app_user.UserDTO;
 import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
-import com.example.tournaments_backend.exception.TokenExpiredException;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 
@@ -74,7 +73,7 @@ public class AuthController {
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException, EmailAlreadyConfirmedException, TokenExpiredException {
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException, EmailAlreadyConfirmedException {
         String jws = authService.confirmToken(token);
 
         Map<String, String> resBody = Map.of("message", "Account verified!");
@@ -99,14 +98,14 @@ public class AuthController {
     }
 
     @GetMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws ServiceException, PasswordAlreadyResetException, TokenExpiredException {
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws ServiceException, PasswordAlreadyResetException {
         authService.validateResetToken(resetToken, email);
         Map<String, String> resBody = Map.of("message", "Redirect user to reset password form.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws ServiceException, PasswordAlreadyResetException, TokenExpiredException {
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws ServiceException, PasswordAlreadyResetException {
         String token = resetPwdRequest.getToken();
         String email = resetPwdRequest.getEmail();
         authService.validateResetToken(token, email);
@@ -129,11 +128,6 @@ public class AuthController {
     @ExceptionHandler(EmailAlreadyConfirmedException.class)
     public ResponseEntity<?> handle(EmailAlreadyConfirmedException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<?> handleTokenExpired(TokenExpiredException ex) {
-        return ResponseEntity.status(HttpStatus.GONE).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
 
     @ExceptionHandler(PasswordAlreadyResetException.class)

@@ -22,7 +22,6 @@ import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
-import com.example.tournaments_backend.exception.TokenExpiredException;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 import com.example.tournaments_backend.security.JwtService;
@@ -70,7 +69,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws ServiceException, EmailAlreadyConfirmedException, TokenExpiredException {
+    public String confirmToken(String token) throws ServiceException, EmailAlreadyConfirmedException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
             .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
@@ -81,7 +80,7 @@ public class AuthService {
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token expired. Please request a new confirmation email.");
+            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new confirmation email.");
         }
 
         confirmationTokenService.setConfirmedAt(token);
@@ -130,7 +129,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void validateResetToken(String token, String email) throws ServiceException, PasswordAlreadyResetException,TokenExpiredException {
+    public void validateResetToken(String token, String email) throws ServiceException, PasswordAlreadyResetException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
@@ -142,7 +141,7 @@ public class AuthService {
 
         LocalDateTime expiredAt = resetToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token expired. Please request a new reset password email.");
+            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new reset password email.");
         }
     }
 
