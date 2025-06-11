@@ -20,9 +20,10 @@ import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
+import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.TokenExpiredException;
-import com.example.tournaments_backend.exception.TokenNotFoundException;
+import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 import com.example.tournaments_backend.security.JwtService;
 
@@ -69,10 +70,10 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws TokenNotFoundException, EmailAlreadyConfirmedException, TokenExpiredException {
+    public String confirmToken(String token) throws ServiceException, EmailAlreadyConfirmedException, TokenExpiredException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
-            .orElseThrow(() -> new TokenNotFoundException("Token not found."));
+            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (confirmationToken.getConfirmedAt() != null) {
             throw new EmailAlreadyConfirmedException("Email is already confirmed.");
@@ -129,11 +130,11 @@ public class AuthService {
     }
 
     @Transactional
-    public void validateResetToken(String token, String email) throws TokenNotFoundException, PasswordAlreadyResetException,TokenExpiredException {
+    public void validateResetToken(String token, String email) throws ServiceException, PasswordAlreadyResetException,TokenExpiredException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
-            .orElseThrow(() -> new TokenNotFoundException("Token not found."));
+            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (resetToken.getResetAt() != null) {
             throw new PasswordAlreadyResetException("Your password was already reset.");
