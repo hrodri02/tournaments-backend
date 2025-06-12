@@ -20,7 +20,6 @@ import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ErrorType;
-import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.security.JwtService;
 
@@ -127,14 +126,14 @@ public class AuthService {
     }
 
     @Transactional
-    public void validateResetToken(String token, String email) throws ServiceException, PasswordAlreadyResetException {
+    public void validateResetToken(String token, String email) throws ServiceException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
             .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (resetToken.getResetAt() != null) {
-            throw new PasswordAlreadyResetException("Your password was already reset.");
+            throw new ServiceException(ErrorType.PASSWORD_ALREADY_RESET, "App user","Your password was already reset.");
         }
 
         LocalDateTime expiredAt = resetToken.getExpiresAt();
