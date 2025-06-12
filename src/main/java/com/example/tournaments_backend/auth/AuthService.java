@@ -18,7 +18,6 @@ import com.example.tournaments_backend.auth.tokens.confirmationToken.Confirmatio
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
-import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
@@ -68,13 +67,13 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws ServiceException, EmailAlreadyConfirmedException {
+    public String confirmToken(String token) throws ServiceException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
             .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new EmailAlreadyConfirmedException("Email is already confirmed.");
+            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
@@ -94,10 +93,10 @@ public class AuthService {
         return jwtService.createToken(user.getEmail(), user.getAppUserRole());
     }
 
-    public void resendEmail(String email) throws UsernameNotFoundException, EmailAlreadyConfirmedException {
+    public void resendEmail(String email) throws UsernameNotFoundException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         if (appUser.isEnabled()) {
-            throw new EmailAlreadyConfirmedException("Email is already confirmed.");
+            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
         }
         else {
             String token = appUserService.generateNewTokenForUser(appUser);

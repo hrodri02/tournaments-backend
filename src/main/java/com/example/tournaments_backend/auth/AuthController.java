@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.UserDTO;
-import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.ServiceException;
@@ -72,7 +71,7 @@ public class AuthController {
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException, EmailAlreadyConfirmedException {
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException {
         String jws = authService.confirmToken(token);
 
         Map<String, String> resBody = Map.of("message", "Account verified!");
@@ -83,7 +82,7 @@ public class AuthController {
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, EmailAlreadyConfirmedException {
+    public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, ServiceException {
         authService.resendEmail(email);
         Map<String, String> resBody = Map.of("message", "A new confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
@@ -117,11 +116,6 @@ public class AuthController {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(EmailAlreadyConfirmedException.class)
-    public ResponseEntity<?> handle(EmailAlreadyConfirmedException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
 
     @ExceptionHandler(PasswordAlreadyResetException.class)
