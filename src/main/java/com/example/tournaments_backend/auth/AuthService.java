@@ -1,7 +1,6 @@
 package com.example.tournaments_backend.auth;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -120,7 +119,7 @@ public class AuthService {
             );
         }
         catch (UsernameNotFoundException ex) {
-            ErrorDetails err = new ErrorDetails(new Date(), ex.getMessage());
+            ErrorDetails err = new ErrorDetails(LocalDateTime.now(), ex.getMessage());
             System.err.println(err);
         }
     }

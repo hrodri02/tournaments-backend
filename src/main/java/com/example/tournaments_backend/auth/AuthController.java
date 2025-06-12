@@ -16,7 +16,7 @@ import java.util.Map;
 import static com.example.tournaments_backend.security.SecurityConstants.AUTHORIZATION_HEADER;
 import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,6 +114,6 @@ public class AuthController {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
     }
 }
