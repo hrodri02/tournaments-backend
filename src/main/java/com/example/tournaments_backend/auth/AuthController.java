@@ -10,7 +10,6 @@ import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
 import com.example.tournaments_backend.exception.ServiceException;
-import com.example.tournaments_backend.exception.UserAlreadyExistsException;
 
 import jakarta.validation.Valid;
 
@@ -38,7 +37,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws UserAlreadyExistsException {
+    public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
         authService.signUp(request);
         Map<String, String> resBody = Map.of("message", "A confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
@@ -118,11 +117,6 @@ public class AuthController {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
     }
 
     @ExceptionHandler(EmailAlreadyConfirmedException.class)
