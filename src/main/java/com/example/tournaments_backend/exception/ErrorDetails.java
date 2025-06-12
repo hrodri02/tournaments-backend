@@ -1,6 +1,6 @@
 package com.example.tournaments_backend.exception;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ErrorDetails {
-    private Date timestamp;
+    private LocalDateTime timestamp;
     private String message;
 }

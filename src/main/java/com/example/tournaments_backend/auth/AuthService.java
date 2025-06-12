@@ -1,7 +1,6 @@
 package com.example.tournaments_backend.auth;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import org.springframework.stereotype.Service;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,12 +17,9 @@ import com.example.tournaments_backend.auth.tokens.confirmationToken.Confirmatio
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
-import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
-import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
-import com.example.tournaments_backend.exception.TokenExpiredException;
-import com.example.tournaments_backend.exception.TokenNotFoundException;
-import com.example.tournaments_backend.exception.UserAlreadyExistsException;
+import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.security.JwtService;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +34,7 @@ public class AuthService {
     private final EmailSender emailSender;
     private final AuthenticationManager authenticationManager;
 
-    public String signUp(RegistrationRequest request) throws UserAlreadyExistsException {
+    public String signUp(RegistrationRequest request) throws ServiceException {
         String token = appUserService.signUp(
             new AppUser(request.getFirstName(), 
                         request.getLastName(),
@@ -69,18 +65,18 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws TokenNotFoundException, EmailAlreadyConfirmedException, TokenExpiredException {
+    public String confirmToken(String token) throws ServiceException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
-            .orElseThrow(() -> new TokenNotFoundException("Token not found."));
+            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new EmailAlreadyConfirmedException("Email is already confirmed.");
+            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token expired. Please request a new confirmation email.");
+            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new confirmation email.");
         }
 
         confirmationTokenService.setConfirmedAt(token);
@@ -95,10 +91,10 @@ public class AuthService {
         return jwtService.createToken(user.getEmail(), user.getAppUserRole());
     }
 
-    public void resendEmail(String email) throws UsernameNotFoundException, EmailAlreadyConfirmedException {
+    public void resendEmail(String email) throws UsernameNotFoundException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         if (appUser.isEnabled()) {
-            throw new EmailAlreadyConfirmedException("Email is already confirmed.");
+            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
         }
         else {
             String token = appUserService.generateNewTokenForUser(appUser);
@@ -123,25 +119,25 @@ public class AuthService {
             );
         }
         catch (UsernameNotFoundException ex) {
-            ErrorDetails err = new ErrorDetails(new Date(), ex.getMessage());
+            ErrorDetails err = new ErrorDetails(LocalDateTime.now(), ex.getMessage());
             System.err.println(err);
         }
     }
 
     @Transactional
-    public void validateResetToken(String token, String email) throws TokenNotFoundException, PasswordAlreadyResetException,TokenExpiredException {
+    public void validateResetToken(String token, String email) throws ServiceException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
-            .orElseThrow(() -> new TokenNotFoundException("Token not found."));
+            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
 
         if (resetToken.getResetAt() != null) {
-            throw new PasswordAlreadyResetException("Your password was already reset.");
+            throw new ServiceException(ErrorType.PASSWORD_ALREADY_RESET, "App user","Your password was already reset.");
         }
 
         LocalDateTime expiredAt = resetToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new TokenExpiredException("Token expired. Please request a new reset password email.");
+            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new reset password email.");
         }
     }
 

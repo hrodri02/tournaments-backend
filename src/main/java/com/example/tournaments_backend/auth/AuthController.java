@@ -6,12 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.UserDTO;
-import com.example.tournaments_backend.exception.EmailAlreadyConfirmedException;
 import com.example.tournaments_backend.exception.ErrorDetails;
-import com.example.tournaments_backend.exception.PasswordAlreadyResetException;
-import com.example.tournaments_backend.exception.TokenExpiredException;
-import com.example.tournaments_backend.exception.TokenNotFoundException;
-import com.example.tournaments_backend.exception.UserAlreadyExistsException;
+import com.example.tournaments_backend.exception.ServiceException;
 
 import jakarta.validation.Valid;
 
@@ -20,7 +16,7 @@ import java.util.Map;
 import static com.example.tournaments_backend.security.SecurityConstants.AUTHORIZATION_HEADER;
 import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +35,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws UserAlreadyExistsException {
+    public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
         authService.signUp(request);
         Map<String, String> resBody = Map.of("message", "A confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
@@ -74,7 +70,7 @@ public class AuthController {
     }
 
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws TokenNotFoundException, EmailAlreadyConfirmedException, TokenExpiredException {
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException {
         String jws = authService.confirmToken(token);
 
         Map<String, String> resBody = Map.of("message", "Account verified!");
@@ -85,7 +81,7 @@ public class AuthController {
     }
 
     @PostMapping("/resend")
-    public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, EmailAlreadyConfirmedException {
+    public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, ServiceException {
         authService.resendEmail(email);
         Map<String, String> resBody = Map.of("message", "A new confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
@@ -99,14 +95,14 @@ public class AuthController {
     }
 
     @GetMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String resetToken, @RequestParam("email") String email) throws ServiceException {
         authService.validateResetToken(resetToken, email);
         Map<String, String> resBody = Map.of("message", "Redirect user to reset password form.");
         return ResponseEntity.ok().body(resBody);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws TokenNotFoundException, PasswordAlreadyResetException, TokenExpiredException {
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws ServiceException {
         String token = resetPwdRequest.getToken();
         String email = resetPwdRequest.getEmail();
         authService.validateResetToken(token, email);
@@ -118,31 +114,6 @@ public class AuthController {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(TokenNotFoundException.class)
-    public ResponseEntity<?> handleTokenNotFound(TokenNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(EmailAlreadyConfirmedException.class)
-    public ResponseEntity<?> handle(EmailAlreadyConfirmedException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<?> handleTokenExpired(TokenExpiredException ex) {
-        return ResponseEntity.status(HttpStatus.GONE).body(new ErrorDetails(new Date(), ex.getMessage()));
-    }
-
-    @ExceptionHandler(PasswordAlreadyResetException.class)
-    public ResponseEntity<?> handlePasswordAlreadyReset(PasswordAlreadyResetException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDetails(new Date(), ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
     }
 }

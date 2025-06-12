@@ -1,6 +1,6 @@
 package com.example.tournaments_backend.exception;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,18 +27,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<?> handleAuthenticationException(AuthenticationException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDetails(new Date(), ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<?> handleInvalidEnumValue(HttpMessageNotReadableException ex) {
         return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
-                        .body(new ErrorDetails(new Date(), ex.getMessage()));
+                        .body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
     }
 
-    @ExceptionHandler(TeamNotFoundException.class)
-    public ResponseEntity<ErrorDetails> handleTeamNotFoundException(TeamNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(new Date(), ex.getMessage()));
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<ErrorDetails> handleServiceException(ServiceException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
     }
 }

@@ -1,2 +1,2 @@
-GET http://localhost:8080/api/v1/auth/confirm?token=9faf2ddc-f29d-4157-9b6a-446857613b1d HTTP/1.1
+GET http://localhost:8080/api/v1/auth/confirm?token=54a9315e-3067-4644-a070-37000997855a HTTP/1.1
 content-type: application/json

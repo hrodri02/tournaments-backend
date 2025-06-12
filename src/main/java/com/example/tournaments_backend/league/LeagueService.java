@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.tournaments_backend.exception.LeagueNotFoundException;
-import com.example.tournaments_backend.exception.TeamNotFoundException;
+import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamService;
 
@@ -24,10 +24,10 @@ public class LeagueService {
     }
 
     @Transactional
-    public League addTeamToLeague(Long leagueId, Long teamId) throws LeagueNotFoundException, TeamNotFoundException {
+    public League addTeamToLeague(Long leagueId, Long teamId) throws ServiceException {
         League league = leagueRepository
                             .findById(leagueId)
-                            .orElseThrow(() -> new LeagueNotFoundException("League with given id was not found."));
+                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id was not found."));
         Team team = teamService.getTeamById(teamId);
         league.addTeam(team);
         League leagueInDB = leagueRepository.save(league);
@@ -38,21 +38,21 @@ public class LeagueService {
         return leagueRepository.findAll();
     }
 
-    public League getLeagueById(Long id) throws LeagueNotFoundException {
+    public League getLeagueById(Long id) throws ServiceException {
         League league = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new LeagueNotFoundException("The league with the given id was not found."));
+                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League","The league with the given id was not found."));
         return league;
     }
 
-    public void deleteLeagueById(Long id) throws LeagueNotFoundException {
+    public void deleteLeagueById(Long id) {
         leagueRepository.deleteById(id);
     }
 
-    public League updateLeague(Long id, League updatedLeauge) throws LeagueNotFoundException {
+    public League updateLeague(Long id, League updatedLeauge) throws ServiceException {
         League oldLeague = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new LeagueNotFoundException("The league with the given id was not found."));
+                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League","The league with the given id was not found."));
         oldLeague.setName(updatedLeauge.getName());
         oldLeague.setStartDate(updatedLeauge.getStartDate());
         oldLeague.setDurationInWeeks(updatedLeauge.getDurationInWeeks());
