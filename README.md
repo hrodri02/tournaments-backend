@@ -50,16 +50,6 @@ The application includes mock data for testing purposes. When the application st
 
 You can view and interact with this mock data through the API endpoints or the Swagger UI interface.
 
-## Authentication
-
-The API uses JWT for authentication. To authenticate:
-
-1. Use the `/api/v1/auth/login` endpoint with valid credentials
-2. Include the returned JWT token in the Authorization header for subsequent requests:
-   ```
-   Authorization: Bearer <your_token>
-   ```
-
 ### Swagger UI Authentication
 
 To test secured endpoints in Swagger UI:
@@ -79,15 +69,6 @@ To test secured endpoints in Swagger UI:
 
 5. Click "Authorize" and close the popup. All subsequent API requests will include your token.
 
-#### Sample Token for Testing
-
-For quick testing, you can use this pre-generated token (valid for admin@example.com):
-```
-Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImF1dGgiOiJBRE1JTiIsImlhdCI6MTcxODU5ODQwMCwiZXhwIjoxNzE5NDYyNDAwfQ.DjkXg4QYgST4Qe0IV9L0i4fx5-kBzQXJwR9IOYPfLqc
-```
-
-Note: This token is for testing purposes only and will expire on June 26, 2025. For production use, always generate a fresh token using the login endpoint.
-
 ## Main Endpoints
 
 - `/api/v1/users` - User management
@@ -96,12 +77,3 @@ Note: This token is for testing purposes only and will expire on June 26, 2025. 
 - `/api/v1/auth` - Authentication and registration
 
 For detailed information about each endpoint, refer to the Swagger UI documentation.
-
-## Java 23 Compatibility Notes
-
-This project uses Java 23, which may display certain JVM warnings. The following JVM arguments have been configured in the Maven plugins to address these warnings:
-
-- `-XX:+EnableDynamicAgentLoading`: Suppresses warnings about dynamic agent loading, which can occur with certain testing frameworks.
-- `-Xshare:off`: Disables Class Data Sharing (CDS) to prevent warnings about "Sharing is only supported for boot loader classes".
-
-These arguments are configured in both the Maven Surefire plugin (for tests) and the Spring Boot Maven plugin (for running the application).
