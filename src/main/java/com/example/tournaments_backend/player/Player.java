@@ -4,9 +4,9 @@ import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRole;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.PrimaryKeyJoinColumn;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,8 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Player extends AppUser {
-    @NotNull
-    @NotEmpty
+    @Enumerated(EnumType.STRING)
     private Position position;
 
     public Player(String firstName,
