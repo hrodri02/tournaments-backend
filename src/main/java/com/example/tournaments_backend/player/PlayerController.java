@@ -26,41 +26,20 @@ public class PlayerController {
 
     @GetMapping("{playerId}")
     public ResponseEntity<PlayerDTO> getPlayer(@PathVariable("playerId") Long playerId) throws ServiceException {
-        Player player = playerService.getPlayerById(playerId);
-        PlayerDTO playerDTO = 
-            new PlayerDTO(playerId, 
-                          player.getFirstName(),
-                          player.getLastName(),
-                          player.getEmail(), 
-                          player.getAppUserRole(),
-                          player.getPosition());
+        PlayerDTO playerDTO = playerService.getPlayerDTOById(playerId);
         return ResponseEntity.ok().body(playerDTO);
     }
 
     @DeleteMapping("{playerId}")
     public ResponseEntity<PlayerDTO> deletePlayer(@PathVariable("playerId") Long playerId) throws ServiceException {
-        Player player = playerService.getPlayerById(playerId);
-        PlayerDTO playerDTO = 
-            new PlayerDTO(playerId, 
-                          player.getFirstName(),
-                          player.getLastName(),
-                          player.getEmail(), 
-                          player.getAppUserRole(),
-                          player.getPosition());
+        PlayerDTO playerDTO = playerService.getPlayerDTOById(playerId);
         playerService.deletePlayerById(playerId);
         return ResponseEntity.ok().body(playerDTO);
     }
 
     @PutMapping("{playerId}")
     public ResponseEntity<PlayerDTO> updatePlayer(@PathVariable("playerId") Long playerId, @RequestBody @Valid PlayerDTO playerDTO) throws ServiceException {
-        Player playerInDB = playerService.updatePlayer(playerId, playerDTO);
-        PlayerDTO playerInResBody
-            = new PlayerDTO(playerId, 
-                            playerInDB.getFirstName(),
-                            playerInDB.getLastName(),
-                            playerInDB.getEmail(),
-                            playerInDB.getAppUserRole(),
-                            playerInDB.getPosition());
-        return ResponseEntity.ok().body(playerInResBody);
+        PlayerDTO updatedPlayerDTO = playerService.updatePlayer(playerId, playerDTO);
+        return ResponseEntity.ok().body(updatedPlayerDTO);
     }
 }

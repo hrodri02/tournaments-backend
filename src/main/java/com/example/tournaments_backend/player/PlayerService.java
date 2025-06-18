@@ -17,6 +17,15 @@ public class PlayerService {
         return playerRepository.save(player);
     }
 
+    public PlayerDTO getPlayerDTOById(Long id) throws ServiceException {
+        Player player = 
+            playerRepository
+                .findById(id)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+        PlayerDTO playerDTO = new PlayerDTO(player);
+        return playerDTO;
+    }
+
     public Player getPlayerById(Long id) throws ServiceException {
         Player player = 
             playerRepository
@@ -30,7 +39,7 @@ public class PlayerService {
     }
 
     @Transactional
-    public Player updatePlayer(Long id, PlayerDTO updatedPlayer) throws ServiceException {
+    public PlayerDTO updatePlayer(Long id, PlayerDTO updatedPlayer) throws ServiceException {
         Player player = 
             playerRepository
                 .findById(id)
@@ -41,6 +50,8 @@ public class PlayerService {
         player.setLastName(updatedPlayer.getLastName());
         player.setEmail(updatedPlayer.getEmail());
         player.setPosition(updatedPlayer.getPosition());
-        return playerRepository.save(player);
+        Player playerInDB = playerRepository.save(player);
+        PlayerDTO playerDTO = new PlayerDTO(playerInDB);
+        return playerDTO;
     }
 }
