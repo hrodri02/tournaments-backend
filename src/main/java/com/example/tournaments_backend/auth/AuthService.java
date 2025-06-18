@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.app_user.AppUser;
+import com.example.tournaments_backend.app_user.AppUserRole;
 import com.example.tournaments_backend.app_user.AppUserService;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
@@ -20,6 +21,7 @@ import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.security.JwtService;
 
 import lombok.AllArgsConstructor;
@@ -35,13 +37,25 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public String signUp(RegistrationRequest request) throws ServiceException {
-        String token = appUserService.signUp(
-            new AppUser(request.getFirstName(), 
+        AppUser newUser;
+        if (request.getRole().equals(AppUserRole.PLAYER)) {
+            newUser = new Player(
+                        request.getFirstName(), 
                         request.getLastName(),
                         request.getEmail(),
                         request.getPassword(),
-                        request.getRole())
-        );
+                        request.getRole(),
+                        request.getPosition());
+        }
+        else {
+            newUser = new AppUser(
+                        request.getFirstName(), 
+                        request.getLastName(),
+                        request.getEmail(),
+                        request.getPassword(),
+                        request.getRole());
+        }
+        String token = appUserService.signUp(newUser);
 
         String link = "http://localhost:8080/api/v1/auth/confirm?token=" + token;
         emailSender.send(

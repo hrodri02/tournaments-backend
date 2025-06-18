@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import com.example.tournaments_backend.app_user.AppUserRole;
+import com.example.tournaments_backend.player.Position;
 
 import jakarta.validation.constraints.NotEmpty;
 
@@ -36,4 +37,5 @@ public class RegistrationRequest {
     private final String matchingPassword;
     @NotNull
     private final AppUserRole role;
+    private final Position position;
 }

@@ -13,6 +13,8 @@ import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.player.Player;
+import com.example.tournaments_backend.player.PlayerService;
 
 import lombok.AllArgsConstructor;
 
@@ -28,6 +30,7 @@ public class AppUserService implements UserDetailsService {
         "user with email %s not found";
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final PlayerService playerService;
     private final ConfirmationTokenService confirmationTokenService;
     private final ResetTokenService resetTokenService;
 
@@ -90,7 +93,12 @@ public class AppUserService implements UserDetailsService {
 
         String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());
         appUser.setPassword(encodedPassword);
-        appUserRepository.save(appUser);
+        if (appUser instanceof Player player) {
+            playerService.save(player);
+        }
+        else {
+            appUserRepository.save(appUser);
+        }
 
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken(token, 
