@@ -14,4 +14,13 @@ public class PlayerDTO extends UserDTO {
         super(id, firstName, lastName, email, appUserRole);
         this.position = position;
     }
+
+    public PlayerDTO(Player player) {
+        super(player.getId(), 
+              player.getFirstName(), 
+              player.getLastName(), 
+              player.getEmail(), 
+              player.getAppUserRole());
+        this.position = player.getPosition();
+    }
 }
