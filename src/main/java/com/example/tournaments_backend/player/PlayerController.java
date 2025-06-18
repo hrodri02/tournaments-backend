@@ -2,6 +2,7 @@ package com.example.tournaments_backend.player;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,20 @@ public class PlayerController {
                           player.getEmail(), 
                           player.getAppUserRole(),
                           player.getPosition());
+        return ResponseEntity.ok().body(playerDTO);
+    }
+
+    @DeleteMapping("{playerId}")
+    public ResponseEntity<PlayerDTO> deletePlayer(@PathVariable("playerId") Long playerId) throws ServiceException {
+        Player player = playerService.getPlayerById(playerId);
+        PlayerDTO playerDTO = 
+            new PlayerDTO(playerId, 
+                          player.getFirstName(),
+                          player.getLastName(),
+                          player.getEmail(), 
+                          player.getAppUserRole(),
+                          player.getPosition());
+        playerService.deletePlayerById(playerId);
         return ResponseEntity.ok().body(playerDTO);
     }
 }

@@ -22,4 +22,8 @@ public class PlayerService {
                 .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
         return player;
     }
+
+    public void deletePlayerById(Long id) {
+        playerRepository.deleteById(id);
+    }
 }
