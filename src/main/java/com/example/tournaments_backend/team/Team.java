@@ -8,6 +8,7 @@ import com.example.tournaments_backend.player.Player;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -48,7 +49,7 @@ public class Team {
     @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<League> leagues = new HashSet<>();
-    @OneToMany(mappedBy = "team")
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Player> players; 
 
@@ -59,6 +60,13 @@ public class Team {
     public void addPlayer(Player player) {
         this.players.add(player);
         player.setTeam(this);
+    }
+
+    public void addPlayers(Set<Player> players) {
+        this.players = players;
+        for (Player player : this.players) {
+            player.setTeam(this);
+        }
     }
 
     public void deletePlayer(Player player) {
