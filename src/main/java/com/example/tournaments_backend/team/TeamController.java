@@ -44,9 +44,15 @@ public class TeamController {
         return ResponseEntity.ok().body(deletedTeam);
     }
 
-    @PutMapping(("{teamId}"))
+    @PutMapping("{teamId}")
     public ResponseEntity<Team> updateTeam(@PathVariable("teamId") Long teamId, @RequestBody @Valid Team updatedTeam) throws ServiceException {
         Team team = teamService.updateTeam(teamId, updatedTeam);
         return ResponseEntity.ok().body(team);
+    }
+
+    @PostMapping("{teamId}/players/{playerId}")
+    public ResponseEntity<TeamDTO> addPlayerToTeam(@PathVariable("teamId") Long teamId, @PathVariable("playerId") Long playerId) {
+        TeamDTO teamDTO = teamService.addPlayerToTeam(playerId, teamId);
+        return ResponseEntity.ok().body(teamDTO);
     }
 }

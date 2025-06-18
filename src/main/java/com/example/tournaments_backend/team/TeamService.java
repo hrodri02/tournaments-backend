@@ -5,12 +5,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.player.Player;
+import com.example.tournaments_backend.player.PlayerService;
 import com.example.tournaments_backend.exception.ErrorType;
 
 @Service
 @AllArgsConstructor
 public class TeamService {
     private final TeamRepository teamRepository;
+    private final PlayerService playerService;
 
     public Team addTeam(Team team) {
         Team teamInDB = teamRepository.save(team);
@@ -36,5 +39,17 @@ public class TeamService {
         
         Team teamInDB = teamRepository.save(oldTeam);
         return teamInDB;
+    }
+
+    public TeamDTO addPlayerToTeam(Long playerId, Long teamId) throws ServiceException {
+        Player player = playerService.getPlayerById(playerId);
+        Team team = 
+            teamRepository
+                .findById(teamId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
+        team.addPlayer(player);
+        Team teamInDB = teamRepository.save(team);
+        TeamDTO teamDTO = new TeamDTO(teamInDB);
+        return teamDTO;
     }
 }
