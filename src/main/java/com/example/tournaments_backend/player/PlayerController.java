@@ -12,10 +12,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ServiceException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(path="/api/v1/players")
+@Tag(name = "Player Management", description = "API endpoints for managing players")
 public class PlayerController {
     private final PlayerService playerService;
 
@@ -24,6 +31,13 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
+    @Operation(summary = "Get a player", description = "Returns a player by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved player information", 
+                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = PlayerDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Player with given id not found."),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @GetMapping("{playerId}")
     public ResponseEntity<PlayerDTO> getPlayer(@PathVariable("playerId") Long playerId) throws ServiceException {
         PlayerDTO playerDTO = playerService.getPlayerDTOById(playerId);
