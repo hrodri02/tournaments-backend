@@ -55,4 +55,17 @@ public class TeamService {
         TeamDTO teamDTO = new TeamDTO(teamInDB);
         return teamDTO;
     }
+
+    @Transactional
+    public TeamDTO deletePlayerFromTeam(Long playerId, Long teamId) throws ServiceException {
+        Player player = playerService.getPlayerById(playerId);
+        Team team = 
+            teamRepository
+                .findById(teamId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
+        team.deletePlayer(player);
+        Team teamInDB = teamRepository.save(team);
+        TeamDTO teamDTO = new TeamDTO(teamInDB);
+        return teamDTO;
+    }
 }

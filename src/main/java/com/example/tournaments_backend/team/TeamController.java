@@ -55,4 +55,10 @@ public class TeamController {
         TeamDTO teamDTO = teamService.addPlayerToTeam(playerId, teamId);
         return ResponseEntity.ok().body(teamDTO);
     }
+
+    @DeleteMapping("{teamId}/players/{playerId}")
+    public ResponseEntity<TeamDTO> deletePlayerFromTeam(@PathVariable("teamId") Long teamId, @PathVariable("playerId") Long playerId) {
+        TeamDTO teamDTO = teamService.deletePlayerFromTeam(playerId, teamId);
+        return ResponseEntity.ok().body(teamDTO);
+    }
 }

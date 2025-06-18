@@ -60,4 +60,9 @@ public class Team {
         this.players.add(player);
         player.setTeam(this);
     }
+
+    public void deletePlayer(Player player) {
+        this.players.remove(player);
+        player.setTeam(null);
+    }
 }
