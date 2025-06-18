@@ -101,7 +101,6 @@ public class AppUserConfig {
         return players;
     }
 
-    // New method for Team 2
     public Set<Player> createPlayersForTeam2() {
         Set<Player> players = new HashSet<>();
         // Defenders (4)
@@ -122,7 +121,6 @@ public class AppUserConfig {
         return players;
     }
 
-    // New method for Team 3
     public Set<Player> createPlayersForTeam3() {
         Set<Player> players = new HashSet<>();
         // Defenders (4)
@@ -143,7 +141,6 @@ public class AppUserConfig {
         return players;
     }
 
-    // New method for Team 4
     public Set<Player> createPlayersForTeam4() {
         Set<Player> players = new HashSet<>();
         // Defenders (4)
