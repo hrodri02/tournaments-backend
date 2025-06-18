@@ -3,6 +3,7 @@ package com.example.tournaments_backend.auth.tokens.confirmationToken;
 import java.time.LocalDateTime;
 
 import com.example.tournaments_backend.app_user.AppUser;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,6 +46,7 @@ public class ConfirmationToken {
         name = "app_user_id", 
         nullable = false
     )
+    @JsonBackReference
     private AppUser appUser;
 
     public ConfirmationToken(String token,

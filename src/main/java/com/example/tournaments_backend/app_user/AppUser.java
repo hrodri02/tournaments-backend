@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -59,6 +60,7 @@ public class AppUser implements UserDetails {
     private Boolean locked;
     private Boolean enabled;
     @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<ConfirmationToken> confirmationTokens; 
 
     public AppUser(String firstName,
