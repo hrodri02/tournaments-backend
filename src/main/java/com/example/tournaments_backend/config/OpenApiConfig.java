@@ -8,17 +8,20 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     @Bean
     public OpenAPI myOpenAPI() {
         Server devServer = new Server();
         // Could be improved by moving this to env variables.
-        devServer.setUrl("http://localhost:8080");
+        devServer.setUrl(baseUrl);
         devServer.setDescription("Server URL in Development environment");
 
         Info info = new Info()
