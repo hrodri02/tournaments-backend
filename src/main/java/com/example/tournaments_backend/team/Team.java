@@ -4,13 +4,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.example.tournaments_backend.league.League;
+import com.example.tournaments_backend.player.Player;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -45,8 +48,16 @@ public class Team {
     @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<League> leagues = new HashSet<>();
+    @OneToMany(mappedBy = "team")
+    @JsonManagedReference
+    private Set<Player> players; 
 
     public Team(String name) {
         this.name = name;
+    }
+
+    public void addPlayer(Player player) {
+        this.players.add(player);
+        player.setTeam(this);
     }
 }
