@@ -16,8 +16,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @RestController
 @RequestMapping(path="/api/v1/users")
+@Tag(name = "User Management", description = "API endpoints for managing users")
 public class AppUserController {
     private final AppUserService appUserService;
 
@@ -26,6 +34,12 @@ public class AppUserController {
         this.appUserService = appUserService;
     }
 
+    @Operation(summary = "Get current user information", description = "Returns the details of the currently authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved user information", 
+                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -41,21 +55,46 @@ public class AppUserController {
         return ResponseEntity.ok(resBody);
     }
 
+    @Operation(summary = "Get all users", description = "Returns a list of all users in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved list of users", 
+                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppUser.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @GetMapping
     public List<AppUser> getPersons() {
         return appUserService.getAppUsers();
     }
 
+    @Operation(summary = "Add a new user", description = "Creates a new user in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User successfully created"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @PostMapping
     public void addUser(@RequestBody AppUser user) {
         appUserService.addUser(user);
     }
 
+    @Operation(summary = "Delete a user", description = "Deletes a user from the system by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User successfully deleted"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @DeleteMapping(path = "{userId}")
     public void deleteUser(@PathVariable("userId") Long userId) {
         appUserService.deleteUser(userId);
     }
 
+    @Operation(summary = "Update a user", description = "Updates an existing user's information")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User successfully updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated")
+    })
     @PutMapping("{userId}")
     public void updateUser(@PathVariable("userId") Long userId, @RequestBody AppUser updatedAppUser) {
         appUserService.updateUser(userId, updatedAppUser);
