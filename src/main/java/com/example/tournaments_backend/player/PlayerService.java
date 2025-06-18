@@ -26,4 +26,18 @@ public class PlayerService {
     public void deletePlayerById(Long id) {
         playerRepository.deleteById(id);
     }
+
+    public Player updatePlayer(Long id, PlayerDTO updatedPlayer) throws ServiceException {
+        Player player = 
+            playerRepository
+                .findById(id)
+                .orElseThrow(() ->
+                    new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found.")
+                );
+        player.setFirstName(updatedPlayer.getFirstName());
+        player.setLastName(updatedPlayer.getLastName());
+        player.setEmail(updatedPlayer.getEmail());
+        player.setPosition(updatedPlayer.getPosition());
+        return playerRepository.save(player);
+    }
 }
