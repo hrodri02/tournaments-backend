@@ -5,8 +5,10 @@ import com.example.tournaments_backend.app_user.UserDTO;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class PlayerDTO extends UserDTO {
     @NotNull
     private Position position;
