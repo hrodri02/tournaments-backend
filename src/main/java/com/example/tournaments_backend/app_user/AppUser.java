@@ -2,11 +2,15 @@ package com.example.tournaments_backend.app_user;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
@@ -53,6 +58,8 @@ public class AppUser implements UserDetails {
     private AppUserRole appUserRole;
     private Boolean locked;
     private Boolean enabled;
+    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConfirmationToken> confirmationTokens; 
 
     public AppUser(String firstName,
                   String lastName, 
