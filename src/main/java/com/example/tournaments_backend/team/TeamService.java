@@ -3,6 +3,7 @@ package com.example.tournaments_backend.team;
 import lombok.AllArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
@@ -31,6 +32,7 @@ public class TeamService {
         teamRepository.deleteById(id);
     }
 
+    @Transactional
     public Team updateTeam(Long id, Team updatedTeam) throws ServiceException {
         Team oldTeam = teamRepository
                         .findById(id)
@@ -41,6 +43,7 @@ public class TeamService {
         return teamInDB;
     }
 
+    @Transactional
     public TeamDTO addPlayerToTeam(Long playerId, Long teamId) throws ServiceException {
         Player player = playerService.getPlayerById(playerId);
         Team team = 

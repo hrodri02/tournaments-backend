@@ -1,6 +1,8 @@
 package com.example.tournaments_backend.player;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.AllArgsConstructor;
 
 import com.example.tournaments_backend.exception.ErrorType;
@@ -27,6 +29,7 @@ public class PlayerService {
         playerRepository.deleteById(id);
     }
 
+    @Transactional
     public Player updatePlayer(Long id, PlayerDTO updatedPlayer) throws ServiceException {
         Player player = 
             playerRepository
