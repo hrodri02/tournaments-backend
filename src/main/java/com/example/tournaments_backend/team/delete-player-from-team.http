@@ -1,2 +1,2 @@
-DELETE http://localhost:8080/api/v1/teams/1/players/1 HTTP/1.1
+DELETE http://localhost:8080/api/v1/teams/5/players/47 HTTP/1.1
 content-type: application/json
