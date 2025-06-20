@@ -18,8 +18,10 @@ public class TeamDTO {
         this.id = team.getId();
         this.name = team.getName();
         // Use stream to map Player entities to PlayerDTOs
-        this.players = team.getPlayers().stream()
+        if (team.getPlayers() != null) {
+            this.players = team.getPlayers().stream()
                              .map(PlayerDTO::new) // Call the PlayerDTO constructor that takes a Player entity
                              .collect(Collectors.toList());
+        }
     }
 }
