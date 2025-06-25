@@ -16,7 +16,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @AllArgsConstructor 
 @ToString
-public class CreateGameRequest {
+public class GameRequest {
     @NotNull
     private Long leagueId;
     @NotNull
