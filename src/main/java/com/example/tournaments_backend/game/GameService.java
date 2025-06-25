@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.game;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.ServiceException;
@@ -46,6 +47,13 @@ public class GameService {
             gameRepository
                 .findById(gameId)
                 .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with given id not found"));
+        return game;
+    }
+
+    @Transactional
+    public Game deleteGameById(Long gameId) throws ServiceException {
+        Game game = getGameById(gameId);
+        gameRepository.deleteById(gameId);
         return game;
     }
 }

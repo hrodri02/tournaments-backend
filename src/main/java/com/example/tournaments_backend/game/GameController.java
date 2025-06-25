@@ -2,6 +2,7 @@ package com.example.tournaments_backend.game;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,9 +53,9 @@ public class GameController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved game information", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid - game is not valid",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - game with given ID not found",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping("{gameId}")
@@ -62,6 +63,24 @@ public class GameController {
         @Parameter(description = "The game id", required = true) @PathVariable("gameId") Long gameId) throws ServiceException
     {
         Game game = gameService.getGameById(gameId);
+        GameDTO gameDTO = new GameDTO(game);
+        return ResponseEntity.ok().body(gameDTO);
+    }
+
+    @Operation(summary = "Delete a game", description = "Returns the deleted game by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully deletes game", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - game with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @DeleteMapping("{gameId}")
+    public ResponseEntity<GameDTO> deleteGame(
+        @Parameter(description = "The game id", required = true) @PathVariable("gameId") Long gameId) throws ServiceException
+    {
+        Game game = gameService.deleteGameById(gameId);
         GameDTO gameDTO = new GameDTO(game);
         return ResponseEntity.ok().body(gameDTO);
     }
