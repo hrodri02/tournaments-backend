@@ -63,4 +63,10 @@ public class Game {
         this.address = address;
         this.durationInMinutes = durationInMinutes;
     }
+
+    public Game(CreateGameRequest request) {
+        this.gameDateTime = request.getGameDateTime();
+        this.address = request.getAddress();
+        this.durationInMinutes = request.getDurationInMinutes();
+    }
 }
