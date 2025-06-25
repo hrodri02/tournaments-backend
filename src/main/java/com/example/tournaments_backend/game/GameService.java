@@ -40,4 +40,12 @@ public class GameService {
         game.setLeague(league);
         return gameRepository.save(game);
     }
+
+    public Game getGameById(Long gameId) throws ServiceException {
+        Game game =
+            gameRepository
+                .findById(gameId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with given id not found"));
+        return game;
+    }
 }
