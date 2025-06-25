@@ -64,7 +64,7 @@ public class Game {
         this.durationInMinutes = durationInMinutes;
     }
 
-    public Game(CreateGameRequest request) {
+    public Game(GameRequest request) {
         this.gameDateTime = request.getGameDateTime();
         this.address = request.getAddress();
         this.durationInMinutes = request.getDurationInMinutes();
