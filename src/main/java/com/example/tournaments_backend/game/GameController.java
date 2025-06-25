@@ -41,6 +41,8 @@ public class GameController {
         @ApiResponse(responseCode = "400", description = "Invalid - game is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - team or league with given ID not found",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
@@ -86,6 +88,17 @@ public class GameController {
         return ResponseEntity.ok().body(gameDTO);
     }
 
+    @Operation(summary = "Update a game", description = "Returns the updated game by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updates game", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - game is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - game, team, or league with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @PutMapping("{gameId}")
     public ResponseEntity<GameDTO> updateGame(
         @Parameter(description = "The game id", required = true) @PathVariable("gameId") Long gameId, @RequestBody @Valid GameRequest updatedGame) throws ServiceException
