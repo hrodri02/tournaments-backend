@@ -3,6 +3,7 @@ package com.example.tournaments_backend.team;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.example.tournaments_backend.game.Game;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -51,7 +52,13 @@ public class Team {
     private Set<League> leagues = new HashSet<>();
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private Set<Player> players; 
+    private Set<Player> players;
+    @OneToMany(mappedBy = "homeTeam", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<Game> homeGames;
+    @OneToMany(mappedBy = "awayTeam", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<Game> awayGames;
 
     public Team(String name) {
         this.name = name;

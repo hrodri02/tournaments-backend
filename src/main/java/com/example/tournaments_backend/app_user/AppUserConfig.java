@@ -1,8 +1,10 @@
 package com.example.tournaments_backend.app_user;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
@@ -10,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.example.tournaments_backend.game.Game;
+import com.example.tournaments_backend.game.GameRepository;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.league.LeagueRepository;
 import com.example.tournaments_backend.player.Player;
@@ -27,6 +31,7 @@ public class AppUserConfig {
             PlayerRepository playerRepository,
             LeagueRepository leagueRepository,
             TeamRepository teamRepository,
+            GameRepository gameRepository,
             BCryptPasswordEncoder passwordEncoder) {
         return args -> {
             // Create and save users
@@ -76,6 +81,35 @@ public class AppUserConfig {
             league2.addTeam(team4);
 
             leagueRepository.saveAll(Arrays.asList(league1, league2));
+
+            Game game1 = new Game(LocalDateTime.now().plusDays(7), 
+                                "Golden Gate Park",
+                                90);
+            game1.setHomeTeam(team1);
+            game1.setAwayTeam(team2);
+            game1.setLeague(league1);
+
+            Game game2 = new Game(LocalDateTime.now().plusDays(12), 
+                                "Garfield Park",
+                                90);
+            game2.setHomeTeam(team2);
+            game2.setAwayTeam(team1);
+            game2.setLeague(league1);
+
+            Game game3 = new Game(LocalDateTime.now().plusDays(14), 
+                                "Silver Park",
+                                90);
+            game3.setHomeTeam(team3);
+            game3.setAwayTeam(team4);
+            game3.setLeague(league2);
+
+            Game game4 = new Game(LocalDateTime.now().plusDays(19), 
+                                "Mission Park",
+                                90);
+            game4.setHomeTeam(team4);
+            game4.setAwayTeam(team3);
+            game4.setLeague(league2);
+            gameRepository.saveAll(List.of(game1, game2, game3, game4));
 
             System.out.println("Database initialized with mock data!");
         };

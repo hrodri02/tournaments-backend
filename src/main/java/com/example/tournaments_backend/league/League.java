@@ -1,6 +1,8 @@
 package com.example.tournaments_backend.league;
 
+import com.example.tournaments_backend.game.Game;
 import com.example.tournaments_backend.team.Team;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,12 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -62,6 +66,9 @@ public class League {
         inverseJoinColumns = @JoinColumn(name = "team_id")
     )
     private Set<Team> teams = new HashSet<>();
+    @OneToMany(mappedBy = "league", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<Game> games;
 
     public League(String name, LocalDate startDate, Integer durationInWeeks) {
         this.name = name;

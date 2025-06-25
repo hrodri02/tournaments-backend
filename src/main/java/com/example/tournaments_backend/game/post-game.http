@@ -1,0 +1,11 @@
+POST http://localhost:8080/api/v1/games HTTP/1.1
+content-type: application/json
+
+{
+    "leagueId": 1,
+    "homeTeamId": 1,
+    "awayTeamId": 2,
+    "gameDateTime": "2025-06-30T10:00:00",
+    "address":  "Golden Gate Park",
+    "durationInMinutes": 90
+}
