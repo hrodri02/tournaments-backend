@@ -19,7 +19,8 @@ public class GameService {
     private final TeamRepository teamRepository;
     private final LeagueRepository leagueRepository;
 
-    public Game addGame(CreateGameRequest gameRequest) throws ServiceException {
+    @Transactional
+    public Game addGame(GameRequest gameRequest) throws ServiceException {
         Game game = new Game(gameRequest);
         Long homeTeamId = gameRequest.getHomeTeamId();
         Long awayTeamId = gameRequest.getAwayTeamId();
@@ -55,5 +56,29 @@ public class GameService {
         Game game = getGameById(gameId);
         gameRepository.deleteById(gameId);
         return game;
+    }
+
+    @Transactional
+    public Game updateGameById(Long gameId, GameRequest updatedGame) throws ServiceException {
+        Game gameInDB = getGameById(gameId);
+        gameInDB.setAddress(updatedGame.getAddress());
+        gameInDB.setDurationInMinutes(updatedGame.getDurationInMinutes());
+        gameInDB.setGameDateTime(updatedGame.getGameDateTime());
+        Team homeTeam = 
+            teamRepository
+                .findById(updatedGame.getHomeTeamId())
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
+        Team awayTeam = 
+            teamRepository
+                .findById(updatedGame.getAwayTeamId())
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
+        League league = 
+            leagueRepository
+                .findById(updatedGame.getLeagueId())
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id not found"));
+        gameInDB.setHomeTeam(homeTeam);
+        gameInDB.setAwayTeam(awayTeam);
+        gameInDB.setLeague(league);
+        return gameRepository.save(gameInDB);
     }
 }

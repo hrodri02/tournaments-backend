@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,7 +44,7 @@ public class GameController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
-    public ResponseEntity<GameDTO> addGame(@RequestBody @Valid CreateGameRequest requestBody) throws ServiceException {
+    public ResponseEntity<GameDTO> addGame(@RequestBody @Valid GameRequest requestBody) throws ServiceException {
         Game gameInDB = gameService.addGame(requestBody);
         GameDTO gameDTO = new GameDTO(gameInDB);
         return ResponseEntity.ok().body(gameDTO);
@@ -81,6 +82,15 @@ public class GameController {
         @Parameter(description = "The game id", required = true) @PathVariable("gameId") Long gameId) throws ServiceException
     {
         Game game = gameService.deleteGameById(gameId);
+        GameDTO gameDTO = new GameDTO(game);
+        return ResponseEntity.ok().body(gameDTO);
+    }
+
+    @PutMapping("{gameId}")
+    public ResponseEntity<GameDTO> updateGame(
+        @Parameter(description = "The game id", required = true) @PathVariable("gameId") Long gameId, @RequestBody @Valid GameRequest updatedGame) throws ServiceException
+    {
+        Game game = gameService.updateGameById(gameId, updatedGame);
         GameDTO gameDTO = new GameDTO(game);
         return ResponseEntity.ok().body(gameDTO);
     }
