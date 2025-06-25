@@ -1,15 +1,21 @@
 package com.example.tournaments_backend.player;
 
+import java.util.Set;
+
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRole;
+import com.example.tournaments_backend.game_stat.GameStat;
 import com.example.tournaments_backend.team.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,6 +33,9 @@ public class Player extends AppUser {
     @JsonBackReference
     @JoinColumn(name = "team_id")
     private Team team;
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<GameStat> gameStats;
 
     public Player(String firstName,
                   String lastName, 
