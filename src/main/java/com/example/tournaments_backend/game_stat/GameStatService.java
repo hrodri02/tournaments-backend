@@ -58,4 +58,28 @@ public class GameStatService {
         gameStatRepository.deleteById(id);
         return gameStat;
     }
+
+    @Transactional
+    public GameStat updateGameStatById(Long id, GameStatRequest gameStatRequest) throws ServiceException {
+        GameStat gameStat = 
+            gameStatRepository
+                .findById(id)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
+        Long gameId = gameStatRequest.getGameId();
+        Game game = 
+            gameRepository
+                .findById(gameId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+
+        Long playerId = gameStatRequest.getPlayerId();
+        Player player =
+            playerRepository
+                .findById(playerId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with id = " + playerId + " not found"));
+        gameStat.setGame(game);
+        gameStat.setPlayer(player);
+        gameStat.setType(gameStatRequest.getType());
+        gameStat.setCreatedAt(gameStatRequest.getCreatedAt());
+        return gameStatRepository.save(gameStat);
+    }
 }

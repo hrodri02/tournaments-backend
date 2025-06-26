@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -86,6 +87,26 @@ public class GameStatController {
         @Parameter(description = "The game stat id", required = true) @PathVariable("gameStatId") Long gameStatId) throws ServiceException
     {
         GameStat gameStat = gameStatService.deleteGameStatById(gameStatId);
+        GameStatDTO gameStatDTO = new GameStatDTO(gameStat);
+        return ResponseEntity.ok(gameStatDTO);
+    }
+
+    @Operation(summary = "Update a game stat", description = "Returns the updated game stat by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updates game stat", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - game stat is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - game stat, game, or player with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PutMapping("{gameStatId}")
+    public ResponseEntity<GameStatDTO> updateGameStat(
+        @Parameter(description = "The game stat id", required = true) @PathVariable("gameStatId") Long gameStatId, @RequestBody @Valid GameStatRequest gameStatRequest) throws ServiceException
+    {
+        GameStat gameStat = gameStatService.updateGameStatById(gameStatId, gameStatRequest);
         GameStatDTO gameStatDTO = new GameStatDTO(gameStat);
         return ResponseEntity.ok(gameStatDTO);
     }
