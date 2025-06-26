@@ -115,6 +115,7 @@ public class AppUserConfig {
             game4.setLeague(league2);
             gameRepository.saveAll(List.of(game1, game2, game3, game4));
 
+            // stats for game1
             GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(25));
             gameStat1.setGame(game1);
             Player raul = getPlayerWithFirstName(team1Players, "Raul");
@@ -122,7 +123,38 @@ public class AppUserConfig {
             GameStat gameStat2 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(35));
             gameStat2.setGame(game1);
             gameStat2.setPlayer(raul);
-            gameStatRepository.saveAll(List.of(gameStat1, gameStat2));
+
+            // stats for game2
+            GameStat gameStat3 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().plusDays(12).plusMinutes(25));
+            gameStat3.setGame(game2);
+            Player alice = getPlayerWithFirstName(team2Players, "Alice");
+            gameStat3.setPlayer(alice);
+            GameStat gameStat4 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().plusDays(12).plusMinutes(35));
+            gameStat4.setGame(game2);
+            Player laura = getPlayerWithFirstName(team1Players, "Laura");
+            gameStat4.setPlayer(laura);
+
+            // stats for game3
+            GameStat gameStat5 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(14).plusMinutes(25));
+            gameStat5.setGame(game3);
+            Player liam = getPlayerWithFirstName(team3Players, "Liam");
+            gameStat5.setPlayer(liam);
+            GameStat gameStat6 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(14).plusMinutes(35));
+            gameStat6.setGame(game3);
+            Player frank = getPlayerWithFirstName(team4Players, "Frank");
+            gameStat6.setPlayer(frank);
+
+            // stats for game4
+            GameStat gameStat7 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(12).plusMinutes(25));
+            gameStat7.setGame(game4);
+            Player mia = getPlayerWithFirstName(team3Players, "Mia");
+            gameStat7.setPlayer(mia);
+            GameStat gameStat8 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(12).plusMinutes(35));
+            gameStat8.setGame(game4);
+            Player willow = getPlayerWithFirstName(team4Players, "Willow");
+            gameStat8.setPlayer(willow);
+
+            gameStatRepository.saveAll(List.of(gameStat1, gameStat2, gameStat3, gameStat4, gameStat5, gameStat6, gameStat7, gameStat8));
             System.out.println("Database initialized with mock data!");
         };
     }
@@ -145,15 +177,6 @@ public class AppUserConfig {
         players.add(new Player("James", "Rodriguez", "jrodriguez@example.com", "securepass10", AppUserRole.PLAYER, Position.STRIKER)); // 2nd Striker
         players.add(new Player("Raul", "Jimenez", "rjimenez@gmail.com", "aseavdabdaf", AppUserRole.PLAYER, Position.STRIKER));
         return players;
-    }
-
-    private Player getPlayerWithFirstName(Set<Player> players, String firstName) {
-        for (Player player : players) {
-            if (player.getFirstName().equals(firstName)) {
-                return player;
-            }
-        }
-        return null;
     }
 
     public Set<Player> createPlayersForTeam2() {
@@ -214,5 +237,14 @@ public class AppUserConfig {
         players.add(new Player("Frank", "Ocean", "frank.o@example.com", "passT4S1", AppUserRole.PLAYER, Position.STRIKER));
         players.add(new Player("Gigi", "Hadid", "gigi.h@example.com", "passT4S2", AppUserRole.PLAYER, Position.STRIKER));
         return players;
+    }
+
+    private Player getPlayerWithFirstName(Set<Player> players, String firstName) {
+        for (Player player : players) {
+            if (player.getFirstName().equals(firstName)) {
+                return player;
+            }
+        }
+        return null;
     }
 }
