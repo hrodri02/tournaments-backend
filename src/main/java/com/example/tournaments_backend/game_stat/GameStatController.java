@@ -1,15 +1,21 @@
 package com.example.tournaments_backend.game_stat;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
+import com.example.tournaments_backend.exception.ServiceException;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,5 +50,23 @@ public class GameStatController {
         GameStat gameStat = gameStatService.addGameStat(request);
         GameStatDTO gameStatDTO = new GameStatDTO(gameStat);
         return ResponseEntity.ok().body(gameStatDTO);
+    }
+
+    @Operation(summary = "Get the stats of a game", description = "Returns a game stats by game ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved stats of  a game", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - game with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @GetMapping
+    public ResponseEntity<List<GameStatDTO>> getGameStats(
+        @Parameter(description = "The game id", required = true) @RequestParam("gameId") Long gameId) throws ServiceException
+    {
+        List<GameStat> gameStats = gameStatService.getGameStatsByGameId(gameId);
+        List<GameStatDTO> gameStatDTOs = GameStatDTO.convert(gameStats);
+        return ResponseEntity.ok(gameStatDTOs);
     }
 }

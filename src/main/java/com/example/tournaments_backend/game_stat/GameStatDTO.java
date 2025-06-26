@@ -1,6 +1,8 @@
 package com.example.tournaments_backend.game_stat;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.example.tournaments_backend.player.PlayerDTO;
 
@@ -18,5 +20,11 @@ public class GameStatDTO {
         this.type = gameStat.getType();
         this.createdAt = gameStat.getCreatedAt();
         this.playerDTO = new PlayerDTO(gameStat.getPlayer());
+    }
+
+    public static List<GameStatDTO> convert(List<GameStat> gameStats) {
+        return gameStats.stream()
+                .map(GameStatDTO::new)
+                .collect(Collectors.toList());
     }
 }
