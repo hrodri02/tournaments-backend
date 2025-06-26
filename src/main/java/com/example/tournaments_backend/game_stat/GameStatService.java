@@ -48,4 +48,14 @@ public class GameStatService {
         List<GameStat> gameStats = gameStatRepository.findByGame_Id(gameId);
         return gameStats;
     }
+
+    @Transactional
+    public GameStat deleteGameStatById(Long id) throws ServiceException {
+        GameStat gameStat = 
+            gameStatRepository
+                .findById(id)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
+        gameStatRepository.deleteById(id);
+        return gameStat;
+    }
 }
