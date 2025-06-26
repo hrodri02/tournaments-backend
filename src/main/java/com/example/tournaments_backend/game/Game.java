@@ -1,11 +1,15 @@
 package com.example.tournaments_backend.game;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
+import com.example.tournaments_backend.game_stat.GameStat;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.team.Team;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,6 +62,10 @@ public class Game {
     private String address;
     @Column(name = "duration_in_minutes", nullable = false)
     private Integer durationInMinutes;
+
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<GameStat> gameStats;
     
     public Game(LocalDateTime gameDateTime, String address, Integer durationInMinutes) {
         this.gameDateTime = gameDateTime;

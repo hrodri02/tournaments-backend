@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/v1/gamestats HTTP/1.1
+content-type: application/json
+
+{
+    "gameId": 1,
+    "playerId": 10,
+    "type":  "GOAL",
+    "createdAt": "2025-06-30T10:00:00"
+}
