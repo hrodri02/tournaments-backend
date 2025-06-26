@@ -14,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.example.tournaments_backend.game.Game;
 import com.example.tournaments_backend.game.GameRepository;
+import com.example.tournaments_backend.game_stat.GameStat;
+import com.example.tournaments_backend.game_stat.GameStatRepository;
+import com.example.tournaments_backend.game_stat.GameStatType;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.league.LeagueRepository;
 import com.example.tournaments_backend.player.Player;
@@ -32,6 +35,7 @@ public class AppUserConfig {
             LeagueRepository leagueRepository,
             TeamRepository teamRepository,
             GameRepository gameRepository,
+            GameStatRepository gameStatRepository,
             BCryptPasswordEncoder passwordEncoder) {
         return args -> {
             // Create and save users
@@ -111,6 +115,14 @@ public class AppUserConfig {
             game4.setLeague(league2);
             gameRepository.saveAll(List.of(game1, game2, game3, game4));
 
+            GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(25));
+            gameStat1.setGame(game1);
+            Player raul = getPlayerWithFirstName(team1Players, "Raul");
+            gameStat1.setPlayer(raul);
+            GameStat gameStat2 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(35));
+            gameStat2.setGame(game1);
+            gameStat2.setPlayer(raul);
+            gameStatRepository.saveAll(List.of(gameStat1, gameStat2));
             System.out.println("Database initialized with mock data!");
         };
     }
@@ -133,6 +145,15 @@ public class AppUserConfig {
         players.add(new Player("James", "Rodriguez", "jrodriguez@example.com", "securepass10", AppUserRole.PLAYER, Position.STRIKER)); // 2nd Striker
         players.add(new Player("Raul", "Jimenez", "rjimenez@gmail.com", "aseavdabdaf", AppUserRole.PLAYER, Position.STRIKER));
         return players;
+    }
+
+    private Player getPlayerWithFirstName(Set<Player> players, String firstName) {
+        for (Player player : players) {
+            if (player.getFirstName().equals(firstName)) {
+                return player;
+            }
+        }
+        return null;
     }
 
     public Set<Player> createPlayersForTeam2() {
