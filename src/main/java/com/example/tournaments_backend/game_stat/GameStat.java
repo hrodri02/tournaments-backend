@@ -54,4 +54,9 @@ public class GameStat {
         this.type = type;
         this.createdAt = createdAt;
     }
+
+    public GameStat(GameStatRequest request) {
+        this.type = request.getType();
+        this.createdAt = request.getCreatedAt();
+    }
 }
