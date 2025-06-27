@@ -29,4 +29,10 @@ public class LeagueDTO {
                     .collect(Collectors.toList());
         }
     }
+
+    public static List<LeagueDTO> convertLeagues(List<League> leagues) {
+        return leagues.stream()
+            .map(LeagueDTO::new)
+            .collect(Collectors.toList());
+    }
 }
