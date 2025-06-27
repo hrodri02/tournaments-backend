@@ -18,9 +18,9 @@ public class LeagueService {
     private final TeamService teamService;
     private final LeagueRepository leagueRepository;
 
-    public League addLeague(League league) {
-        League leagueInDB = leagueRepository.save(league);
-        return leagueInDB;
+    public League addLeague(LeagueRequest leagueRequest) {
+        League league = new League(leagueRequest);
+        return leagueRepository.save(league);
     }
 
     @Transactional
