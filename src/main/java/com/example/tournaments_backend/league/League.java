@@ -13,11 +13,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import lombok.EqualsAndHashCode;
@@ -47,16 +42,9 @@ public class League {
     )
     @EqualsAndHashCode.Include
     private Long id;
-    @NotNull
-    @NotEmpty
-    @Size(min = 2, max = 255, message = "League name must be between 2 and 255 characters.")
     private String name;
-    @NotNull
-    @Future
     @Column(name = "start_date")
     private LocalDate startDate;
-    @NotNull
-    @Min(value = 4, message = "League duration must be at least 4 weeks long.")
     @Column(name = "duration_in_weeks")
     private Integer durationInWeeks;
     @ManyToMany
@@ -74,6 +62,12 @@ public class League {
         this.name = name;
         this.startDate = startDate;
         this.durationInWeeks = durationInWeeks;
+    }
+
+    public League(LeagueRequest leagueRequest) {
+        this.name = leagueRequest.getName();
+        this.startDate = leagueRequest.getStartDate();
+        this.durationInWeeks = leagueRequest.getDurationInWeeks();
     }
 
     public void addTeam(Team team) {
