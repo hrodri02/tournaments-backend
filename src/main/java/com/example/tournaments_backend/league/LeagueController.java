@@ -67,10 +67,18 @@ public class LeagueController {
         return ResponseEntity.ok().body(leagueDTO);
     }
 
+    @Operation(summary = "Get all the leagues", description = "Returns all the leagues")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved leagues", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = LeagueDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @GetMapping
-    public ResponseEntity<List<League>> getLeagues() {
+    public ResponseEntity<List<LeagueDTO>> getLeagues() {
         List<League> leagues = leagueService.getLeagues();
-        return ResponseEntity.ok().body(leagues);
+        List<LeagueDTO> leagueDTOs = LeagueDTO.convertLeagues(leagues);
+        return ResponseEntity.ok().body(leagueDTOs);
     }
 
     @GetMapping("{leagueId}")
