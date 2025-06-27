@@ -16,10 +16,9 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final PlayerService playerService;
 
-    public TeamDTO addTeam(Team team) {
-        Team teamInDB = teamRepository.save(team);
-        TeamDTO teamDTO = new TeamDTO(teamInDB);
-        return teamDTO;
+    public Team addTeam(TeamRequest teamRequest) {
+        Team team = new Team(teamRequest);
+        return teamRepository.save(team);
     }
 
     public Team getTeamById(Long id) throws ServiceException {

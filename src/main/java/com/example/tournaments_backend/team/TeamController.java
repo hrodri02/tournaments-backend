@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,14 +37,17 @@ public class TeamController {
     @Operation(summary = "Create a team", description = "Returns the team created")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully created a team", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid - team is not valid", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content)
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - team is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
-    public ResponseEntity<TeamDTO> addTeam(@RequestBody @Valid Team team) {
-        TeamDTO teamDTO= teamService.addTeam(team);
-        return ResponseEntity.ok().body(teamDTO);
+    public ResponseEntity<TeamDTO> addTeam(@RequestBody @Valid TeamRequest teamRequest) {
+        Team team = teamService.addTeam(teamRequest);
+        TeamDTO teamDTO = new TeamDTO(team);
+        return ResponseEntity.ok(teamDTO);
     }
 
     @Operation(summary = "Get a team", description = "Returns a team by ID")
