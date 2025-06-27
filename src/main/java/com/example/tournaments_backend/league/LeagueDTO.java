@@ -30,6 +30,14 @@ public class LeagueDTO {
         }
     }
 
+    public LeagueDTO(Long id, String name, LocalDate startDate, Integer durationInWeeks) {
+        this.id = id;
+        this.name = name;
+        this.startDate = startDate;
+        this.durationInWeeks = durationInWeeks;
+        this.teams = null;
+    }
+
     public static List<LeagueDTO> convertLeagues(List<League> leagues) {
         return leagues.stream()
             .map(LeagueDTO::new)
