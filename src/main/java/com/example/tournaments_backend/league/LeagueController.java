@@ -117,9 +117,21 @@ public class LeagueController {
         return ResponseEntity.ok(leagueDTO);
     }
 
+    @Operation(summary = "Update a league", description = "Returns the updated league by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updates league", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = LeagueDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - league is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - league, team, or league with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @PutMapping("{leagueId}")
-    public ResponseEntity<League> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody @Valid League updatedLeauge) throws ServiceException {
-        League leagueInDB = leagueService.updateLeague(leagueId, updatedLeauge);
-        return ResponseEntity.ok().body(leagueInDB);
+    public ResponseEntity<LeagueDTO> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody @Valid LeagueRequest leagueRequest) throws ServiceException {
+        League leagueInDB = leagueService.updateLeague(leagueId, leagueRequest);
+        LeagueDTO leagueDTO = new LeagueDTO(leagueInDB);
+        return ResponseEntity.ok(leagueDTO);
     }
 }

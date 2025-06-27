@@ -51,15 +51,14 @@ public class LeagueService {
         return deletedLeague;
     }
 
-    public League updateLeague(Long id, League updatedLeauge) throws ServiceException {
+    @Transactional
+    public League updateLeague(Long id, LeagueRequest leagueRequest) throws ServiceException {
         League oldLeague = leagueRepository
                             .findById(id)
                             .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League","The league with the given id was not found."));
-        oldLeague.setName(updatedLeauge.getName());
-        oldLeague.setStartDate(updatedLeauge.getStartDate());
-        oldLeague.setDurationInWeeks(updatedLeauge.getDurationInWeeks());
-        
-        League leagueInDB = leagueRepository.save(oldLeague);
-        return leagueInDB;
+        oldLeague.setName(leagueRequest.getName());
+        oldLeague.setStartDate(leagueRequest.getStartDate());
+        oldLeague.setDurationInWeeks(leagueRequest.getDurationInWeeks());
+        return leagueRepository.save(oldLeague);
     }
 }
