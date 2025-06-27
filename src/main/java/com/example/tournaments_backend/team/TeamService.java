@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerService;
 import com.example.tournaments_backend.exception.ErrorType;
@@ -28,8 +29,14 @@ public class TeamService {
         return team;
     }
 
-    public void deleteTeamById(Long id) {
+    @Transactional
+    public Team deleteTeamById(Long id) {
+        Team team = getTeamById(id);
+        for (League league : team.getLeagues()) {
+            league.getTeams().remove(team);
+        }
         teamRepository.deleteById(id);
+        return team;
     }
 
     @Transactional
