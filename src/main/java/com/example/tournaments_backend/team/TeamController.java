@@ -54,8 +54,10 @@ public class TeamController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved team information", 
                      content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Not found - team with given ID not found", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - team with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
     })
     @GetMapping("{teamId}")
     public ResponseEntity<TeamDTO> getTeam(
@@ -69,9 +71,11 @@ public class TeamController {
     @Operation(summary = "Delete a team", description = "Returns deleted team by ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully deletes team", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content),
-        @ApiResponse(responseCode = "404", description = "Not found - team with given ID not found", content = @Content),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - team with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
     })
     @DeleteMapping("{teamId}")
     public ResponseEntity<TeamDTO> deleteTeam(
@@ -86,9 +90,11 @@ public class TeamController {
     @Operation(summary = "Update a team", description = "Returns the updated team")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updated team", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid - team is not valid", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content)
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - team is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PutMapping("{teamId}")
     public ResponseEntity<TeamDTO> updateTeam(
@@ -101,9 +107,11 @@ public class TeamController {
     @Operation(summary = "Add a player to a team", description = "Returns the updated team")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully added player to team", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Not found - team and/or player with given id not found", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content)
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - team and/or player with given id not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("{teamId}/players/{playerId}")
     public ResponseEntity<TeamDTO> addPlayerToTeam(
@@ -117,9 +125,11 @@ public class TeamController {
     @Operation(summary = "Remove a player to a team", description = "Returns the updated team")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully removed player from team", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Not found - team and/or player with given id not found", content = @Content),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated", content = @Content)
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - team and/or player with given id not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @DeleteMapping("{teamId}/players/{playerId}")
     public ResponseEntity<TeamDTO> deletePlayerFromTeam(
