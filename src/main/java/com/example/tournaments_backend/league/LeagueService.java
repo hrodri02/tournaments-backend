@@ -3,13 +3,12 @@ package com.example.tournaments_backend.league;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamService;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -45,8 +44,11 @@ public class LeagueService {
         return league;
     }
 
-    public void deleteLeagueById(Long id) {
+    @Transactional    
+    public League deleteLeagueById(Long id) throws ServiceException {
+        League deletedLeague = getLeagueById(id);
         leagueRepository.deleteById(id);
+        return deletedLeague;
     }
 
     public League updateLeague(Long id, League updatedLeauge) throws ServiceException {
