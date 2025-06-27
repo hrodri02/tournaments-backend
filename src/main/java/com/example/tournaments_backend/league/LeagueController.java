@@ -81,10 +81,20 @@ public class LeagueController {
         return ResponseEntity.ok().body(leagueDTOs);
     }
 
+    @Operation(summary = "Get a league", description = "Returns a league by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved league information", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = LeagueDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - league with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @GetMapping("{leagueId}")
-    public ResponseEntity<League> getLeague(@PathVariable("leagueId") Long leagueId) throws ServiceException {
+    public ResponseEntity<LeagueDTO> getLeague(@PathVariable("leagueId") Long leagueId) throws ServiceException {
         League league = leagueService.getLeagueById(leagueId);
-        return ResponseEntity.ok().body(league);
+        LeagueDTO leagueDTO = new LeagueDTO(league);
+        return ResponseEntity.ok(leagueDTO);
     }
 
     @DeleteMapping("{leagueId}")
