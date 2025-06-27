@@ -17,9 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,9 +40,6 @@ public class Team {
     )
     @EqualsAndHashCode.Include
     private Long id;
-    @NotNull
-    @NotEmpty
-    @Size(min = 2, max = 255, message = "Team name must be between 2 and 255 characters.")
     private String name;
     @JsonIgnore
     @ManyToMany(mappedBy = "teams")
@@ -62,6 +56,10 @@ public class Team {
 
     public Team(String name) {
         this.name = name;
+    }
+
+    public Team(TeamRequest teamRequest) {
+        this.name = teamRequest.getName();
     }
 
     public void addPlayer(Player player) {
