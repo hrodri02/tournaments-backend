@@ -65,7 +65,7 @@ public class TeamController {
     {
         Team team = teamService.getTeamById(teamId);
         TeamDTO teamDTO = new TeamDTO(team);
-        return ResponseEntity.ok().body(teamDTO);
+        return ResponseEntity.ok(teamDTO);
     }
 
     @Operation(summary = "Delete a team", description = "Returns deleted team by ID")
@@ -84,7 +84,7 @@ public class TeamController {
         Team deletedTeam = teamService.getTeamById(teamId);
         teamService.deleteTeamById(teamId);
         TeamDTO teamDTO = new TeamDTO(deletedTeam);
-        return ResponseEntity.ok().body(teamDTO);
+        return ResponseEntity.ok(teamDTO);
     }
 
     @Operation(summary = "Update a team", description = "Returns the updated team")
@@ -119,7 +119,7 @@ public class TeamController {
         @Parameter(description = "The player id", required = true) @PathVariable("playerId") Long playerId) 
     {
         TeamDTO teamDTO = teamService.addPlayerToTeam(playerId, teamId);
-        return ResponseEntity.ok().body(teamDTO);
+        return ResponseEntity.ok(teamDTO);
     }
 
     @Operation(summary = "Remove a player to a team", description = "Returns the updated team")
@@ -137,6 +137,6 @@ public class TeamController {
         @Parameter(description = "The player id", required = true) @PathVariable("playerId") Long playerId) 
     {
         TeamDTO teamDTO = teamService.deletePlayerFromTeam(playerId, teamId);
-        return ResponseEntity.ok().body(teamDTO);
+        return ResponseEntity.ok(teamDTO);
     }
 }
