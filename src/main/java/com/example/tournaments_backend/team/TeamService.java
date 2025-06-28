@@ -40,15 +40,13 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamDTO updateTeam(Long id, Team updatedTeam) throws ServiceException {
+    public Team updateTeam(Long id, TeamRequest teamRequest) throws ServiceException {
         Team oldTeam = teamRepository
                         .findById(id)
                         .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
-        oldTeam.setName(updatedTeam.getName());
+        oldTeam.setName(teamRequest.getName());
         
-        Team teamInDB = teamRepository.save(oldTeam);
-        TeamDTO teamDTO = new TeamDTO(teamInDB);
-        return teamDTO;
+        return teamRepository.save(oldTeam);
     }
 
     @Transactional

@@ -97,10 +97,11 @@ public class TeamController {
     })
     @PutMapping("{teamId}")
     public ResponseEntity<TeamDTO> updateTeam(
-        @Parameter(description = "The team id", required = true) @PathVariable("teamId") Long teamId, @RequestBody @Valid Team updatedTeam) throws ServiceException 
+        @Parameter(description = "The team id", required = true) @PathVariable("teamId") Long teamId, @RequestBody @Valid TeamRequest teamRequest) throws ServiceException 
     {
-        TeamDTO team = teamService.updateTeam(teamId, updatedTeam);
-        return ResponseEntity.ok().body(team);
+        Team team = teamService.updateTeam(teamId, teamRequest);
+        TeamDTO teamDTO = new TeamDTO(team);
+        return ResponseEntity.ok(teamDTO);
     }
 
     @Operation(summary = "Add a player to a team", description = "Returns the updated team")
