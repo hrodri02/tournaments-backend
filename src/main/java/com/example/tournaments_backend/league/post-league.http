@@ -3,6 +3,6 @@ content-type: application/json
 
 {
     "name": "Liga de San Matias",
-    "startDate": "2025-06-10",
+    "startDate": "2025-07-01",
     "durationInWeeks": 4
 }
