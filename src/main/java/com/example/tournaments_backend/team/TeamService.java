@@ -35,6 +35,9 @@ public class TeamService {
         for (League league : team.getLeagues()) {
             league.getTeams().remove(team);
         }
+        for (Player player : team.getPlayers()) {
+            player.setTeam(null);
+        }
         teamRepository.deleteById(id);
         return team;
     }
