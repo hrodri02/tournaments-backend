@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.Map;
@@ -25,6 +26,8 @@ import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,7 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping(path="api/v1/auth")
 @AllArgsConstructor
+@Tag(name = "Auth Management", description = "API endpoints for authentication")
 public class AuthController {
     private AuthService authService;
 
@@ -50,34 +54,40 @@ public class AuthController {
     public ResponseEntity<RegistrationConfirmationResponse> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
         authService.signUp(request);
         RegistrationConfirmationResponse resBody = new RegistrationConfirmationResponse("A confirmation email has been sent.");
-        return ResponseEntity.ok().body(resBody);
+        return ResponseEntity.ok(resBody);
     }
 
+    @Operation(summary = "Logs in a user", description = "Returns the authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully authenticates a user", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - authentication request is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - account disabled or bad credentials",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+    })
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest authRequest) {
+    public ResponseEntity<UserDTO> authenticate(@RequestBody @Valid AuthenticationRequest authRequest) throws AuthenticationException {
         AppUser authenticatedUser = authService.authenticate(authRequest);
 
-        // if user's account is verified
-        if (authenticatedUser.getEnabled()) {
-            String jws = authService.generateJWS(authenticatedUser);
-
-            UserDTO resBody = new UserDTO(
-                authenticatedUser.getId(), 
-                authenticatedUser.getFirstName(),
-                authenticatedUser.getLastName(),
-                authenticatedUser.getEmail(),
-                authenticatedUser.getAppUserRole());
-            
-            // send user json to client with auth token
-            return ResponseEntity
-                    .ok()
-                    .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + jws)
-                    .body(resBody);
+        if (!authenticatedUser.getEnabled()) {
+            throw new DisabledException("Account is not enabled. Please verify your email.");
         }
 
-        Map<String, String> resBody = Map.of("message", "Account is not enabled. Please verify your email.");
+        // if user's account is verified
+        String jws = authService.generateJWS(authenticatedUser);
+
+        UserDTO resBody = new UserDTO(
+            authenticatedUser.getId(), 
+            authenticatedUser.getFirstName(),
+            authenticatedUser.getLastName(),
+            authenticatedUser.getEmail(),
+            authenticatedUser.getAppUserRole());
+        
+        // send user json to client with auth token
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+                .ok()
+                .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + jws)
                 .body(resBody);
     }
 
