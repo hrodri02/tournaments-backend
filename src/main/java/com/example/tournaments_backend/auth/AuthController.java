@@ -48,14 +48,14 @@ public class AuthController {
     @Operation(summary = "Registers a user", description = "Returns a confirmation message.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully creates a user", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegistrationConfirmationResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - registration request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
     })
     @PostMapping("/signup")
-    public ResponseEntity<RegistrationConfirmationResponse> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
+    public ResponseEntity<AuthResponse> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
         authService.signUp(request);
-        RegistrationConfirmationResponse resBody = new RegistrationConfirmationResponse("A confirmation email has been sent.");
+        AuthResponse resBody = new AuthResponse("A confirmation email has been sent.");
         return ResponseEntity.ok(resBody);
     }
 
@@ -95,11 +95,20 @@ public class AuthController {
                 .body(resBody);
     }
 
+    @Operation(summary = "Enables a user account", description = "Returns a confirmation message")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully enables a user's account", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)),
+            headers = @Header(name = HttpHeaders.AUTHORIZATION, description = "JWT Token", schema = @Schema(type = "string"))
+        ),
+        @ApiResponse(responseCode = "404", description = "Not found - cofirmation token not found or it expired",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @GetMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestParam("token") String token) throws ServiceException {
+    public ResponseEntity<AuthResponse> confirm(@RequestParam("token") String token) throws ServiceException {
         String jws = authService.confirmToken(token);
 
-        Map<String, String> resBody = Map.of("message", "Account verified!");
+        AuthResponse resBody = new AuthResponse("Account verified!");
         return ResponseEntity
                 .ok()
                 .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + jws)
