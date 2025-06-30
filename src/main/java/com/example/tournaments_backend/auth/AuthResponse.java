@@ -7,6 +7,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RegistrationConfirmationResponse {
+public class AuthResponse {
     private String message;
 }
