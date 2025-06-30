@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.headers.Header;
 import jakarta.validation.Valid;
 
 import java.util.Map;
@@ -24,6 +25,7 @@ import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_P
 
 import java.time.LocalDateTime;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -60,7 +62,9 @@ public class AuthController {
     @Operation(summary = "Logs in a user", description = "Returns the authenticated user")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully authenticates a user", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)),
+            headers = @Header(name = HttpHeaders.AUTHORIZATION, description = "JWT Token", schema = @Schema(type = "string"))
+        ),
         @ApiResponse(responseCode = "400", description = "Invalid - authentication request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - account disabled or bad credentials",
