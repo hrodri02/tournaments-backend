@@ -9,6 +9,11 @@ import com.example.tournaments_backend.app_user.UserDTO;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 import java.util.Map;
@@ -34,10 +39,17 @@ import lombok.AllArgsConstructor;
 public class AuthController {
     private AuthService authService;
 
+    @Operation(summary = "Registers a user", description = "Returns a confirmation message.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully creates a user", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = RegistrationConfirmationResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - registration request is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+    })
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
+    public ResponseEntity<RegistrationConfirmationResponse> signUp(@RequestBody @Valid RegistrationRequest request) throws ServiceException {
         authService.signUp(request);
-        Map<String, String> resBody = Map.of("message", "A confirmation email has been sent.");
+        RegistrationConfirmationResponse resBody = new RegistrationConfirmationResponse("A confirmation email has been sent.");
         return ResponseEntity.ok().body(resBody);
     }
 
