@@ -10,6 +10,7 @@ import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -95,7 +96,7 @@ public class AuthController {
                 .body(resBody);
     }
 
-    @Operation(summary = "Enables a user account", description = "Returns a confirmation message")
+    @Operation(summary = "Enables a user account", description = "Returns a confirmation message along with JWT")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully enables a user's account", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)),
@@ -105,7 +106,10 @@ public class AuthController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping("/confirm")
-    public ResponseEntity<AuthResponse> confirm(@RequestParam("token") String token) throws ServiceException {
+    public ResponseEntity<AuthResponse> confirm(
+        @Parameter(description = "Confirmation token with 15 minute expiration")
+        @RequestParam("token") String token) throws ServiceException 
+    {
         String jws = authService.confirmToken(token);
 
         AuthResponse resBody = new AuthResponse("Account verified!");
@@ -124,7 +128,10 @@ public class AuthController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("/resend")
-    public ResponseEntity<AuthResponse> resend(@RequestParam("email") String email) throws UsernameNotFoundException, ServiceException {
+    public ResponseEntity<AuthResponse> resend(
+        @Parameter(description = "User's email")
+        @RequestParam("email") String email) throws UsernameNotFoundException, ServiceException 
+    {
         authService.resendEmail(email);
         AuthResponse resBody = new AuthResponse("A new confirmation email has been sent.");
         return ResponseEntity.ok(resBody);
@@ -137,7 +144,10 @@ public class AuthController {
         )
     })
     @PostMapping("/forgot-password")
-    public ResponseEntity<AuthResponse> forgotPassword(@RequestParam("email") String email) {
+    public ResponseEntity<AuthResponse> forgotPassword(
+        @Parameter(description = "User's email")
+        @RequestParam("email") String email) 
+    {
         authService.sendResetPasswordEmail(email);
         AuthResponse resBody = new AuthResponse("We've sent password reset instructions to your email.");
         return ResponseEntity.ok(resBody);
