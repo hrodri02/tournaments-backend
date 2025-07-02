@@ -150,15 +150,25 @@ public class AuthController {
         return ResponseEntity.ok().body(resBody);
     }
 
+    @Operation(summary = "Resets user's password", description = "Notifies user that their password was reset")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully resets a user's password", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Invalid - reset password request body is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - user/token not found or password was already reset",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws ServiceException {
+    public ResponseEntity<AuthResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest resetPwdRequest) throws ServiceException {
         String token = resetPwdRequest.getToken();
         String email = resetPwdRequest.getEmail();
         authService.validateResetToken(token, email);
         String newPassword = resetPwdRequest.getNewPassword();
         authService.saveUsersNewPassword(token, email, newPassword);
-        Map<String, String> resBody = Map.of("message", "Password has been successfully reset.");
-        return ResponseEntity.ok().body(resBody);
+        AuthResponse resBody = new AuthResponse("Password has been successfully reset.");
+        return ResponseEntity.ok(resBody);
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
