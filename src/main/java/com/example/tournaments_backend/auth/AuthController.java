@@ -115,11 +115,20 @@ public class AuthController {
                 .body(resBody);
     }
 
+    @Operation(summary = "Resends confirmation link to user's email", description = "Returns a confirmation message")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully resends email to user's account", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)),
+            headers = @Header(name = HttpHeaders.AUTHORIZATION, description = "JWT Token", schema = @Schema(type = "string"))
+        ),
+        @ApiResponse(responseCode = "404", description = "Not found - user with email not found or email already confirmed",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
     @PostMapping("/resend")
-    public ResponseEntity<?> resend(@RequestParam("email") String email) throws UsernameNotFoundException, ServiceException {
+    public ResponseEntity<AuthResponse> resend(@RequestParam("email") String email) throws UsernameNotFoundException, ServiceException {
         authService.resendEmail(email);
-        Map<String, String> resBody = Map.of("message", "A new confirmation email has been sent.");
-        return ResponseEntity.ok().body(resBody);
+        AuthResponse resBody = new AuthResponse("A new confirmation email has been sent.");
+        return ResponseEntity.ok(resBody);
     }
 
     @PostMapping("/forgot-password")
