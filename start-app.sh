@@ -1,6 +1,6 @@
 #!/bin/bash
-# starts mail server
-maildev
+# starts mail server in the background
+maildev &
 # starts postgresql server 
 sudo systemctl start postgresql
 # starts tournaments backend app in the background
