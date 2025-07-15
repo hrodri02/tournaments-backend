@@ -20,10 +20,7 @@ public class TournamentsBackendApplication {
 			public void addCorsMappings(CorsRegistry registry) {
 				registry
 					.addMapping("/api/v*/**")
-                    .allowedOrigins("http://localhost:8081")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
+                    .allowedOrigins("http://localhost:8081");
 			}
 		};
 	}
