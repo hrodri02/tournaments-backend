@@ -19,8 +19,11 @@ public class TournamentsBackendApplication {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry
-					.addMapping("/api/v1/auth/login")
-					.allowedOrigins("http://localhost:8081");
+					.addMapping("/api/v*/**")
+                    .allowedOrigins("http://localhost:8081")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedHeaders("*")
+                    .allowCredentials(true);
 			}
 		};
 	}
