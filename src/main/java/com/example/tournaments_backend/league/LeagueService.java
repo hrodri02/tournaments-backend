@@ -38,7 +38,7 @@ public class LeagueService {
     public List<League> getLeagues(Optional<String> optionalStatus) {
         if (optionalStatus.isPresent()) {
             String status = optionalStatus.get();
-            if (status == "notStarted") {
+            if (status.equals("notStarted")) {
                 return leagueRepository.findByStartDateAfter(LocalDate.now());
             }
             return List.of();
