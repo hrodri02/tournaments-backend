@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.league;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +12,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -75,8 +78,12 @@ public class LeagueController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping
-    public ResponseEntity<List<LeagueDTO>> getLeagues() {
-        List<League> leagues = leagueService.getLeagues();
+    public ResponseEntity<List<LeagueDTO>> getLeagues(
+        @Parameter(description = "status can be: not started, in progress, or ended")
+        @RequestParam("status") Optional<String> optionalStatus
+    ) 
+    {
+        List<League> leagues = leagueService.getLeagues(optionalStatus);
         List<LeagueDTO> leagueDTOs = LeagueDTO.convertLeagues(leagues);
         return ResponseEntity.ok().body(leagueDTOs);
     }
