@@ -35,17 +35,29 @@ public class LeagueService {
         return leagueInDB;
     }
     
-    public List<League> getLeagues(Optional<String> optionalStatus) {
+    public List<League> getLeagues(Optional<LeagueStatus> optionalStatus) {
+        LocalDate today = LocalDate.now();
+        List<League> leagues;
         if (optionalStatus.isPresent()) {
-            String status = optionalStatus.get();
-            if (status.equals("notStarted")) {
-                return leagueRepository.findByStartDateAfter(LocalDate.now());
+            LeagueStatus status = optionalStatus.get();
+            switch (status) {
+                case LeagueStatus.NOT_STARTED:
+                    leagues = leagueRepository.findByStartDateAfter(today);
+                    break;
+                case LeagueStatus.IN_PROGRESS:
+                    leagues = leagueRepository.findInProgressLeagues(today);
+                    break;
+                case LeagueStatus.ENDED:
+                    leagues = leagueRepository.findEndedLeagues(today);
+                    break;
+                default:
+                    leagues = List.of();
             }
-            return List.of();
         }
         else {
-            return leagueRepository.findAll();
+            leagues = leagueRepository.findAll();
         }
+        return leagues;
     }
 
     public League getLeagueById(Long id) throws ServiceException {
