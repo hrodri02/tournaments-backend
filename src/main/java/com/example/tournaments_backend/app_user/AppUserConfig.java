@@ -72,10 +72,22 @@ public class AppUserConfig {
             Team team4 = new Team("Liverpool");
             Set<Player> team4Players = createPlayersForTeam4();
             team4.addPlayers(team4Players);
+            Team bayern = new Team("Bayern Munich");
+            Set<Player> bayernPlayers = createPlayersForBayern();
+            bayern.addPlayers(bayernPlayers);
+            Team borussia = new Team("Borussia Dortmund");
+            Set<Player> borussiaPlayers = createPlayersForBorussia();
+            borussia.addPlayers(borussiaPlayers);
+            Team america = new Team("América");
+            Set<Player> americaPlayers = createPlayersForAmerica();
+            america.addPlayers(americaPlayers);
+            Team tigres = new Team("Tigres");
+            Set<Player> tigresPlayers = createPlayersForTigres();
+            tigres.addPlayers(tigresPlayers);
 
-            teamRepository.saveAll(Arrays.asList(team1, team2, team3, team4));
+            teamRepository.saveAll(Arrays.asList(team1, team2, team3, team4, bayern, borussia, america, tigres));
 
-            // Create and save leagues
+            // Create and save leagues (not started)
             League league1 = new League("La Liga", LocalDate.now().plusDays(7), 12);
             league1.addTeam(team1);
             league1.addTeam(team2);
@@ -84,8 +96,19 @@ public class AppUserConfig {
             league2.addTeam(team3);
             league2.addTeam(team4);
 
-            leagueRepository.saveAll(Arrays.asList(league1, league2));
+            // Create league that has ended
+            League league3 = new League("Bundes Liga", LocalDate.now().minusWeeks(13), 12);
+            league3.addTeam(bayern);
+            league3.addTeam(borussia);
 
+            // Create league that is in progress
+            League league4 = new League("Liga MX", LocalDate.now().minusWeeks(6), 10);
+            league4.addTeam(america);
+            league4.addTeam(tigres);
+
+            leagueRepository.saveAll(Arrays.asList(league1, league2, league3, league4));
+
+            // games for league 1
             Game game1 = new Game(LocalDateTime.now().plusDays(7), 
                                 "Golden Gate Park",
                                 90);
@@ -100,6 +123,7 @@ public class AppUserConfig {
             game2.setAwayTeam(team1);
             game2.setLeague(league1);
 
+            // games for league 2
             Game game3 = new Game(LocalDateTime.now().plusDays(14), 
                                 "Silver Park",
                                 90);
@@ -113,48 +137,63 @@ public class AppUserConfig {
             game4.setHomeTeam(team4);
             game4.setAwayTeam(team3);
             game4.setLeague(league2);
-            gameRepository.saveAll(List.of(game1, game2, game3, game4));
 
-            // stats for game1
-            GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(25));
-            gameStat1.setGame(game1);
-            Player raul = getPlayerWithFirstName(team1Players, "Raul");
-            gameStat1.setPlayer(raul);
-            GameStat gameStat2 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(7).plusMinutes(35));
-            gameStat2.setGame(game1);
-            gameStat2.setPlayer(raul);
+            // games for league 3 (started 13 weeks ago)
+            Game game5 = new Game(LocalDateTime.now().minusWeeks(12), 
+                                "Allianz Arena",
+                                90);
+            game5.setHomeTeam(bayern);
+            game5.setAwayTeam(borussia);
+            game5.setLeague(league3);
 
-            // stats for game2
-            GameStat gameStat3 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().plusDays(12).plusMinutes(25));
-            gameStat3.setGame(game2);
-            Player alice = getPlayerWithFirstName(team2Players, "Alice");
-            gameStat3.setPlayer(alice);
-            GameStat gameStat4 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().plusDays(12).plusMinutes(35));
-            gameStat4.setGame(game2);
-            Player laura = getPlayerWithFirstName(team1Players, "Laura");
-            gameStat4.setPlayer(laura);
+            Game game6 = new Game(LocalDateTime.now().minusWeeks(11), 
+                                "Signal Iduna Park",
+                                90);
+            game6.setHomeTeam(borussia);
+            game6.setAwayTeam(bayern);
+            game6.setLeague(league3);
 
-            // stats for game3
-            GameStat gameStat5 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(14).plusMinutes(25));
-            gameStat5.setGame(game3);
-            Player liam = getPlayerWithFirstName(team3Players, "Liam");
-            gameStat5.setPlayer(liam);
-            GameStat gameStat6 = new GameStat(GameStatType.GOAL, LocalDateTime.now().plusDays(14).plusMinutes(35));
-            gameStat6.setGame(game3);
-            Player frank = getPlayerWithFirstName(team4Players, "Frank");
-            gameStat6.setPlayer(frank);
+            Game game7 = new Game(LocalDateTime.now().minusWeeks(6), 
+                                "Estadio Azteca",
+                                90);
+            game7.setHomeTeam(america);
+            game7.setAwayTeam(tigres);
+            game7.setLeague(league4);
 
-            // stats for game4
-            GameStat gameStat7 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(12).plusMinutes(25));
-            gameStat7.setGame(game4);
-            Player mia = getPlayerWithFirstName(team3Players, "Mia");
-            gameStat7.setPlayer(mia);
-            GameStat gameStat8 = new GameStat(GameStatType.RED_CARD, LocalDateTime.now().plusDays(12).plusMinutes(35));
-            gameStat8.setGame(game4);
-            Player willow = getPlayerWithFirstName(team4Players, "Willow");
-            gameStat8.setPlayer(willow);
+            Game game8 = new Game(LocalDateTime.now().minusWeeks(5), 
+                                "Estadio Universitario",
+                                90);
+            game8.setHomeTeam(tigres);
+            game8.setAwayTeam(america);
+            game8.setLeague(league4);
 
-            gameStatRepository.saveAll(List.of(gameStat1, gameStat2, gameStat3, gameStat4, gameStat5, gameStat6, gameStat7, gameStat8));
+            gameRepository.saveAll(List.of(game1, game2, game3, game4, game5, game6, game7, game8));
+
+            // stats for game5
+            GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().minusWeeks(12).plusMinutes(70));
+            gameStat1.setGame(game5);
+            Player isabella = getPlayerWithFirstName(bayernPlayers, "Isabella");
+            gameStat1.setPlayer(isabella);
+            
+            // stats for game6
+            GameStat gameStat2 = new GameStat(GameStatType.GOAL, LocalDateTime.now().minusWeeks(11).plusMinutes(30));
+            gameStat2.setGame(game6);
+            Player abigail = getPlayerWithFirstName(borussiaPlayers, "Abigail");
+            gameStat2.setPlayer(abigail);
+            
+            // stats for game7
+            GameStat gameStat3 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().minusWeeks(6).plusMinutes(50));
+            gameStat3.setGame(game7);
+            Player harry = getPlayerWithFirstName(tigresPlayers, "Harry");
+            gameStat3.setPlayer(harry);
+
+            // stats for game8
+            GameStat gameStat4 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().minusWeeks(5).plusMinutes(60));
+            gameStat4.setGame(game8);
+            Player angela = getPlayerWithFirstName(americaPlayers, "Angela");
+            gameStat4.setPlayer(angela);
+
+            gameStatRepository.saveAll(List.of(gameStat1, gameStat2, gameStat3, gameStat4));
             System.out.println("Database initialized with mock data!");
         };
     }
@@ -236,6 +275,86 @@ public class AppUserConfig {
         // Strikers (2)
         players.add(new Player("Frank", "Ocean", "frank.o@example.com", "passT4S1", AppUserRole.PLAYER, Position.STRIKER));
         players.add(new Player("Gigi", "Hadid", "gigi.h@example.com", "passT4S2", AppUserRole.PLAYER, Position.STRIKER));
+        return players;
+    }
+
+    public Set<Player> createPlayersForBayern() {
+        Set<Player> players = new HashSet<>();
+        // Defenders (4)
+        players.add(new Player("Liam", "Smith", "liam.s@example.com", "passT3D1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Mia", "Jones", "mia.j@example.com", "passT3D2", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Noah", "Brown", "noah.b@example.com", "passT3D3", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Olivia", "Davis", "olivia.d@example.com", "passT3D4", AppUserRole.PLAYER, Position.DEFENDER));
+        // Midfielders (4)
+        players.add(new Player("James", "Miller", "james.m@example.com", "passT3M1", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Sophia", "Garcia", "sophia.g@example.com", "passT3M2", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Benjamin", "Rodriguez", "benjamin.r@example.com", "passT3M3", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Emma", "Martinez", "emma.m@example.com", "passT3M4", AppUserRole.PLAYER, Position.MIDFIELDER));
+        // Goalkeeper (1)
+        players.add(new Player("William", "Hernandez", "william.h@example.com", "passT3GK", AppUserRole.PLAYER, Position.GOAL_KEEPER));
+        // Strikers (2)
+        players.add(new Player("Isabella", "Lopez", "isabella.l@example.com", "passT3S1", AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("Lucas", "Gonzalez", "lucas.g@example.com", "passT3S2", AppUserRole.PLAYER, Position.STRIKER));
+        return players;
+    }
+
+    public Set<Player> createPlayersForBorussia() {
+        Set<Player> players = new HashSet<>();
+        // Defenders (4)
+        players.add(new Player("Henry", "Wilson", "henry.w@example.com", "passT4D1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Charlotte", "Anderson", "charlotte.a@example.com", "passT4D2", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Alexander", "Thomas", "alexander.t@example.com", "passT4D3", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Amelia", "Jackson", "amelia.j@example.com", "passT4D4", AppUserRole.PLAYER, Position.DEFENDER));
+        // Midfielders (4)
+        players.add(new Player("Daniel", "White", "daniel.w@example.com", "passT4M1", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Harper", "Harris", "harper.h@example.com", "passT4M2", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Matthew", "Martin", "matthew.m@example.com", "passT4M3", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Evelyn", "Thompson", "evelyn.t@example.com", "passT4M4", AppUserRole.PLAYER, Position.MIDFIELDER));
+        // Goalkeeper (1)
+        players.add(new Player("Samuel", "Moore", "samuel.m@example.com", "passT4GK", AppUserRole.PLAYER, Position.GOAL_KEEPER));
+        // Strikers (2)
+        players.add(new Player("Abigail", "Young", "abigail.y@example.com", "passT4S1", AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("David", "King", "david.k@example.com", "passT4S2", AppUserRole.PLAYER, Position.STRIKER));
+        return players;
+    }
+
+    public Set<Player> createPlayersForAmerica() {
+        Set<Player> players = new HashSet<>();
+        // Defenders (4)
+        players.add(new Player("Michael", "Scott", "michael.s@example.com", "passT5D1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Pamela", "Beesly", "pamela.b@example.com", "passT5D2", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Dwight", "Schrute", "dwight.s@example.com", "passT5D3", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Angela", "Martin", "angela.m@example.com", "passT5D4", AppUserRole.PLAYER, Position.DEFENDER));
+        // Midfielders (4)
+        players.add(new Player("Jim", "Halpert", "jim.h@example.com", "passT5M1", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Phyllis", "Lapin", "phyllis.l@example.com", "passT5M2", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Stanley", "Hudson", "stanley.h@example.com", "passT5M3", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Oscar", "Martinez", "oscar.m@example.com", "passT5M4", AppUserRole.PLAYER, Position.MIDFIELDER));
+        // Goalkeeper (1)
+        players.add(new Player("Kevin", "Malone", "kevin.m@example.com", "passT5GK", AppUserRole.PLAYER, Position.GOAL_KEEPER));
+        // Strikers (2)
+        players.add(new Player("Erin", "Hannon", "erin.h@example.com", "passT5S1", AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("Andy", "Bernard", "andy.b@example.com", "passT5S2", AppUserRole.PLAYER, Position.STRIKER));
+        return players;
+    }
+
+    public Set<Player> createPlayersForTigres() {
+        Set<Player> players = new HashSet<>();
+        // Defenders (4)
+        players.add(new Player("Ronald", "Weasley", "ronald.w@example.com", "passT6D1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Hermione", "Granger", "hermione.g@example.com", "passT6D2", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Harry", "Potter", "harry.p@example.com", "passT6D3", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Ginny", "Weasley", "ginny.w@example.com", "passT6D4", AppUserRole.PLAYER, Position.DEFENDER));
+        // Midfielders (4)
+        players.add(new Player("Draco", "Malfoy", "draco.m@example.com", "passT6M1", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Luna", "Lovegood", "luna.l@example.com", "passT6M2", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Neville", "Longbottom", "neville.l@example.com", "passT6M3", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Fred", "Weasley", "fred.w@example.com", "passT6M4", AppUserRole.PLAYER, Position.MIDFIELDER));
+        // Goalkeeper (1)
+        players.add(new Player("George", "Weasley", "george.w@example.com", "passT6GK", AppUserRole.PLAYER, Position.GOAL_KEEPER));
+        // Strikers (2)
+        players.add(new Player("Severus", "Snape", "severus.s@example.com", "passT6S1", AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("Minerva", "McGonagall", "minerva.m@example.com", "passT6S2", AppUserRole.PLAYER, Position.STRIKER));
         return players;
     }
 
