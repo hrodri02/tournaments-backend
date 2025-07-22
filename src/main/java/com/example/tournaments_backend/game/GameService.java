@@ -1,5 +1,8 @@
 package com.example.tournaments_backend.game;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,14 @@ public class GameService {
         game.setAwayTeam(awayTeam);
         game.setLeague(league);
         return gameRepository.save(game);
+    }
+
+    public List<Game> getGames(Optional<Long> optionalLeagueId) throws ServiceException {
+        if (optionalLeagueId.isPresent()) {
+            Long leagueId = optionalLeagueId.get();
+            return gameRepository.findByLeagueId(leagueId);
+        }
+        return gameRepository.findAll();
     }
 
     public Game getGameById(Long gameId) throws ServiceException {

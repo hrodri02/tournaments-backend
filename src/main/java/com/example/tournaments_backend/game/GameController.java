@@ -1,5 +1,8 @@
 package com.example.tournaments_backend.game;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
@@ -50,6 +54,23 @@ public class GameController {
         Game gameInDB = gameService.addGame(requestBody);
         GameDTO gameDTO = new GameDTO(gameInDB);
         return ResponseEntity.ok().body(gameDTO);
+    }
+
+    @Operation(summary = "Get games", description = "Returns all games or by leagueId. If the leagueId is invalid an empty list is returned.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved games of a league", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @GetMapping
+    public ResponseEntity<List<GameDTO>> getGames(
+        @Parameter(description = "The league id") 
+        @RequestParam("leagueId") Optional<Long> optionalLeagueId) throws ServiceException
+    {
+        List<Game> games = gameService.getGames(optionalLeagueId);
+        List<GameDTO> gameDTOs = GameDTO.convertGames(games);
+        return ResponseEntity.ok(gameDTOs);
     }
 
     @Operation(summary = "Get a game", description = "Returns a game by ID")
