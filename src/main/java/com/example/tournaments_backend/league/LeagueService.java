@@ -1,6 +1,8 @@
 package com.example.tournaments_backend.league;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +35,29 @@ public class LeagueService {
         return leagueInDB;
     }
     
-    public List<League> getLeagues() {
-        return leagueRepository.findAll();
+    public List<League> getLeagues(Optional<LeagueStatus> optionalStatus) {
+        LocalDate today = LocalDate.now();
+        List<League> leagues;
+        if (optionalStatus.isPresent()) {
+            LeagueStatus status = optionalStatus.get();
+            switch (status) {
+                case LeagueStatus.NOT_STARTED:
+                    leagues = leagueRepository.findByStartDateAfter(today);
+                    break;
+                case LeagueStatus.IN_PROGRESS:
+                    leagues = leagueRepository.findInProgressLeagues(today);
+                    break;
+                case LeagueStatus.ENDED:
+                    leagues = leagueRepository.findEndedLeagues(today);
+                    break;
+                default:
+                    leagues = List.of();
+            }
+        }
+        else {
+            leagues = leagueRepository.findAll();
+        }
+        return leagues;
     }
 
     public League getLeagueById(Long id) throws ServiceException {

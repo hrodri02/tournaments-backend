@@ -12,6 +12,7 @@ import lombok.Getter;
 public class LeagueDTO {
     private Long id;
     private String name;
+    private LeagueStatus status;
     private LocalDate startDate;
     private Integer durationInWeeks;
     private List<TeamDTO> teams;
@@ -21,6 +22,7 @@ public class LeagueDTO {
         this.name = league.getName();
         this.startDate = league.getStartDate();
         this.durationInWeeks = league.getDurationInWeeks();
+        setStatus();
         if (league.getTeams() != null) {
             this.teams = 
                 league.getTeams()
@@ -35,7 +37,22 @@ public class LeagueDTO {
         this.name = name;
         this.startDate = startDate;
         this.durationInWeeks = durationInWeeks;
+        setStatus();
         this.teams = null;
+    }
+
+    private void setStatus() {
+        LocalDate today = LocalDate.now();
+        LocalDate end = this.startDate.plusWeeks(this.durationInWeeks);
+        if (this.startDate.isAfter(today)) {
+            this.status = LeagueStatus.NOT_STARTED;
+        }
+        else if (end.isBefore(today)) {
+            this.status = LeagueStatus.ENDED;
+        }
+        else {
+            this.status = LeagueStatus.IN_PROGRESS;
+        }
     }
 
     public static List<LeagueDTO> convertLeagues(List<League> leagues) {
