@@ -79,7 +79,7 @@ public class LeagueController {
     })
     @GetMapping
     public ResponseEntity<List<LeagueDTO>> getLeagues(
-        @Parameter(description = "status can be: not started, in progress, or ended")
+        @Parameter(description = "status can be: NOT_STARTED, IN_PROGRESS, or ENDED")
         @RequestParam("status") Optional<LeagueStatus> optionalStatus
     )
     {
