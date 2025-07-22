@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.example.tournaments_backend.game.Game;
-import com.example.tournaments_backend.game.GameDTO;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamDTO;
 
@@ -20,7 +18,6 @@ public class LeagueDTO {
     private LocalDate startDate;
     private Integer durationInWeeks;
     private List<TeamDTO> teams;
-    private List<GameDTO> games;
 
     public LeagueDTO(League league) {
         this.id = league.getId();
