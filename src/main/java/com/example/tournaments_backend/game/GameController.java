@@ -58,7 +58,7 @@ public class GameController {
 
     @Operation(summary = "Get games", description = "Returns all games or by leagueId. If the leagueId is invalid an empty list is returned.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved games of a league", 
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved games", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameDTO.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
