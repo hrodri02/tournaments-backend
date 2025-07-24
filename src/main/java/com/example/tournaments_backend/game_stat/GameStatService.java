@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.game_stat;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +42,20 @@ public class GameStatService {
     }
 
     @Transactional
-    public List<GameStat> getGameStatsByGameId(Long gameId) throws ServiceException {
-        gameRepository
-            .findById(gameId)
-            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
-        List<GameStat> gameStats = gameStatRepository.findByGame_Id(gameId);
+    public List<GameStat> getGameStatsByGameId(Optional<Long> optionalGameId) throws ServiceException {
+        List<GameStat> gameStats;
+        
+        if (optionalGameId.isPresent()) {
+            Long gameId = optionalGameId.get();
+            gameRepository
+                .findById(gameId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+            gameStats = gameStatRepository.findByGame_Id(gameId);
+        } 
+        else {
+            gameStats = gameStatRepository.findAll();
+        }
+        
         return gameStats;
     }
 
