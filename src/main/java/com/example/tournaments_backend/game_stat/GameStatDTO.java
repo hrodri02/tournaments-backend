@@ -14,14 +14,14 @@ public class GameStatDTO {
     private Long gameId;
     private GameStatType type;
     private LocalDateTime createdAt;
-    private PlayerDTO playerDTO;
+    private PlayerDTO player;
 
     public GameStatDTO(GameStat gameStat) {
         this.id = gameStat.getId();
         this.gameId = gameStat.getGame().getId();
         this.type = gameStat.getType();
         this.createdAt = gameStat.getCreatedAt();
-        this.playerDTO = new PlayerDTO(gameStat.getPlayer());
+        this.player = new PlayerDTO(gameStat.getPlayer());
     }
 
     public static List<GameStatDTO> convert(List<GameStat> gameStats) {
