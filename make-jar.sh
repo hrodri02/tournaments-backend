@@ -1,5 +1,5 @@
 #!/bin/bash
-# check if database is running
+# if database is not running
 if ! systemctl is-active --quiet postgresql; then
     # start database
     sudo systemctl start postgresql
