@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.game_stat;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,9 +56,9 @@ public class GameStatController {
         return ResponseEntity.ok().body(gameStatDTO);
     }
 
-    @Operation(summary = "Get the stats of a game", description = "Returns a game stats by game ID")
+    @Operation(summary = "Get game stats", description = "Returns all game stats or by gameId")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved stats of  a game", 
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved stats", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
@@ -66,9 +67,9 @@ public class GameStatController {
     })
     @GetMapping
     public ResponseEntity<List<GameStatDTO>> getGameStats(
-        @Parameter(description = "The game id", required = true) @RequestParam("gameId") Long gameId) throws ServiceException
+        @Parameter(description = "The game id") @RequestParam("gameId") Optional<Long> optionalGameId) throws ServiceException
     {
-        List<GameStat> gameStats = gameStatService.getGameStatsByGameId(gameId);
+        List<GameStat> gameStats = gameStatService.getGameStatsByGameId(optionalGameId);
         List<GameStatDTO> gameStatDTOs = GameStatDTO.convert(gameStats);
         return ResponseEntity.ok(gameStatDTOs);
     }
