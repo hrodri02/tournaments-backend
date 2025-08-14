@@ -21,6 +21,7 @@ public class TournamentsBackendApplication {
 				registry
 					.addMapping("/api/v*/**")
                     .allowedOrigins("http://localhost:8081")
+					.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 					.exposedHeaders("Authorization");
 			}
 		};
