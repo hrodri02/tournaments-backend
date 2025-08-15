@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 import com.example.tournaments_backend.player.PlayerDTO;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class GameStatDTO {
     private Long id;
     private Long gameId;
