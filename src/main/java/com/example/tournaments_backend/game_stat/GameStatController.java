@@ -111,4 +111,12 @@ public class GameStatController {
         GameStatDTO gameStatDTO = new GameStatDTO(gameStat);
         return ResponseEntity.ok(gameStatDTO);
     }
+
+    @PutMapping("/batchUpdate")
+    public ResponseEntity<List<GameStatDTO>> updateGameStats(@RequestBody @Valid List<GameStatDTO> gameStatDTOs)
+    {
+        List<GameStat> gameStats = gameStatService.updateGameStats(gameStatDTOs);
+        List<GameStatDTO> updatedGameStatDTOs = GameStatDTO.convert(gameStats);
+        return ResponseEntity.ok(updatedGameStatDTOs);
+    }
 }
