@@ -2,7 +2,11 @@ package com.example.tournaments_backend.game_stat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,37 +98,48 @@ public class GameStatService {
         return gameStatRepository.save(gameStat);
     }
 
-    public List<GameStat> updateGameStats(List<GameStatDTO> gameStatDTOs) {
-        List<GameStat> gameStats = new ArrayList<>();
-        for (GameStatDTO gameStatDTO : gameStatDTOs) {
-            GameStat updatedGameStat = updateGameStat(gameStatDTO);
-            gameStats.add(updatedGameStat);
-        }
-        return gameStats;
-    }
-
     @Transactional
-    private GameStat updateGameStat(GameStatDTO gameStatDTO) {
-        Long id = gameStatDTO.getId();
-        GameStat gameStat = 
-            gameStatRepository
-                .findById(id)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
-        Long gameId = gameStatDTO.getGameId();
-        Game game = 
-            gameRepository
-                .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+    public List<GameStat> updateGameStats(List<GameStatDTO> gameStatDTOs) {
+        Set<Long> gameStatIds = gameStatDTOs.stream()
+                .map(GameStatDTO::getId)
+                .collect(Collectors.toSet());
+        Set<Long> gameIds = gameStatDTOs.stream()
+                .map(GameStatDTO::getGameId)
+                .collect(Collectors.toSet());
+        Set<Long> playerIds = gameStatDTOs.stream()
+                .map(dto -> dto.getPlayer().getId())
+                .collect(Collectors.toSet());
 
-        Long playerId = gameStatDTO.getPlayer().getId();
-        System.out.println(playerId);
-        Player player =
-            playerRepository
-                .findById(playerId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with id = " + playerId + " not found"));
-        gameStat.setGame(game);
-        gameStat.setPlayer(player);
-        gameStat.setType(gameStatDTO.getType());
-        return gameStatRepository.save(gameStat);
+        List<GameStat> existingGameStats = gameStatRepository.findAllById(gameStatIds);
+        Map<Long, Game> gamesMap = gameRepository.findAllById(gameIds).stream()
+                .collect(Collectors.toMap(Game::getId, Function.identity()));
+        Map<Long, Player> playersMap = playerRepository.findAllById(playerIds).stream()
+                .collect(Collectors.toMap(Player::getId, Function.identity()));
+        Map<Long, GameStat> existingGameStatsMap = existingGameStats.stream()
+                .collect(Collectors.toMap(GameStat::getId, Function.identity()));
+
+        List<GameStat> updatedGameStats = new ArrayList<>();
+        for (GameStatDTO dto : gameStatDTOs) {
+            GameStat gameStat = existingGameStatsMap.get(dto.getId());
+            if (gameStat == null) {
+                // Handle missing game stat: log or add to a failure list
+                continue;
+            }
+
+            // Get related entities from the pre-fetched maps
+            Game game = gamesMap.get(dto.getGameId());
+            Player player = playersMap.get(dto.getPlayer().getId());
+            if (game == null || player == null) {
+                // Handle missing related entities: log or add to a failure list
+                continue;
+            }
+
+            gameStat.setGame(game);
+            gameStat.setPlayer(player);
+            gameStat.setType(dto.getType());
+            updatedGameStats.add(gameStat);
+        }
+
+        return gameStatRepository.saveAll(updatedGameStats);
     }
 }
