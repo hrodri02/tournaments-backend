@@ -99,15 +99,15 @@ public class GameStatService {
     }
 
     @Transactional
-    public List<GameStat> updateGameStats(List<GameStatDTO> gameStatDTOs) {
-        Set<Long> gameStatIds = gameStatDTOs.stream()
-                .map(GameStatDTO::getId)
+    public List<GameStat> updateGameStats(List<GameStatUpdateRequest> gameStatsToUpdate) {
+        Set<Long> gameStatIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getId)
                 .collect(Collectors.toSet());
-        Set<Long> gameIds = gameStatDTOs.stream()
-                .map(GameStatDTO::getGameId)
+        Set<Long> gameIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getGameId)
                 .collect(Collectors.toSet());
-        Set<Long> playerIds = gameStatDTOs.stream()
-                .map(dto -> dto.getPlayer().getId())
+        Set<Long> playerIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getPlayerId)
                 .collect(Collectors.toSet());
 
         List<GameStat> existingGameStats = gameStatRepository.findAllById(gameStatIds);
@@ -119,16 +119,16 @@ public class GameStatService {
                 .collect(Collectors.toMap(GameStat::getId, Function.identity()));
 
         List<GameStat> updatedGameStats = new ArrayList<>();
-        for (GameStatDTO dto : gameStatDTOs) {
-            GameStat gameStat = existingGameStatsMap.get(dto.getId());
+        for (GameStatUpdateRequest request : gameStatsToUpdate) {
+            GameStat gameStat = existingGameStatsMap.get(request.getId());
             if (gameStat == null) {
                 // Handle missing game stat: log or add to a failure list
                 continue;
             }
 
             // Get related entities from the pre-fetched maps
-            Game game = gamesMap.get(dto.getGameId());
-            Player player = playersMap.get(dto.getPlayer().getId());
+            Game game = gamesMap.get(request.getGameId());
+            Player player = playersMap.get(request.getPlayerId());
             if (game == null || player == null) {
                 // Handle missing related entities: log or add to a failure list
                 continue;
@@ -136,7 +136,7 @@ public class GameStatService {
 
             gameStat.setGame(game);
             gameStat.setPlayer(player);
-            gameStat.setType(dto.getType());
+            gameStat.setType(request.getType());
             updatedGameStats.add(gameStat);
         }
 
