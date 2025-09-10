@@ -112,7 +112,7 @@ public class GameStatController {
         return ResponseEntity.ok(gameStatDTO);
     }
 
-    @Operation(summary = "Update a game stats", description = "Returns a list of updated game stats")
+    @Operation(summary = "Update game stats", description = "Returns a list of updated game stats")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates game stats", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
