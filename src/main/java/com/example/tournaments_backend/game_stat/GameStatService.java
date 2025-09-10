@@ -1,7 +1,12 @@
 package com.example.tournaments_backend.game_stat;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -91,5 +96,50 @@ public class GameStatService {
         gameStat.setType(gameStatRequest.getType());
         gameStat.setCreatedAt(gameStatRequest.getCreatedAt());
         return gameStatRepository.save(gameStat);
+    }
+
+    @Transactional
+    public List<GameStat> updateGameStats(List<GameStatUpdateRequest> gameStatsToUpdate) {
+        Set<Long> gameStatIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getId)
+                .collect(Collectors.toSet());
+        Set<Long> gameIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getGameId)
+                .collect(Collectors.toSet());
+        Set<Long> playerIds = gameStatsToUpdate.stream()
+                .map(GameStatUpdateRequest::getPlayerId)
+                .collect(Collectors.toSet());
+
+        List<GameStat> existingGameStats = gameStatRepository.findAllById(gameStatIds);
+        Map<Long, Game> gamesMap = gameRepository.findAllById(gameIds).stream()
+                .collect(Collectors.toMap(Game::getId, Function.identity()));
+        Map<Long, Player> playersMap = playerRepository.findAllById(playerIds).stream()
+                .collect(Collectors.toMap(Player::getId, Function.identity()));
+        Map<Long, GameStat> existingGameStatsMap = existingGameStats.stream()
+                .collect(Collectors.toMap(GameStat::getId, Function.identity()));
+
+        List<GameStat> updatedGameStats = new ArrayList<>();
+        for (GameStatUpdateRequest request : gameStatsToUpdate) {
+            GameStat gameStat = existingGameStatsMap.get(request.getId());
+            if (gameStat == null) {
+                // Handle missing game stat: log or add to a failure list
+                continue;
+            }
+
+            // Get related entities from the pre-fetched maps
+            Game game = gamesMap.get(request.getGameId());
+            Player player = playersMap.get(request.getPlayerId());
+            if (game == null || player == null) {
+                // Handle missing related entities: log or add to a failure list
+                continue;
+            }
+
+            gameStat.setGame(game);
+            gameStat.setPlayer(player);
+            gameStat.setType(request.getType());
+            updatedGameStats.add(gameStat);
+        }
+
+        return gameStatRepository.saveAll(updatedGameStats);
     }
 }
