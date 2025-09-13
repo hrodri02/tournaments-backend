@@ -78,4 +78,12 @@ public class Game {
         this.address = request.getAddress();
         this.durationInMinutes = request.getDurationInMinutes();
     }
+
+    public boolean isActive() {
+        LocalDateTime gameStartTime = getGameDateTime();
+        Integer duration = getDurationInMinutes();
+        LocalDateTime gameEndTime = gameStartTime.plusMinutes(duration);
+        LocalDateTime currentTime = LocalDateTime.now();
+        return currentTime.isAfter(gameStartTime) && currentTime.isBefore(gameEndTime);
+    }
 }
