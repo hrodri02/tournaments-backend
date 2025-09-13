@@ -36,6 +36,15 @@ public class GameStatService {
                 .findById(gameId)
                 .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
 
+        // if the game ended or hasn't started throw exception
+        if (!game.isActive()) {
+            throw new ServiceException(
+                ErrorType.GAME_INACTIVE,
+                "Game",
+                "Game is inactive."
+            );
+        }
+
         Long playerId = gameStatRequest.getPlayerId();
         Player player =
             playerRepository
@@ -70,7 +79,24 @@ public class GameStatService {
             gameStatRepository
                 .findById(id)
                 .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
+
+        Long gameId = gameStat.getGame().getId();
+        Game game = 
+            gameRepository
+                .findById(gameId)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+                
+        // if the game ended or hasn't started throw exception
+        if (!game.isActive()) {
+            throw new ServiceException(
+                ErrorType.GAME_INACTIVE,
+                "Game",
+                "Game is inactive."
+            );
+        }
+
         gameStatRepository.deleteById(id);
+
         return gameStat;
     }
 
@@ -86,6 +112,15 @@ public class GameStatService {
                 .findById(gameId)
                 .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
 
+        // if the game ended or hasn't started throw exception
+        if (!game.isActive()) {
+            throw new ServiceException(
+                ErrorType.GAME_INACTIVE,
+                "Game",
+                "Game is inactive."
+            );
+        }
+
         Long playerId = gameStatRequest.getPlayerId();
         Player player =
             playerRepository
@@ -99,7 +134,7 @@ public class GameStatService {
     }
 
     @Transactional
-    public List<GameStat> updateGameStats(List<GameStatUpdateRequest> gameStatsToUpdate) {
+    public GameStatUpdateResponse updateGameStats(List<GameStatUpdateRequest> gameStatsToUpdate) {
         Set<Long> gameStatIds = gameStatsToUpdate.stream()
                 .map(GameStatUpdateRequest::getId)
                 .collect(Collectors.toSet());
@@ -119,18 +154,34 @@ public class GameStatService {
                 .collect(Collectors.toMap(GameStat::getId, Function.identity()));
 
         List<GameStat> updatedGameStats = new ArrayList<>();
+        List<Failure> failures = new ArrayList<>();
         for (GameStatUpdateRequest request : gameStatsToUpdate) {
-            GameStat gameStat = existingGameStatsMap.get(request.getId());
+            Long gameStatId = request.getId();
+            GameStat gameStat = existingGameStatsMap.get(gameStatId);
             if (gameStat == null) {
                 // Handle missing game stat: log or add to a failure list
+                failures.add(new Failure(gameStatId, "GameStat with ID " + gameStatId + " not found."));
                 continue;
             }
 
             // Get related entities from the pre-fetched maps
-            Game game = gamesMap.get(request.getGameId());
-            Player player = playersMap.get(request.getPlayerId());
-            if (game == null || player == null) {
-                // Handle missing related entities: log or add to a failure list
+            Long gameId = request.getGameId();
+            Game game = gamesMap.get(gameId);
+            if (game == null) {
+                failures.add(new Failure(gameStatId, "Game with ID " + gameId + " not found."));
+                continue;
+            }
+
+            // if the game ended or hasn't started add to failure list
+            if (!game.isActive()) {
+                failures.add(new Failure(gameStatId, "Game with ID " + gameId + " is inactive."));
+                continue;
+            }
+
+            Long playerId = request.getPlayerId();
+            Player player = playersMap.get(playerId);
+            if (player == null) {
+                failures.add(new Failure(gameStatId, "Player with ID " + playerId + " not found."));
                 continue;
             }
 
@@ -140,6 +191,8 @@ public class GameStatService {
             updatedGameStats.add(gameStat);
         }
 
-        return gameStatRepository.saveAll(updatedGameStats);
+        List<GameStat> successfulUpdates = gameStatRepository.saveAll(updatedGameStats);
+        GameStatUpdateResponse response = new GameStatUpdateResponse(successfulUpdates, failures);
+        return response;
     }
 }
