@@ -115,17 +115,16 @@ public class GameStatController {
     @Operation(summary = "Update game stats", description = "Returns a list of updated game stats")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates game stats", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatUpdateResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - game stat is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PutMapping("/batchUpdate")
-    public ResponseEntity<List<GameStatDTO>> updateGameStats(@RequestBody @Valid List<GameStatUpdateRequest> gameStatsToUpdate)
+    public ResponseEntity<GameStatUpdateResponse> updateGameStats(@RequestBody @Valid List<GameStatUpdateRequest> gameStatsToUpdate)
     {
-        List<GameStat> gameStats = gameStatService.updateGameStats(gameStatsToUpdate);
-        List<GameStatDTO> updatedGameStatDTOs = GameStatDTO.convert(gameStats);
-        return ResponseEntity.ok(updatedGameStatDTOs);
+        GameStatUpdateResponse updateResponse = gameStatService.updateGameStats(gameStatsToUpdate);
+        return ResponseEntity.ok(updateResponse);
     }
 }
