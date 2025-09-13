@@ -153,6 +153,7 @@ public class AppUserConfig {
             game6.setAwayTeam(bayern);
             game6.setLeague(league3);
 
+            // Games for league 4 that is in progress
             Game game7 = new Game(LocalDateTime.now().minusWeeks(6), 
                                 "Estadio Azteca",
                                 90);
@@ -167,7 +168,15 @@ public class AppUserConfig {
             game8.setAwayTeam(america);
             game8.setLeague(league4);
 
-            gameRepository.saveAll(List.of(game1, game2, game3, game4, game5, game6, game7, game8));
+            // added an active game for testing
+            Game game9 = new Game(LocalDateTime.now(), 
+                                "Estadio Azteca",
+                                90);
+            game9.setHomeTeam(america);
+            game9.setAwayTeam(tigres);
+            game9.setLeague(league4);
+
+            gameRepository.saveAll(List.of(game1, game2, game3, game4, game5, game6, game7, game8, game9));
 
             // stats for game5
             GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().minusWeeks(12).plusMinutes(70));
