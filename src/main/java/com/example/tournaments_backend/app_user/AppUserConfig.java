@@ -2,6 +2,8 @@ package com.example.tournaments_backend.app_user;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -87,36 +89,45 @@ public class AppUserConfig {
 
             teamRepository.saveAll(Arrays.asList(team1, team2, team3, team4, bayern, borussia, america, tigres));
 
+            // 1. Get the ZoneId for San Francisco
+            ZoneId sanFranciscoZone = ZoneId.of("America/Los_Angeles");
+
+            // 2. Get the current ZonedDateTime for that time zone
+            ZonedDateTime sanFranciscoZonedTime = ZonedDateTime.now(sanFranciscoZone);
+
+            LocalDateTime sanFranciscoLocalDateTime = sanFranciscoZonedTime.toLocalDateTime();
+            LocalDate sanFranciscoLocalDate = sanFranciscoZonedTime.toLocalDate();
+
             // Create and save leagues (not started)
-            League league1 = new League("La Liga", LocalDate.now().plusDays(7), 12);
+            League league1 = new League("La Liga", sanFranciscoLocalDate.plusDays(7), 12);
             league1.addTeam(team1);
             league1.addTeam(team2);
 
-            League league2 = new League("Premier League", LocalDate.now().plusDays(14), 10);
+            League league2 = new League("Premier League", sanFranciscoLocalDate.plusDays(14), 10);
             league2.addTeam(team3);
             league2.addTeam(team4);
 
             // Create league that has ended
-            League league3 = new League("Bundes Liga", LocalDate.now().minusWeeks(13), 12);
+            League league3 = new League("Bundes Liga", sanFranciscoLocalDate.minusWeeks(13), 12);
             league3.addTeam(bayern);
             league3.addTeam(borussia);
 
             // Create league that is in progress
-            League league4 = new League("Liga MX", LocalDate.now().minusWeeks(6), 10);
+            League league4 = new League("Liga MX", sanFranciscoLocalDate.minusWeeks(6), 10);
             league4.addTeam(america);
             league4.addTeam(tigres);
 
             leagueRepository.saveAll(Arrays.asList(league1, league2, league3, league4));
 
             // games for league 1
-            Game game1 = new Game(LocalDateTime.now().plusDays(7), 
+            Game game1 = new Game(sanFranciscoLocalDateTime.plusDays(7), 
                                 "Golden Gate Park",
                                 90);
             game1.setHomeTeam(team1);
             game1.setAwayTeam(team2);
             game1.setLeague(league1);
 
-            Game game2 = new Game(LocalDateTime.now().plusDays(12), 
+            Game game2 = new Game(sanFranciscoLocalDateTime.plusDays(12), 
                                 "Garfield Park",
                                 90);
             game2.setHomeTeam(team2);
@@ -124,14 +135,14 @@ public class AppUserConfig {
             game2.setLeague(league1);
 
             // games for league 2
-            Game game3 = new Game(LocalDateTime.now().plusDays(14), 
+            Game game3 = new Game(sanFranciscoLocalDateTime.plusDays(14), 
                                 "Silver Park",
                                 90);
             game3.setHomeTeam(team3);
             game3.setAwayTeam(team4);
             game3.setLeague(league2);
 
-            Game game4 = new Game(LocalDateTime.now().plusDays(19), 
+            Game game4 = new Game(sanFranciscoLocalDateTime.plusDays(19), 
                                 "Mission Park",
                                 90);
             game4.setHomeTeam(team4);
@@ -139,14 +150,14 @@ public class AppUserConfig {
             game4.setLeague(league2);
 
             // games for league 3 (started 13 weeks ago)
-            Game game5 = new Game(LocalDateTime.now().minusWeeks(12), 
+            Game game5 = new Game(sanFranciscoLocalDateTime.minusWeeks(12), 
                                 "Allianz Arena",
                                 90);
             game5.setHomeTeam(bayern);
             game5.setAwayTeam(borussia);
             game5.setLeague(league3);
 
-            Game game6 = new Game(LocalDateTime.now().minusWeeks(11), 
+            Game game6 = new Game(sanFranciscoLocalDateTime.minusWeeks(11), 
                                 "Signal Iduna Park",
                                 90);
             game6.setHomeTeam(borussia);
@@ -154,14 +165,14 @@ public class AppUserConfig {
             game6.setLeague(league3);
 
             // Games for league 4 that is in progress
-            Game game7 = new Game(LocalDateTime.now().minusWeeks(6), 
+            Game game7 = new Game(sanFranciscoLocalDateTime.minusWeeks(6), 
                                 "Estadio Azteca",
                                 90);
             game7.setHomeTeam(america);
             game7.setAwayTeam(tigres);
             game7.setLeague(league4);
 
-            Game game8 = new Game(LocalDateTime.now().minusWeeks(5), 
+            Game game8 = new Game(sanFranciscoLocalDateTime.minusWeeks(5), 
                                 "Estadio Universitario",
                                 90);
             game8.setHomeTeam(tigres);
@@ -169,7 +180,7 @@ public class AppUserConfig {
             game8.setLeague(league4);
 
             // added an active game for testing
-            Game game9 = new Game(LocalDateTime.now(), 
+            Game game9 = new Game(sanFranciscoLocalDateTime, 
                                 "Estadio Azteca",
                                 90);
             game9.setHomeTeam(america);
@@ -179,25 +190,25 @@ public class AppUserConfig {
             gameRepository.saveAll(List.of(game1, game2, game3, game4, game5, game6, game7, game8, game9));
 
             // stats for game5
-            GameStat gameStat1 = new GameStat(GameStatType.GOAL, LocalDateTime.now().minusWeeks(12).plusMinutes(70));
+            GameStat gameStat1 = new GameStat(GameStatType.GOAL, sanFranciscoLocalDateTime.minusWeeks(12).plusMinutes(70));
             gameStat1.setGame(game5);
             Player isabella = getPlayerWithFirstName(bayernPlayers, "Isabella");
             gameStat1.setPlayer(isabella);
             
             // stats for game6
-            GameStat gameStat2 = new GameStat(GameStatType.GOAL, LocalDateTime.now().minusWeeks(11).plusMinutes(30));
+            GameStat gameStat2 = new GameStat(GameStatType.GOAL, sanFranciscoLocalDateTime.minusWeeks(11).plusMinutes(30));
             gameStat2.setGame(game6);
             Player abigail = getPlayerWithFirstName(borussiaPlayers, "Abigail");
             gameStat2.setPlayer(abigail);
             
             // stats for game7
-            GameStat gameStat3 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().minusWeeks(6).plusMinutes(50));
+            GameStat gameStat3 = new GameStat(GameStatType.YELLOW_CARD, sanFranciscoLocalDateTime.minusWeeks(6).plusMinutes(50));
             gameStat3.setGame(game7);
             Player harry = getPlayerWithFirstName(tigresPlayers, "Harry");
             gameStat3.setPlayer(harry);
 
             // stats for game8
-            GameStat gameStat4 = new GameStat(GameStatType.YELLOW_CARD, LocalDateTime.now().minusWeeks(5).plusMinutes(60));
+            GameStat gameStat4 = new GameStat(GameStatType.YELLOW_CARD, sanFranciscoLocalDateTime.minusWeeks(5).plusMinutes(60));
             gameStat4.setGame(game8);
             Player angela = getPlayerWithFirstName(americaPlayers, "Angela");
             gameStat4.setPlayer(angela);
