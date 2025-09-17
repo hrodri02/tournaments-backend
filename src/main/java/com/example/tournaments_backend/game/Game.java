@@ -1,6 +1,8 @@
 package com.example.tournaments_backend.game;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import com.example.tournaments_backend.game_stat.GameStat;
@@ -77,5 +79,15 @@ public class Game {
         this.gameDateTime = request.getGameDateTime();
         this.address = request.getAddress();
         this.durationInMinutes = request.getDurationInMinutes();
+    }
+
+    public boolean isActive() {
+        LocalDateTime gameStartTime = getGameDateTime();
+        Integer duration = getDurationInMinutes();
+        LocalDateTime gameEndTime = gameStartTime.plusMinutes(duration);
+        ZoneId sanFranciscoZone = ZoneId.of("America/Los_Angeles");
+        ZonedDateTime sanFranciscoZonedTime = ZonedDateTime.now(sanFranciscoZone);
+        LocalDateTime currentTime = sanFranciscoZonedTime.toLocalDateTime();
+        return currentTime.isAfter(gameStartTime) && currentTime.isBefore(gameEndTime);
     }
 }
