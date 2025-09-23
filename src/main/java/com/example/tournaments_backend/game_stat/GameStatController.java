@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
@@ -50,6 +51,7 @@ public class GameStatController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GameStatDTO> addGameStat(@RequestBody @Valid GameStatRequest request) {
         GameStat gameStat = gameStatService.addGameStat(request);
         GameStatDTO gameStatDTO = new GameStatDTO(gameStat);
@@ -84,6 +86,7 @@ public class GameStatController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @DeleteMapping("{gameStatId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GameStatDTO> deleteGameStat(
         @Parameter(description = "The game stat id", required = true) @PathVariable("gameStatId") Long gameStatId) throws ServiceException
     {
@@ -104,6 +107,7 @@ public class GameStatController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PutMapping("{gameStatId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GameStatDTO> updateGameStat(
         @Parameter(description = "The game stat id", required = true) @PathVariable("gameStatId") Long gameStatId, @RequestBody @Valid GameStatRequest gameStatRequest) throws ServiceException
     {
@@ -122,6 +126,7 @@ public class GameStatController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PutMapping("/batchUpdate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<GameStatUpdateResponse> updateGameStats(@RequestBody @Valid List<GameStatUpdateRequest> gameStatsToUpdate)
     {
         GameStatUpdateResponse updateResponse = gameStatService.updateGameStats(gameStatsToUpdate);
