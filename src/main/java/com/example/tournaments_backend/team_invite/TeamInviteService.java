@@ -59,6 +59,32 @@ public class TeamInviteService {
         return inviteInDB;
     }
 
+    @Transactional
+    public TeamInvite accepInvite(Long inviteId, Authentication authentication) {
+        TeamInvite invite = teamInviteRepository
+                        .findById(inviteId)
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+
+        if (invite.getStatus() == TeamInviteStatus.REVOKED) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite to join team was revoked.");
+        }
+
+        invite.setStatus(TeamInviteStatus.ACCEPTED);
+
+        Team team = invite.getTeam();
+        Player player = invite.getInvitee();
+        team.addPlayer(player);
+        String currentUserEmail = authentication.getName();
+        String inviteeEmail = player.getEmail();
+
+        if (!currentUserEmail.equals(inviteeEmail)) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user was not invited to join this team.");
+        }
+
+        invite.setStatus(TeamInviteStatus.ACCEPTED);
+        return teamInviteRepository.save(invite);
+    }
+
     private String buildEmail(String name, String teamName, String acceptLink, String declineLink) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
                 "\n" +
