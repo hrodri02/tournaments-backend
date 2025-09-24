@@ -69,11 +69,7 @@ public class TeamInviteService {
             throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite to join team was revoked.");
         }
 
-        invite.setStatus(TeamInviteStatus.ACCEPTED);
-
-        Team team = invite.getTeam();
         Player player = invite.getInvitee();
-        team.addPlayer(player);
         String currentUserEmail = authentication.getName();
         String inviteeEmail = player.getEmail();
 
@@ -81,7 +77,31 @@ public class TeamInviteService {
             throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user was not invited to join this team.");
         }
 
+        Team team = invite.getTeam();
+        team.addPlayer(player);
         invite.setStatus(TeamInviteStatus.ACCEPTED);
+        return teamInviteRepository.save(invite);
+    }
+
+    @Transactional
+    public TeamInvite declineInvite(Long inviteId, Authentication authentication) {
+        TeamInvite invite = teamInviteRepository
+                        .findById(inviteId)
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+
+        if (invite.getStatus() == TeamInviteStatus.REVOKED) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite to join team was revoked.");
+        }
+
+        Player player = invite.getInvitee();
+        String currentUserEmail = authentication.getName();
+        String inviteeEmail = player.getEmail();
+
+        if (!currentUserEmail.equals(inviteeEmail)) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user was not invited to join this team.");
+        }
+
+        invite.setStatus(TeamInviteStatus.DECLINED);
         return teamInviteRepository.save(invite);
     }
 

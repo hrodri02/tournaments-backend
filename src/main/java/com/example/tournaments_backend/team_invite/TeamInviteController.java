@@ -39,16 +39,36 @@ public class TeamInviteController {
 
     @Operation(summary = "Accept an invitation to join a team", description = "Returns the updated team invitation")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully updated team inivitation", 
+        @ApiResponse(responseCode = "200", description = "Successfully updates team inivitation", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamInviteDTO.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "403", description = "Forbidden - user accepting invite was not invited to join team or invite was revoked",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not Found - invite with given ID was not found",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("/{inviteId}/accept")
     public ResponseEntity<TeamInviteDTO> acceptInvite(@PathVariable Long inviteId, Authentication authentication) {
         TeamInvite invite = teamInviteService.accepInvite(inviteId, authentication);
+        TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
+        return ResponseEntity.ok(inviteDTO);
+    }
+
+    @Operation(summary = "Decline an invitation to join a team", description = "Returns the updated team invitation")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updates team inivitation", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamInviteDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - user accepting invite was not invited to join team or invite was revoked",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not Found - invite with given ID was not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("/{inviteId}/decline")
+    public ResponseEntity<TeamInviteDTO> declineInvite(@PathVariable Long inviteId, Authentication authentication) {
+        TeamInvite invite = teamInviteService.declineInvite(inviteId, authentication);
         TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
         return ResponseEntity.ok(inviteDTO);
     }
