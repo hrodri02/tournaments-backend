@@ -3,6 +3,7 @@ package com.example.tournaments_backend.team_invite;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.ErrorType;
@@ -102,6 +103,27 @@ public class TeamInviteService {
         }
 
         invite.setStatus(TeamInviteStatus.DECLINED);
+        return teamInviteRepository.save(invite);
+    }
+
+    @Transactional
+    public TeamInvite revokeInvite(@PathVariable Long inviteId, Authentication authentication) {
+        TeamInvite invite = teamInviteRepository
+                        .findById(inviteId)
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+
+        TeamInviteStatus status = invite.getStatus();
+        if (status == TeamInviteStatus.ACCEPTED || status == TeamInviteStatus.DECLINED) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite was already accepted/declined.");
+        }
+
+        String currentUserEmail = authentication.getName();
+        String ownerEmail = invite.getTeam().getOwner().getEmail();
+        if (!currentUserEmail.equals(ownerEmail)) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user does not own this team.");
+        }
+
+        invite.setStatus(TeamInviteStatus.REVOKED);
         return teamInviteRepository.save(invite);
     }
 

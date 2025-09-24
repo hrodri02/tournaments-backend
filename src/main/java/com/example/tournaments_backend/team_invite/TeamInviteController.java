@@ -72,4 +72,22 @@ public class TeamInviteController {
         TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
         return ResponseEntity.ok(inviteDTO);
     }
+
+    @Operation(summary = "Revoke an invitation to join a team", description = "Returns the updated team invitation")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updates team inivitation", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamInviteDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - user revoking invite does own the team or invite was already accepted or declined",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not Found - invite with given ID was not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("/{inviteId}/revoke")
+    public ResponseEntity<TeamInviteDTO> revokeInvite(@PathVariable Long inviteId, Authentication authentication) {
+        TeamInvite invite = teamInviteService.revokeInvite(inviteId, authentication);
+        TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
+        return ResponseEntity.ok(inviteDTO);
+    }
 }
