@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping(path="/api/v1/teaminvites")
+@RequestMapping(path="/api/v1/team-invites")
 @Tag(name = "Team Invites Management", description = "API endpoints for managing team invites")
 public class TeamInviteController {
     private final TeamInviteService teamInviteService;
