@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Accept Invitation</title>
+</head>
+<body onload="document.forms[0].submit()">
+    <form action="/team-invites/{inviteId}/accept" method="post" style="display:none;">
+        <input type="hidden" name="_method" value="post" />
+    </form>
+    <p>Please wait, redirecting to accept the invitation...</p>
+</body>
+</html>
