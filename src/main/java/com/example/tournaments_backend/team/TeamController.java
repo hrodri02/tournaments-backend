@@ -10,9 +10,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.game_stat.GameStat;
+import com.example.tournaments_backend.game_stat.GameStatDTO;
+import com.example.tournaments_backend.team_invite.CreateTeamInviteRequest;
+import com.example.tournaments_backend.team_invite.TeamInvite;
+import com.example.tournaments_backend.team_invite.TeamInviteDTO;
+import com.example.tournaments_backend.team_invite.TeamInviteService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,10 +35,12 @@ import jakarta.validation.Valid;
 @Tag(name = "Team Management", description = "API endpoints for managing teams")
 public class TeamController {
     private final TeamService teamService;
+    private final TeamInviteService teamInviteService;
 
     @Autowired
-    public TeamController(TeamService teamService) {
+    public TeamController(TeamService teamService, TeamInviteService teamInviteService) {
         this.teamService = teamService;
+        this.teamInviteService = teamInviteService;
     }
 
     @Operation(summary = "Create a team", description = "Returns the team created")
@@ -48,6 +57,28 @@ public class TeamController {
         Team team = teamService.addTeam(teamRequest);
         TeamDTO teamDTO = new TeamDTO(team);
         return ResponseEntity.ok(teamDTO);
+    }
+
+    @Operation(summary = "Invite a player to a team", description = "Returns the team invitation created")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully created a team inivitation", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamInviteDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - team invite is not valid",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - user sending invite does not own the team",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("{teamId}/invites")
+    public ResponseEntity<TeamInviteDTO> addTeamInvite(
+        @RequestBody @Valid CreateTeamInviteRequest request,
+        @Parameter(description = "The team id", required = true) @PathVariable("teamId") Long teamId,
+        Authentication authentication) 
+    {
+        TeamInvite invite = teamInviteService.addTeamInvite(request, teamId, authentication);
+        TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
+        return ResponseEntity.ok(inviteDTO);
     }
 
     @Operation(summary = "Get a team", description = "Returns a team by ID")
