@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.team_invite;
 
+import java.time.LocalDateTime;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,4 +17,6 @@ import lombok.ToString;
 public class CreateTeamInviteRequest {
     @NotNull
     private Long playerId;
+    @NotNull
+    private LocalDateTime createdAt;
 }
