@@ -6,6 +6,8 @@ import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.team.Team;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,4 +44,6 @@ public class TeamInvite {
     @JoinColumn(name = "invitee_id", nullable = false)
     private Player invitee;
     private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    private TeamInviteStatus status;
 }
