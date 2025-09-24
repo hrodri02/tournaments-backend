@@ -14,8 +14,6 @@ import org.springframework.security.core.Authentication;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
-import com.example.tournaments_backend.game_stat.GameStat;
-import com.example.tournaments_backend.game_stat.GameStatDTO;
 import com.example.tournaments_backend.team_invite.CreateTeamInviteRequest;
 import com.example.tournaments_backend.team_invite.TeamInvite;
 import com.example.tournaments_backend.team_invite.TeamInviteDTO;
