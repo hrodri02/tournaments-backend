@@ -63,7 +63,7 @@ public class AppUserConfig {
 
             // Create and save teams
             Team team1 = new Team("Barcelona FC");
-            Set<Player> team1Players = createPlayersForTeam1();
+            Set<Player> team1Players = createPlayersForTeam1(passwordEncoder);
             team1.addPlayers(team1Players);
             team1.setOwner(getPlayerWithFirstName(team1Players, "Sarah"));
             Team team2 = new Team("Real Madrid");
@@ -226,10 +226,10 @@ public class AppUserConfig {
         };
     }
 
-    public Set<Player> createPlayersForTeam1() {
+    public Set<Player> createPlayersForTeam1(BCryptPasswordEncoder passwordEncoder) {
         Set<Player> players = new HashSet<>();
         // Defenders
-        players.add(new Player("Sarah", "Connor", "sconnor@example.com", "securepass1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Sarah", "Connor", "sconnor@example.com", passwordEncoder.encode("securepass1"), AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("David", "Silva", "dsilva@example.com", "securepass2", AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("Laura", "Smith", "lsmith@example.com", "securepass3", AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("Michael", "Johnson", "mjohnson@example.com", "securepass4", AppUserRole.PLAYER, Position.DEFENDER));
