@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.team_invite;
 
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,6 +127,18 @@ public class TeamInviteService {
 
         invite.setStatus(TeamInviteStatus.REVOKED);
         return teamInviteRepository.save(invite);
+    }
+
+    public List<TeamInvite> getAllInvitesByPlayerId(Long playerId, Authentication authentication) throws ServiceException {
+        Player player = playerRepository
+            .findById(playerId)
+            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+
+        if (!authentication.getName().equals(player.getEmail())) {
+            throw new ServiceException(ErrorType.FORBIDDEN, "Player", "Current user does not match playerId.");
+        }
+
+        return teamInviteRepository.findAllByInviteeId(playerId);
     }
 
     private String buildEmail(String name, String teamName, String acceptLink, String declineLink) {
