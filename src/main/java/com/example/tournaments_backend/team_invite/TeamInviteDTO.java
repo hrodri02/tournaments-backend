@@ -1,6 +1,9 @@
 package com.example.tournaments_backend.team_invite;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,5 +22,12 @@ public class TeamInviteDTO {
         this.teamId = teamInvite.getTeam().getId();
         this.playerId = teamInvite.getInvitee().getId();
         this.createdAt = teamInvite.getCreatedAt();
+    }
+
+    public static List<TeamInviteDTO> convert(List<TeamInvite> invites) {
+        return invites
+            .stream()
+            .map(TeamInviteDTO::new)
+            .collect(Collectors.toList());
     }
 }
