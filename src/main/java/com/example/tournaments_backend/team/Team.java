@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -47,6 +48,8 @@ public class Team {
     @JoinColumn(name = "owner_id", nullable = false)
     private Player owner;
     private String name;
+    @Column(name = "logo_url")
+    private String logoUrl;
     @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<League> leagues = new HashSet<>();
