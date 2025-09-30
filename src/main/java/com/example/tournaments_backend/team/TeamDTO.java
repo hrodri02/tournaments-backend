@@ -3,7 +3,7 @@ package com.example.tournaments_backend.team;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.tournaments_backend.player.PlayerDTO;
+import com.example.tournaments_backend.league.League;
 
 import lombok.Getter;
 
@@ -11,23 +11,27 @@ import lombok.Getter;
 public class TeamDTO {
     private Long id;
     private String name;
-    private List<PlayerDTO> players; // List of PlayerDTOs
+    private String logoUrl;
+    private Long ownerId;
+    private List<Long> leagueIds;
+    private String invitationStatus;
 
     // Constructor to map from Team entity
-    public TeamDTO(Team team) {
+    public TeamDTO(Team team, String invitationStatus) {
         this.id = team.getId();
         this.name = team.getName();
-        // Use stream to map Player entities to PlayerDTOs
-        if (team.getPlayers() != null) {
-            this.players = team.getPlayers().stream()
-                             .map(PlayerDTO::new) // Call the PlayerDTO constructor that takes a Player entity
-                             .collect(Collectors.toList());
-        }
+        this.logoUrl = team.getLogoUrl();
+        this.ownerId = team.getOwner().getId();
+        this.leagueIds = 
+            team.getLeagues()
+                .stream()
+                .map(League::getId)
+                .collect(Collectors.toList());
+        this.invitationStatus = invitationStatus;
     }
 
     public TeamDTO(Long id, String name) {
         this.id = id;
         this.name = name;
-        this.players = null;
     }
 }
