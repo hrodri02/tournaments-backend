@@ -66,6 +66,6 @@ public class PlayerService {
     }
 
     public List<Player> getAllPlayersByEmail(List<String> emails) {
-        return playerRepository.finAllByEmailIn(emails);
+        return playerRepository.findAllByEmailIn(emails);
     }
 }
