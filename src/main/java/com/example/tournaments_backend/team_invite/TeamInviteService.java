@@ -62,6 +62,10 @@ public class TeamInviteService {
         return inviteInDB;
     }
 
+    public List<TeamInvite> addAll(List<TeamInvite> invites) {
+        return teamInviteRepository.saveAll(invites);
+    }
+
     @Transactional
     public TeamInvite accepInvite(Long inviteId, Authentication authentication) {
         TeamInvite invite = teamInviteRepository
