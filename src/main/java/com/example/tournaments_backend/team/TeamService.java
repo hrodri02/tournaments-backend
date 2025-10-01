@@ -35,7 +35,7 @@ public class TeamService {
 
         // get all the players by id
         List<String> playerEmails = teamRequest.getPlayersToInvite();
-        List<Player> players = playerService.getAllPlayersByEmail(playerEmails); 
+        List<Player> players = playerService.getAllPlayersByEmail(playerEmails);
         // create a team invitation for each player
         List<TeamInvite> invites = new ArrayList<>();
         for (Player player : players) {
@@ -44,6 +44,7 @@ public class TeamService {
             invite.setTeam(teamInDB);
             invite.setInvitee(player);
             invite.setCreatedAt(teamRequest.getCreatedAt());
+            invites.add(invite);
         }
         // save the team invitations
         List<TeamInvite> invitesInDB = teamInviteService.addAll(invites);
