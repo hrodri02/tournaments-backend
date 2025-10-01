@@ -51,9 +51,8 @@ public class TeamController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
-    public ResponseEntity<TeamDTO> addTeam(@RequestBody @Valid TeamRequest teamRequest) {
-        Team team = teamService.addTeam(teamRequest);
-        TeamDTO teamDTO = new TeamDTO(team);
+    public ResponseEntity<TeamDTO> addTeam(@RequestBody @Valid TeamRequest teamRequest, Authentication authentication) {
+        TeamDTO teamDTO = teamService.addTeam(teamRequest, authentication);
         return ResponseEntity.ok(teamDTO);
     }
 
