@@ -2,6 +2,10 @@ package com.example.tournaments_backend.team;
 
 import lombok.AllArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,6 +13,9 @@ import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerService;
+import com.example.tournaments_backend.team_invite.TeamInvite;
+import com.example.tournaments_backend.team_invite.TeamInviteService;
+import com.example.tournaments_backend.team_invite.TeamInviteStatus;
 import com.example.tournaments_backend.exception.ErrorType;
 
 @Service
@@ -16,10 +23,34 @@ import com.example.tournaments_backend.exception.ErrorType;
 public class TeamService {
     private final TeamRepository teamRepository;
     private final PlayerService playerService;
+    private final TeamInviteService teamInviteService;
 
-    public Team addTeam(TeamRequest teamRequest) {
+    @Transactional
+    public TeamDTO addTeam(TeamRequest teamRequest, Authentication authentication) {
         Team team = new Team(teamRequest);
-        return teamRepository.save(team);
+        String ownerEmail = authentication.getName();
+        Player owner = playerService.getPlayerByEmail(ownerEmail);
+        team.setOwner(owner);
+        Team teamInDB = teamRepository.save(team);
+
+        // get all the players by id
+        List<String> playerEmails = teamRequest.getPlayersToInvite();
+        List<Player> players = playerService.getAllPlayersByEmail(playerEmails); 
+        // create a team invitation for each player
+        List<TeamInvite> invites = new ArrayList<>();
+        for (Player player : players) {
+            TeamInvite invite = new TeamInvite();
+            invite.setStatus(TeamInviteStatus.PENDING);
+            invite.setTeam(teamInDB);
+            invite.setInvitee(player);
+            invite.setCreatedAt(teamRequest.getCreatedAt());
+        }
+        // save the team invitations
+        List<TeamInvite> invitesInDB = teamInviteService.addAll(invites);
+        
+        String invitationStatus = invitesInDB.size() + " invitations sent successfully.";
+        TeamDTO teamDTO = new TeamDTO(teamInDB, invitationStatus);
+        return teamDTO;
     }
 
     public Team getTeamById(Long id) throws ServiceException {
