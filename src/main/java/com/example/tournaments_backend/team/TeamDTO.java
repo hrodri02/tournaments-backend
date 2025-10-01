@@ -17,6 +17,19 @@ public class TeamDTO {
     private String invitationStatus;
 
     // Constructor to map from Team entity
+    public TeamDTO(Team team) {
+        this.id = team.getId();
+        this.name = team.getName();
+        this.logoUrl = team.getLogoUrl();
+        this.ownerId = team.getOwner().getId();
+        this.leagueIds = 
+            team.getLeagues()
+                .stream()
+                .map(League::getId)
+                .collect(Collectors.toList());
+        this.invitationStatus = null;
+    }
+
     public TeamDTO(Team team, String invitationStatus) {
         this.id = team.getId();
         this.name = team.getName();
