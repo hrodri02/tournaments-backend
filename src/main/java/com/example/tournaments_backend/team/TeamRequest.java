@@ -1,5 +1,6 @@
 package com.example.tournaments_backend.team;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -23,4 +24,6 @@ public class TeamRequest {
     private String name;
     private String logoUrl;
     private List<String> playersToInvite;
+    @NotNull
+    private LocalDateTime createdAt;
 }
