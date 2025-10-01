@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.player;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,14 @@ public class PlayerService {
         return player;
     }
 
+    public Player getPlayerByEmail(String email) throws ServiceException {
+        Player player = 
+            playerRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+        return player;
+    }
+
     public void deletePlayerById(Long id) {
         playerRepository.deleteById(id);
     }
@@ -53,5 +63,9 @@ public class PlayerService {
         Player playerInDB = playerRepository.save(player);
         PlayerDTO playerDTO = new PlayerDTO(playerInDB);
         return playerDTO;
+    }
+
+    public List<Player> getAllPlayersByEmail(List<String> emails) {
+        return playerRepository.finAllByEmailIn(emails);
     }
 }
