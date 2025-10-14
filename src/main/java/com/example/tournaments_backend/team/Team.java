@@ -53,8 +53,8 @@ public class Team {
     @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<League> leagues = new HashSet<>();
-    @OneToMany(mappedBy = "team", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JsonManagedReference
+    @JsonIgnore 
+    @ManyToMany(mappedBy = "teams", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Player> players;
     @OneToMany(mappedBy = "homeTeam", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -73,18 +73,18 @@ public class Team {
 
     public void addPlayer(Player player) {
         this.players.add(player);
-        player.setTeam(this);
+        player.getTeams().add(this);
     }
 
     public void addPlayers(Set<Player> players) {
         this.players = players;
         for (Player player : this.players) {
-            player.setTeam(this);
+            player.getTeams().add(this);
         }
     }
 
     public void deletePlayer(Player player) {
         this.players.remove(player);
-        player.setTeam(null);
+        player.getTeams().remove(this);
     }
 }
