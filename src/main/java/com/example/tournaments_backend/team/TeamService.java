@@ -25,6 +25,13 @@ public class TeamService {
     private final PlayerService playerService;
     private final TeamInviteService teamInviteService;
 
+    public List<Team> getTeams(Authentication authentication) {
+        String clientEmail = authentication.getName();
+        Player client = playerService.getPlayerByEmail(clientEmail);
+        List<Team> teams = teamRepository.findByPlayers_Id(client.getId());
+        return teams;
+    }
+
     @Transactional
     public TeamDTO addTeam(TeamRequest teamRequest, Authentication authentication) {
         Team team = new Team(teamRequest);

@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.team;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,6 +41,21 @@ public class TeamController {
     public TeamController(TeamService teamService, TeamInviteService teamInviteService) {
         this.teamService = teamService;
         this.teamInviteService = teamInviteService;
+    }
+
+    @Operation(summary = "Get a teams a user belongs to", description = "Returns a teams")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved teams information", 
+                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @GetMapping()
+    public ResponseEntity<List<TeamDTO>> getTeams(Authentication authentication)
+    {
+        List<Team> teams = teamService.getTeams(authentication);
+        List<TeamDTO> teamDTOs = TeamDTO.convert(teams);
+        return ResponseEntity.ok(teamDTOs);
     }
 
     @Operation(summary = "Create a team", description = "Returns the team created")
