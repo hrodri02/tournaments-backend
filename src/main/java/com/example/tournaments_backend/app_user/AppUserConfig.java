@@ -63,28 +63,36 @@ public class AppUserConfig {
 
             // Create and save teams
             Team team1 = new Team("Barcelona FC");
-            Set<Player> team1Players = createPlayersForTeam1();
+            Set<Player> team1Players = createPlayersForTeam1(passwordEncoder);
             team1.addPlayers(team1Players);
+            team1.setOwner(getPlayerWithFirstName(team1Players, "Sarah"));
             Team team2 = new Team("Real Madrid");
-            Set<Player> team2Players = createPlayersForTeam2();
+            Set<Player> team2Players = createPlayersForTeam2(passwordEncoder);
             team2.addPlayers(team2Players);
+            team2.setOwner(getPlayerWithFirstName(team2Players, "Alice"));
             Team team3 = new Team("Manchester United");
             Set<Player> team3Players = createPlayersForTeam3();
+            team3.setOwner(getPlayerWithFirstName(team3Players, "Liam"));
             team3.addPlayers(team3Players);
             Team team4 = new Team("Liverpool");
             Set<Player> team4Players = createPlayersForTeam4();
+            team4.setOwner(getPlayerWithFirstName(team4Players, "Willow"));
             team4.addPlayers(team4Players);
             Team bayern = new Team("Bayern Munich");
             Set<Player> bayernPlayers = createPlayersForBayern();
             bayern.addPlayers(bayernPlayers);
+            bayern.setOwner(getPlayerWithFirstName(bayernPlayers, "Liam"));
             Team borussia = new Team("Borussia Dortmund");
             Set<Player> borussiaPlayers = createPlayersForBorussia();
             borussia.addPlayers(borussiaPlayers);
+            borussia.setOwner(getPlayerWithFirstName(borussiaPlayers, "Henry"));
             Team america = new Team("América");
             Set<Player> americaPlayers = createPlayersForAmerica();
+            america.setOwner(getPlayerWithFirstName(americaPlayers, "Michael"));
             america.addPlayers(americaPlayers);
             Team tigres = new Team("Tigres");
             Set<Player> tigresPlayers = createPlayersForTigres();
+            tigres.setOwner(getPlayerWithFirstName(tigresPlayers, "Ronald"));
             tigres.addPlayers(tigresPlayers);
 
             teamRepository.saveAll(Arrays.asList(team1, team2, team3, team4, bayern, borussia, america, tigres));
@@ -218,10 +226,10 @@ public class AppUserConfig {
         };
     }
 
-    public Set<Player> createPlayersForTeam1() {
+    public Set<Player> createPlayersForTeam1(BCryptPasswordEncoder passwordEncoder) {
         Set<Player> players = new HashSet<>();
         // Defenders
-        players.add(new Player("Sarah", "Connor", "sconnor@example.com", "securepass1", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Sarah", "Connor", "sconnor@example.com", passwordEncoder.encode("securepass1"), AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("David", "Silva", "dsilva@example.com", "securepass2", AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("Laura", "Smith", "lsmith@example.com", "securepass3", AppUserRole.PLAYER, Position.DEFENDER));
         players.add(new Player("Michael", "Johnson", "mjohnson@example.com", "securepass4", AppUserRole.PLAYER, Position.DEFENDER));
@@ -238,23 +246,23 @@ public class AppUserConfig {
         return players;
     }
 
-    public Set<Player> createPlayersForTeam2() {
+    public Set<Player> createPlayersForTeam2(BCryptPasswordEncoder passwordEncoder) {
         Set<Player> players = new HashSet<>();
         // Defenders (4)
-        players.add(new Player("Alice", "Wonderland", "alice.w@example.com", "passT2D1", AppUserRole.PLAYER, Position.DEFENDER));
-        players.add(new Player("Bob", "Thebuilder", "bob.t@example.com", "passT2D2", AppUserRole.PLAYER, Position.DEFENDER));
-        players.add(new Player("Charlie", "Chaplin", "charlie.c@example.com", "passT2D3", AppUserRole.PLAYER, Position.DEFENDER));
-        players.add(new Player("Diana", "Prince", "diana.p@example.com", "passT2D4", AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Alice", "Wonderland", "alice.w@example.com", passwordEncoder.encode("passT2D1"), AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Bob", "Thebuilder", "bob.t@example.com", passwordEncoder.encode("passT2D2"), AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Charlie", "Chaplin", "charlie.c@example.com", passwordEncoder.encode("passT2D3"), AppUserRole.PLAYER, Position.DEFENDER));
+        players.add(new Player("Diana", "Prince", "diana.p@example.com", passwordEncoder.encode("passT2D4"), AppUserRole.PLAYER, Position.DEFENDER));
         // Midfielders (4)
-        players.add(new Player("Ethan", "Hunt", "ethan.h@example.com", "passT2M1", AppUserRole.PLAYER, Position.MIDFIELDER));
-        players.add(new Player("Fiona", "Shrek", "fiona.s@example.com", "passT2M2", AppUserRole.PLAYER, Position.MIDFIELDER));
-        players.add(new Player("George", "Jungle", "george.j@example.com", "passT2M3", AppUserRole.PLAYER, Position.MIDFIELDER));
-        players.add(new Player("Hannah", "Montana", "hannah.m@example.com", "passT2M4", AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Ethan", "Hunt", "ethan.h@example.com", passwordEncoder.encode("passT2M1"), AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Fiona", "Shrek", "fiona.s@example.com", passwordEncoder.encode("passT2M2"), AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("George", "Jungle", "george.j@example.com", passwordEncoder.encode("passT2M3"), AppUserRole.PLAYER, Position.MIDFIELDER));
+        players.add(new Player("Hannah", "Montana", "hannah.m@example.com", passwordEncoder.encode("passT2M4"), AppUserRole.PLAYER, Position.MIDFIELDER));
         // Goalkeeper (1)
-        players.add(new Player("Ivan", "Theterrible", "ivan.t@example.com", "passT2GK", AppUserRole.PLAYER, Position.GOAL_KEEPER));
+        players.add(new Player("Ivan", "Theterrible", "ivan.t@example.com", passwordEncoder.encode("passT2GK"), AppUserRole.PLAYER, Position.GOAL_KEEPER));
         // Strikers (2)
-        players.add(new Player("Julia", "Roberts", "julia.r@example.com", "passT2S1", AppUserRole.PLAYER, Position.STRIKER));
-        players.add(new Player("Kevin", "Hart", "kevin.h@example.com", "passT2S2", AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("Julia", "Roberts", "julia.r@example.com", passwordEncoder.encode("passT2S1"), AppUserRole.PLAYER, Position.STRIKER));
+        players.add(new Player("Kevin", "Hart", "kevin.h@example.com", passwordEncoder.encode("passT2S2"), AppUserRole.PLAYER, Position.STRIKER));
         return players;
     }
 
