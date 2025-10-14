@@ -75,7 +75,7 @@ public class TeamService {
             league.getTeams().remove(team);
         }
         for (Player player : team.getPlayers()) {
-            player.setTeam(null);
+            player.getTeams().remove(team);
         }
         teamRepository.deleteById(id);
         return team;
