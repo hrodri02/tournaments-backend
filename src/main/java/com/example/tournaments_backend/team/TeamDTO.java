@@ -1,9 +1,12 @@
 package com.example.tournaments_backend.team;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.example.tournaments_backend.league.League;
+import com.example.tournaments_backend.player.Player;
+import com.example.tournaments_backend.player.PlayerDTO;
 
 import lombok.Getter;
 
@@ -14,6 +17,7 @@ public class TeamDTO {
     private String logoUrl;
     private Long ownerId;
     private List<Long> leagueIds;
+    private List<PlayerDTO> playerDTOs;
     private String invitationStatus;
 
     // Constructor to map from Team entity
@@ -28,6 +32,12 @@ public class TeamDTO {
                 .map(League::getId)
                 .collect(Collectors.toList());
         this.invitationStatus = null;
+        Set<Player> players = team.getPlayers();
+        if (players != null) {
+            this.playerDTOs = players.stream()
+                                .map(PlayerDTO::new)
+                                .collect(Collectors.toList());
+        } 
     }
 
     public TeamDTO(Team team, String invitationStatus) {
@@ -46,5 +56,11 @@ public class TeamDTO {
     public TeamDTO(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public static List<TeamDTO> convert(List<Team> teams) {
+        return teams.stream()
+                    .map(TeamDTO::new)
+                    .collect(Collectors.toList());
     }
 }
