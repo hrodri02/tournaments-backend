@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerDTO;
+import com.example.tournaments_backend.team_invite.TeamInviteDTO;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class TeamDTO {
     private Long id;
     private String name;
@@ -19,6 +22,7 @@ public class TeamDTO {
     private List<Long> leagueIds;
     private List<PlayerDTO> playerDTOs;
     private String invitationStatus;
+    private List<TeamInviteDTO> invites;
 
     // Constructor to map from Team entity
     public TeamDTO(Team team) {
