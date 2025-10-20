@@ -81,9 +81,7 @@ public class TeamService {
         }
         // save the team invitations
         List<TeamInvite> invitesInDB = teamInviteService.addAll(invites);
-        
-        String invitationStatus = invitesInDB.size() + " invitations sent successfully.";
-        TeamDTO teamDTO = new TeamDTO(teamInDB, invitationStatus);
+        TeamDTO teamDTO = new TeamDTO(teamInDB, invitesInDB);
         return teamDTO;
     }
 

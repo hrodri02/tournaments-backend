@@ -8,6 +8,7 @@ import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerDTO;
 import com.example.tournaments_backend.team_invite.TeamInviteDTO;
+import com.example.tournaments_backend.team_invite.TeamInvite;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,6 @@ public class TeamDTO {
     private Long ownerId;
     private List<Long> leagueIds;
     private List<PlayerDTO> playerDTOs;
-    private String invitationStatus;
     private List<TeamInviteDTO> invites;
 
     // Constructor to map from Team entity
@@ -35,7 +35,6 @@ public class TeamDTO {
                 .stream()
                 .map(League::getId)
                 .collect(Collectors.toList());
-        this.invitationStatus = null;
         Set<Player> players = team.getPlayers();
         if (players != null) {
             this.playerDTOs = players.stream()
@@ -44,18 +43,11 @@ public class TeamDTO {
         } 
     }
 
-    public TeamDTO(Team team, String invitationStatus) {
-        this.id = team.getId();
-        this.name = team.getName();
-        this.logoUrl = team.getLogoUrl();
-        this.ownerId = team.getOwner().getId();
-        this.leagueIds = 
-            team.getLeagues()
-                .stream()
-                .map(League::getId)
-                .collect(Collectors.toList());
-        this.invitationStatus = invitationStatus;
+    public TeamDTO(Team team, List<TeamInvite> invites) {
+        this(team);
+        this.invites = TeamInviteDTO.convert(invites);
     }
+
 
     public TeamDTO(Long id, String name) {
         this.id = id;
