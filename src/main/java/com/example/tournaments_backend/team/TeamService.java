@@ -64,6 +64,7 @@ public class TeamService {
         String ownerEmail = authentication.getName();
         Player owner = playerService.getPlayerByEmail(ownerEmail);
         team.setOwner(owner);
+        team.addPlayer(owner);
         Team teamInDB = teamRepository.save(team);
 
         // get all the players by id
