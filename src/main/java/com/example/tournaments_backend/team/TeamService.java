@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerService;
 import com.example.tournaments_backend.team_invite.TeamInvite;
+import com.example.tournaments_backend.team_invite.TeamInviteDTO;
 import com.example.tournaments_backend.team_invite.TeamInviteService;
 import com.example.tournaments_backend.team_invite.TeamInviteStatus;
 import com.example.tournaments_backend.exception.ErrorType;
@@ -25,11 +28,34 @@ public class TeamService {
     private final PlayerService playerService;
     private final TeamInviteService teamInviteService;
 
-    public List<Team> getTeams(Authentication authentication) {
+    @Transactional
+    public List<TeamDTO> getTeams(Authentication authentication) {
         String clientEmail = authentication.getName();
         Player client = playerService.getPlayerByEmail(clientEmail);
         List<Team> teams = teamRepository.findByPlayers_Id(client.getId());
-        return teams;
+
+        // get team ids
+        List<Long> teamIds = teams.stream()
+                                .map(Team::getId)
+                                .collect(Collectors.toList());
+        // get all the team invites
+        List<TeamInvite> invites = teamInviteService.getAllTeamInvites(teamIds);
+        // group team invites by teamId
+        Map<Long, List<TeamInvite>> groupedInvites = 
+            invites.stream()
+                .collect(Collectors.groupingBy(invite -> invite.getTeam().getId()));
+        // create TeamDTOs and add invites to each
+        List<TeamDTO> teamDTOs = new ArrayList<>();
+        for (Team team : teams) {
+            Long teamId = team.getId();
+            List<TeamInvite> teamInvites = groupedInvites.get(teamId);
+            List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
+            TeamDTO teamDTO = new TeamDTO(team);
+            teamDTO.setInvites(inviteDTOs);
+            teamDTOs.add(teamDTO);
+        }
+
+        return teamDTOs;
     }
 
     @Transactional
@@ -38,6 +64,7 @@ public class TeamService {
         String ownerEmail = authentication.getName();
         Player owner = playerService.getPlayerByEmail(ownerEmail);
         team.setOwner(owner);
+        team.addPlayer(owner);
         Team teamInDB = teamRepository.save(team);
 
         // get all the players by id
@@ -55,9 +82,7 @@ public class TeamService {
         }
         // save the team invitations
         List<TeamInvite> invitesInDB = teamInviteService.addAll(invites);
-        
-        String invitationStatus = invitesInDB.size() + " invitations sent successfully.";
-        TeamDTO teamDTO = new TeamDTO(teamInDB, invitationStatus);
+        TeamDTO teamDTO = new TeamDTO(teamInDB, invitesInDB);
         return teamDTO;
     }
 

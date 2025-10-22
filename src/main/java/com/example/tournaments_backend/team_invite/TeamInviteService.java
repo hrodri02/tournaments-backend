@@ -145,6 +145,10 @@ public class TeamInviteService {
         return teamInviteRepository.findAllByInviteeId(playerId);
     }
 
+    public List<TeamInvite> getAllTeamInvites(List<Long> teamIds) {
+        return teamInviteRepository.findAllById(teamIds);
+    }
+
     private String buildEmail(String name, String teamName, String acceptLink, String declineLink) {
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
                 "\n" +

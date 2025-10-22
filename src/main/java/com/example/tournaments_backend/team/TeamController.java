@@ -53,8 +53,7 @@ public class TeamController {
     @GetMapping()
     public ResponseEntity<List<TeamDTO>> getTeams(Authentication authentication)
     {
-        List<Team> teams = teamService.getTeams(authentication);
-        List<TeamDTO> teamDTOs = TeamDTO.convert(teams);
+        List<TeamDTO> teamDTOs = teamService.getTeams(authentication);
         return ResponseEntity.ok(teamDTOs);
     }
 

@@ -55,7 +55,7 @@ public class Team {
     private Set<League> leagues = new HashSet<>();
     @JsonIgnore 
     @ManyToMany(mappedBy = "teams", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private Set<Player> players;
+    private Set<Player> players = new HashSet<>();;
     @OneToMany(mappedBy = "homeTeam", cascade = CascadeType.ALL)
     @JsonManagedReference
     private Set<Game> homeGames;
