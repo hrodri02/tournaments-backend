@@ -31,9 +31,9 @@ public class TeamInviteService {
                         .findById(teamId)
                         .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
 
-        Long playerId = request.getPlayerId();
+        String playerEmail = request.getEmail();
         Player player = playerRepository
-                        .findById(playerId)
+                        .findByEmail(playerEmail)
                         .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
 
         String currentUserEmail = authentication.getName();
