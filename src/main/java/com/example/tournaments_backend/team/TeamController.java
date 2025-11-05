@@ -46,15 +46,15 @@ public class TeamController {
     @Operation(summary = "Get a teams a user belongs to", description = "Returns a teams")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved teams information", 
-                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamDTO.class))),
+                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = GetTeamsResponse.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
-    @GetMapping()
-    public ResponseEntity<List<TeamDTO>> getTeams(Authentication authentication)
+    @GetMapping
+    public ResponseEntity<GetTeamsResponse> getTeams(Authentication authentication)
     {
-        List<TeamDTO> teamDTOs = teamService.getTeams(authentication);
-        return ResponseEntity.ok(teamDTOs);
+        GetTeamsResponse response = teamService.getTeams(authentication);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Create a team", description = "Returns the team created")

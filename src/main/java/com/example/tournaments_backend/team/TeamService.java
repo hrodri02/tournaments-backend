@@ -29,7 +29,7 @@ public class TeamService {
     private final TeamInviteService teamInviteService;
 
     @Transactional
-    public List<TeamDTO> getTeams(Authentication authentication) {
+    public GetTeamsResponse getTeams(Authentication authentication) {
         String clientEmail = authentication.getName();
         Player client = playerService.getPlayerByEmail(clientEmail);
         List<Team> teams = teamRepository.findByPlayers_Id(client.getId());
@@ -55,7 +55,20 @@ public class TeamService {
             teamDTOs.add(teamDTO);
         }
 
-        return teamDTOs;
+        // get the invites for current user
+        List<TeamInvite> invitesForUser = teamInviteService.getAllInvitesByPlayerId(client.getId(), authentication);
+        // get team ids that player was invited to
+        List<Long> teamIdsInvitedTo = invitesForUser.stream()
+                                .map(invite -> invite.getTeam().getId())
+                                .collect(Collectors.toList());
+        List<Team> teamsInvitedTo = teamRepository.findAllById(teamIdsInvitedTo);
+        List<TeamDTO> teamInviteToDTOs = new ArrayList<>();
+        for (Team team : teamsInvitedTo) {
+            TeamDTO teamDTO = new TeamDTO(team);
+            teamInviteToDTOs.add(teamDTO);
+        }
+        GetTeamsResponse response = new GetTeamsResponse(teamDTOs, teamInviteToDTOs);
+        return response;
     }
 
     @Transactional
