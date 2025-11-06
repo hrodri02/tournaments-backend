@@ -13,6 +13,7 @@ import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerRepository;
 import com.example.tournaments_backend.team.Team;
+import com.example.tournaments_backend.team.TeamDTO;
 import com.example.tournaments_backend.team.TeamRepository;
 
 import lombok.AllArgsConstructor;
@@ -67,7 +68,7 @@ public class TeamInviteService {
     }
 
     @Transactional
-    public TeamInvite accepInvite(Long inviteId, Authentication authentication) {
+    public AcceptTeamInviteResponse accepInvite(Long inviteId, Authentication authentication) {
         TeamInvite invite = teamInviteRepository
                         .findById(inviteId)
                         .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
@@ -87,7 +88,13 @@ public class TeamInviteService {
         Team team = invite.getTeam();
         team.addPlayer(player);
         invite.setStatus(TeamInviteStatus.ACCEPTED);
-        return teamInviteRepository.save(invite);
+
+        teamInviteRepository.save(invite);
+
+        TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
+        TeamDTO teamDTO = new TeamDTO(team);
+        AcceptTeamInviteResponse response = new AcceptTeamInviteResponse(inviteDTO, teamDTO);
+        return response;
     }
 
     @Transactional
