@@ -40,7 +40,7 @@ public class TeamInviteController {
     @Operation(summary = "Accept an invitation to join a team", description = "Returns the updated team invitation")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates team inivitation", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TeamInviteDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AcceptTeamInviteResponse.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "403", description = "Forbidden - user accepting invite was not invited to join team or invite was revoked",
@@ -49,10 +49,9 @@ public class TeamInviteController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping("/{inviteId}/accept")
-    public ResponseEntity<TeamInviteDTO> acceptInvite(@PathVariable Long inviteId, Authentication authentication) {
-        TeamInvite invite = teamInviteService.accepInvite(inviteId, authentication);
-        TeamInviteDTO inviteDTO = new TeamInviteDTO(invite);
-        return ResponseEntity.ok(inviteDTO);
+    public ResponseEntity<AcceptTeamInviteResponse> acceptInvite(@PathVariable Long inviteId, Authentication authentication) {
+        AcceptTeamInviteResponse response = teamInviteService.accepInvite(inviteId, authentication);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Decline an invitation to join a team", description = "Returns the updated team invitation")
