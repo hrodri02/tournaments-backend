@@ -29,33 +29,24 @@ public class TeamService {
     private final TeamInviteService teamInviteService;
 
     @Transactional
-    public List<TeamDTO> getTeams(Authentication authentication) {
+    public GetTeamsResponse getTeams(Authentication authentication) {
         String clientEmail = authentication.getName();
         Player client = playerService.getPlayerByEmail(clientEmail);
         List<Team> teams = teamRepository.findByPlayers_Id(client.getId());
+        List<TeamDTO> teamsPartOfDTOs = getTeamDTOsWithInvites(teams);
 
-        // get team ids
-        List<Long> teamIds = teams.stream()
-                                .map(Team::getId)
+        // get the invites for current user
+        List<TeamInvite> invitesForUser = teamInviteService.getAllInvitesByPlayerId(client.getId(), authentication);
+        // get team ids that user was invited to
+        List<Long> teamIdsInvitedTo = invitesForUser.stream()
+                                .map(invite -> invite.getTeam().getId())
                                 .collect(Collectors.toList());
-        // get all the team invites
-        List<TeamInvite> invites = teamInviteService.getAllTeamInvites(teamIds);
-        // group team invites by teamId
-        Map<Long, List<TeamInvite>> groupedInvites = 
-            invites.stream()
-                .collect(Collectors.groupingBy(invite -> invite.getTeam().getId()));
-        // create TeamDTOs and add invites to each
-        List<TeamDTO> teamDTOs = new ArrayList<>();
-        for (Team team : teams) {
-            Long teamId = team.getId();
-            List<TeamInvite> teamInvites = groupedInvites.get(teamId);
-            List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
-            TeamDTO teamDTO = new TeamDTO(team);
-            teamDTO.setInvites(inviteDTOs);
-            teamDTOs.add(teamDTO);
-        }
+        // get the teams the user was invited to
+        List<Team> teamsInvitedTo = teamRepository.findAllById(teamIdsInvitedTo);
+        List<TeamDTO> teamsInvitedToDTOs = getTeamDTOsWithInvites(teamsInvitedTo);
 
-        return teamDTOs;
+        GetTeamsResponse response = new GetTeamsResponse(teamsPartOfDTOs, teamsInvitedToDTOs);
+        return response;
     }
 
     @Transactional
@@ -140,5 +131,29 @@ public class TeamService {
         Team teamInDB = teamRepository.save(team);
         TeamDTO teamDTO = new TeamDTO(teamInDB);
         return teamDTO;
+    }
+
+    private List<TeamDTO> getTeamDTOsWithInvites(List<Team> teams) {
+        // get team ids
+        List<Long> teamIds = teams.stream()
+                                .map(Team::getId)
+                                .collect(Collectors.toList());
+        // get all the team invites
+        List<TeamInvite> invites = teamInviteService.getAllTeamInvites(teamIds);
+        // group team invites by teamId
+        Map<Long, List<TeamInvite>> groupedInvites = 
+            invites.stream()
+                .collect(Collectors.groupingBy(invite -> invite.getTeam().getId()));
+        // create TeamDTOs and add invites to each
+        List<TeamDTO> teamDTOs = new ArrayList<>();
+        for (Team team : teams) {
+            Long teamId = team.getId();
+            List<TeamInvite> teamInvites = groupedInvites.get(teamId);
+            List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
+            TeamDTO teamDTO = new TeamDTO(team);
+            teamDTO.setInvites(inviteDTOs);
+            teamDTOs.add(teamDTO);
+        }
+        return teamDTOs;
     }
 }
