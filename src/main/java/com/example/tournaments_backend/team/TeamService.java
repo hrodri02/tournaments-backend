@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
+import com.example.tournaments_backend.player.PlayerDTO;
 import com.example.tournaments_backend.player.PlayerService;
 import com.example.tournaments_backend.team_invite.TeamInvite;
 import com.example.tournaments_backend.team_invite.TeamInviteDTO;
@@ -148,10 +149,18 @@ public class TeamService {
         List<TeamDTO> teamDTOs = new ArrayList<>();
         for (Team team : teams) {
             Long teamId = team.getId();
+            // set the invites of the current team
             List<TeamInvite> teamInvites = groupedInvites.get(teamId);
             List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
             TeamDTO teamDTO = new TeamDTO(team);
             teamDTO.setInvites(inviteDTOs);
+            // set the players invited to the current team
+            List<Long> playerIds = teamInvites.stream()
+                                    .map(invite -> invite.getInvitee().getId())
+                                    .toList();
+            List<Player> players = playerService.getAllPlayersByIds(playerIds);
+            List<PlayerDTO> playerDTOs = PlayerDTO.convert(players);
+            teamDTO.setInvitees(playerDTOs);
             teamDTOs.add(teamDTO);
         }
         return teamDTOs;
