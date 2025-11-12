@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.player;
 
+import java.util.List;
+
 import com.example.tournaments_backend.app_user.AppUserRole;
 import com.example.tournaments_backend.app_user.UserDTO;
 
@@ -24,5 +26,9 @@ public class PlayerDTO extends UserDTO {
               player.getEmail(), 
               player.getAppUserRole());
         this.position = player.getPosition();
+    }
+
+    public static List<PlayerDTO> convert(List<Player> players) {
+        return players.stream().map(PlayerDTO::new).toList();
     }
 }
