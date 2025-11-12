@@ -23,6 +23,7 @@ public class TeamDTO {
     private List<Long> leagueIds;
     private List<PlayerDTO> playerDTOs;
     private List<TeamInviteDTO> invites;
+    private List<PlayerDTO> invitees;
 
     // Constructor to map from Team entity
     public TeamDTO(Team team) {
