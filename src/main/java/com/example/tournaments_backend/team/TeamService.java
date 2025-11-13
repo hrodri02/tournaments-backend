@@ -149,19 +149,17 @@ public class TeamService {
         for (Team team : teams) {
             Long teamId = team.getId();
             // set the invites of the current team
-            List<TeamInvite> teamInvites = groupedInvites.get(teamId);
+            List<TeamInvite> teamInvites = groupedInvites.getOrDefault(teamId, List.of());
             TeamDTO teamDTO = new TeamDTO(team);
-            if (teamInvites != null && teamInvites.size() > 0) {
-                List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
-                teamDTO.setInvites(inviteDTOs);
-                // set the players invited to the current team
-                List<Long> playerIds = teamInvites.stream()
-                                        .map(invite -> invite.getInvitee().getId())
-                                        .toList();
-                List<Player> players = playerService.getAllPlayersByIds(playerIds);
-                List<PlayerDTO> playerDTOs = PlayerDTO.convert(players);
-                teamDTO.setInvitees(playerDTOs);
-            }
+            List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
+            teamDTO.setInvites(inviteDTOs);
+            // set the players invited to the current team
+            List<Long> playerIds = teamInvites.stream()
+                                    .map(invite -> invite.getInvitee().getId())
+                                    .toList();
+            List<Player> players = playerService.getAllPlayersByIds(playerIds);
+            List<PlayerDTO> playerDTOs = PlayerDTO.convert(players);
+            teamDTO.setInvitees(playerDTOs);
             teamDTOs.add(teamDTO);
         }
         return teamDTOs;
