@@ -142,8 +142,7 @@ public class TeamService {
         // get all the team invites
         List<TeamInvite> invites = teamInviteService.getAllTeamInvites(teamIds);
         // group team invites by teamId
-        Map<Long, List<TeamInvite>> groupedInvites = 
-            invites.stream()
+        Map<Long, List<TeamInvite>> groupedInvites = invites.stream()
                 .collect(Collectors.groupingBy(invite -> invite.getTeam().getId()));
         // create TeamDTOs and add invites to each
         List<TeamDTO> teamDTOs = new ArrayList<>();
@@ -151,16 +150,18 @@ public class TeamService {
             Long teamId = team.getId();
             // set the invites of the current team
             List<TeamInvite> teamInvites = groupedInvites.get(teamId);
-            List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
             TeamDTO teamDTO = new TeamDTO(team);
-            teamDTO.setInvites(inviteDTOs);
-            // set the players invited to the current team
-            List<Long> playerIds = teamInvites.stream()
-                                    .map(invite -> invite.getInvitee().getId())
-                                    .toList();
-            List<Player> players = playerService.getAllPlayersByIds(playerIds);
-            List<PlayerDTO> playerDTOs = PlayerDTO.convert(players);
-            teamDTO.setInvitees(playerDTOs);
+            if (teamInvites != null && teamInvites.size() > 0) {
+                List<TeamInviteDTO> inviteDTOs = TeamInviteDTO.convert(teamInvites);
+                teamDTO.setInvites(inviteDTOs);
+                // set the players invited to the current team
+                List<Long> playerIds = teamInvites.stream()
+                                        .map(invite -> invite.getInvitee().getId())
+                                        .toList();
+                List<Player> players = playerService.getAllPlayersByIds(playerIds);
+                List<PlayerDTO> playerDTOs = PlayerDTO.convert(players);
+                teamDTO.setInvitees(playerDTOs);
+            }
             teamDTOs.add(teamDTO);
         }
         return teamDTOs;
