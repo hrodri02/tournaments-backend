@@ -68,4 +68,8 @@ public class PlayerService {
     public List<Player> getAllPlayersByEmail(List<String> emails) {
         return playerRepository.findAllByEmailIn(emails);
     }
+
+    public List<Player> getAllPlayersByIds(List<Long> ids) {
+        return playerRepository.findAllById(ids);
+    }
 }
