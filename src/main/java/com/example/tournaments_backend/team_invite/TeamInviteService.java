@@ -43,7 +43,9 @@ public class TeamInviteService {
             throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user does not own this team.");
         }
 
-        TeamInvite invite = new TeamInvite();
+        TeamInvite invite = teamInviteRepository
+                                .findByTeamIdAndInviteeId(teamId, player.getId())
+                                .orElse(new TeamInvite());
         invite.setStatus(TeamInviteStatus.PENDING);
         invite.setTeam(team);
         invite.setInvitee(player);
