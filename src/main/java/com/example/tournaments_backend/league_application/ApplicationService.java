@@ -56,4 +56,12 @@ public class ApplicationService {
             new Application(team, league, request.getCreatedAt(), ApplicationStatus.PENDING);
         return applicationRepository.save(application);
     }
+
+    public Application updateApplication(Long applicationId, UpdateApplicationRequest request) throws ServiceException {
+        Application application = applicationRepository
+                                    .findById(applicationId)
+                                    .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Application", "Application with given id not found."));
+        application.setStatus(request.getStatus());
+        return applicationRepository.save(application);
+    }
 }
