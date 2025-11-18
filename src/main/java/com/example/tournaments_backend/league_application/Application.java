@@ -46,4 +46,11 @@ public class Application {
     private LocalDateTime createdAt;
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
+
+    public Application(Team team, League league, LocalDateTime createdAt, ApplicationStatus status) {
+        this.team = team;
+        this.league = league;
+        this.createdAt = createdAt;
+        this.status = status;
+    }
 }
