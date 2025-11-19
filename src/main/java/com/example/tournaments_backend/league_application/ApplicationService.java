@@ -70,6 +70,7 @@ public class ApplicationService {
     @Transactional
     public List<Application> getApplications(
         Optional<Long> optionalTeamId,
+        Optional<Long> optionalLeagueId,
         Authentication authentication
     ) 
     {
@@ -86,7 +87,12 @@ public class ApplicationService {
                 throw new ServiceException(ErrorType.FORBIDDEN, "League Application", "Current user does not own this team.");
             }
             applications = applicationRepository.findAllByTeamId(teamId);
-        } else {
+        }
+        else if (optionalLeagueId.isPresent()) {
+            Long leagueId = optionalLeagueId.get();
+            applications = applicationRepository.findAllByLeagueId(leagueId);
+        }
+        else {
             applications = applicationRepository.findAll();
         }
         return applications;

@@ -76,10 +76,11 @@ public class ApplicationController {
     @GetMapping
     public ResponseEntity<List<ApplicationDTO>> getApplications(
         @RequestParam("teamId") Optional<Long> optionalTeamId,
+        @RequestParam("leagueId") Optional<Long> optionalLeagueId,
         Authentication authentication
     )
     {
-        List<Application> applications = applicationService.getApplications(optionalTeamId, authentication);
+        List<Application> applications = applicationService.getApplications(optionalTeamId, optionalLeagueId, authentication);
         List<ApplicationDTO> applicationDTOs = ApplicationDTO.convert(applications);
         return ResponseEntity.ok(applicationDTOs);
     }
