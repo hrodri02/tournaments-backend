@@ -1,5 +1,7 @@
 package com.example.tournaments_backend.league_application;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.security.core.Authentication;
@@ -63,5 +65,30 @@ public class ApplicationService {
                                     .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Application", "Application with given id not found."));
         application.setStatus(request.getStatus());
         return applicationRepository.save(application);
+    }
+
+    @Transactional
+    public List<Application> getApplications(
+        Optional<Long> optionalTeamId,
+        Authentication authentication
+    ) 
+    {
+        List<Application> applications;
+        if (optionalTeamId.isPresent()) {
+            Long teamId = optionalTeamId.get();
+            Team team = teamRepository
+                        .findById(teamId)
+                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
+            // check if client owns the team they want to retrieve the applications for
+            String currentUserEmail = authentication.getName();
+            String ownerEmail = team.getOwner().getEmail();
+            if (!currentUserEmail.equals(ownerEmail)) {
+                throw new ServiceException(ErrorType.FORBIDDEN, "League Application", "Current user does not own this team.");
+            }
+            applications = applicationRepository.findAllByTeamId(teamId);
+        } else {
+            applications = applicationRepository.findAll();
+        }
+        return applications;
     }
 }
