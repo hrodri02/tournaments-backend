@@ -64,7 +64,7 @@ public class ApplicationController {
 
     @Operation(summary = "Get applications", description = "Returns the applications")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully returns applications", 
+        @ApiResponse(responseCode = "200", description = "Successfully returns applications filter by teamId or leagueId. Applications can be filtered by either, neither, but not by both at the same time.", 
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApplicationDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - application request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
