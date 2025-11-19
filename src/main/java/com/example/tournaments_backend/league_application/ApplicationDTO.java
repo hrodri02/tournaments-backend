@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.league_application;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +24,14 @@ public class ApplicationDTO {
         this.league = new LeagueDTO(application.getLeague());
         this.status = application.getStatus();
         this.createdAt = application.getCreatedAt();
+    }
+
+    public static List<ApplicationDTO> convert(List<Application> applications) {
+        if (applications == null || applications.size() == 0) return List.of();
+
+        return applications
+                .stream()
+                .map(ApplicationDTO::new)
+                .toList();
     }
 }
