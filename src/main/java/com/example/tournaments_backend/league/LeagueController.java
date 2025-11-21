@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.league_application.Application;
+import com.example.tournaments_backend.league_application.ApplicationDTO;
+import com.example.tournaments_backend.league_application.ApplicationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,10 +36,12 @@ import jakarta.validation.Valid;
 @Tag(name = "League Management", description = "API endpoints for managing leagues")
 public class LeagueController {
     private final LeagueService leagueService;
+    private final ApplicationService applicationService;
 
     @Autowired
-    public LeagueController(LeagueService leagueService) {
+    public LeagueController(LeagueService leagueService, ApplicationService applicationService) {
         this.leagueService = leagueService;
+        this.applicationService = applicationService;
     }
 
     @Operation(summary = "Create a league", description = "Returns the league created")
@@ -140,5 +146,29 @@ public class LeagueController {
         League leagueInDB = leagueService.updateLeague(leagueId, leagueRequest);
         LeagueDTO leagueDTO = new LeagueDTO(leagueInDB);
         return ResponseEntity.ok(leagueDTO);
+    }
+
+    @Operation(summary = "Apply to join a league", description = "Returns the application created")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully creates an application", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApplicationDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid - the team is already part of the league",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - the client does not own the team",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
+        @ApiResponse(responseCode = "404", description = "Not found - league or team with given ID not found",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
+    })
+    @PostMapping("{leagueId}/applications")
+    public ResponseEntity<ApplicationDTO> applyToLeague(
+        @PathVariable("leagueId") Long leagueId, 
+        @RequestBody @Valid JoinLeagueRequest request,
+        Authentication authentication
+    ) throws ServiceException {
+        Application application = applicationService.addApplication(leagueId, request, authentication);
+        ApplicationDTO applicationDTO = new ApplicationDTO(application);
+        return ResponseEntity.ok(applicationDTO);
     }
 }
