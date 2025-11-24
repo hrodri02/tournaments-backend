@@ -26,7 +26,7 @@ public class LeagueDTO {
         this.durationInWeeks = league.getDurationInWeeks();
         setStatus();
         Set<Team> teamsSet = league.getTeams();
-        if (teams != null) {
+        if (teamsSet != null) {
             this.teams = teamsSet
                     .stream()
                     .map(TeamDTO::new)
