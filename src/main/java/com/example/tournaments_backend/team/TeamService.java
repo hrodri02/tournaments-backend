@@ -20,24 +20,28 @@ import com.example.tournaments_backend.team_invite.TeamInvite;
 import com.example.tournaments_backend.team_invite.TeamInviteDTO;
 import com.example.tournaments_backend.team_invite.TeamInviteService;
 import com.example.tournaments_backend.team_invite.TeamInviteStatus;
+import com.example.tournaments_backend.app_user.AppUser;
+import com.example.tournaments_backend.app_user.AppUserService;
 import com.example.tournaments_backend.exception.ErrorType;
 
 @Service
 @AllArgsConstructor
 public class TeamService {
     private final TeamRepository teamRepository;
+    private final AppUserService appUserService;
     private final PlayerService playerService;
     private final TeamInviteService teamInviteService;
 
     @Transactional
     public GetTeamsResponse getTeams(Authentication authentication) {
         String clientEmail = authentication.getName();
-        Player client = playerService.getPlayerByEmail(clientEmail);
-        List<Team> teams = teamRepository.findByPlayers_Id(client.getId());
+        AppUser client = appUserService.getAppUserByEmail(clientEmail);
+        Long userId = client.getId();
+        List<Team> teams = teamRepository.findByPlayers_Id(userId);
         List<TeamDTO> teamsPartOfDTOs = getTeamDTOsWithInvites(teams);
 
         // get the invites for current user
-        List<TeamInvite> invitesForUser = teamInviteService.getAllInvitesByPlayerId(client.getId(), authentication);
+        List<TeamInvite> invitesForUser = client.isAdmin()? List.of() : teamInviteService.getAllInvitesByPlayerId(userId, authentication);
         // get team ids that user was invited to
         List<Long> teamIdsInvitedTo = invitesForUser.stream()
                                 .map(invite -> invite.getTeam().getId())
@@ -135,6 +139,8 @@ public class TeamService {
     }
 
     private List<TeamDTO> getTeamDTOsWithInvites(List<Team> teams) {
+        if (teams.size() == 0) return List.of();
+
         // get team ids
         List<Long> teamIds = teams.stream()
                                 .map(Team::getId)

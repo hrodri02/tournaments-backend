@@ -2,7 +2,9 @@ package com.example.tournaments_backend.app_user;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -91,6 +93,21 @@ public class AppUser implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(appUserRole.asGrantedAuthority());
+    }
+
+    public List<String> getRoles() {
+        Collection<? extends GrantedAuthority> authorities = getAuthorities();
+
+        List<String> roles = authorities.stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
+
+        return roles;
+    }
+
+    public boolean isAdmin() {
+        List<String> roles = getRoles();
+        return roles.contains("ROLE_ADMIN");
     }
 
     @Override
