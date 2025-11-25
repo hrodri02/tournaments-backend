@@ -41,7 +41,7 @@ public class TeamService {
         List<TeamDTO> teamsPartOfDTOs = getTeamDTOsWithInvites(teams);
 
         // get the invites for current user
-        List<TeamInvite> invitesForUser = teamInviteService.getAllInvitesByPlayerId(userId, authentication);
+        List<TeamInvite> invitesForUser = client.isAdmin()? List.of() : teamInviteService.getAllInvitesByPlayerId(userId, authentication);
         // get team ids that user was invited to
         List<Long> teamIdsInvitedTo = invitesForUser.stream()
                                 .map(invite -> invite.getTeam().getId())
@@ -140,7 +140,7 @@ public class TeamService {
 
     private List<TeamDTO> getTeamDTOsWithInvites(List<Team> teams) {
         if (teams.size() == 0) return List.of();
-        
+
         // get team ids
         List<Long> teamIds = teams.stream()
                                 .map(Team::getId)
