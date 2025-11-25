@@ -3,7 +3,6 @@ package com.example.tournaments_backend.league_application;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
-import com.example.tournaments_backend.game_stat.GameStatDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class ApplicationController {
     @Operation(summary = "Update an application", description = "Returns the updated application")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates application", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UpdateApplicationResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApplicationDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - application request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
@@ -53,12 +52,13 @@ public class ApplicationController {
     })
     @PutMapping("{applicationId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UpdateApplicationResponse> updateApplication(
+    public ResponseEntity<ApplicationDTO> updateApplication(
         @PathVariable("applicationId") Long applicationId,
         @RequestBody @Valid UpdateApplicationRequest request) 
     {
-        UpdateApplicationResponse response = applicationService.updateApplication(applicationId, request);
-        return ResponseEntity.ok(response);
+        Application application = applicationService.updateApplication(applicationId, request);
+        ApplicationDTO applicationDTO = new ApplicationDTO(application);
+        return ResponseEntity.ok(applicationDTO);
     }
 
     @Operation(summary = "Get applications", description = "Returns the applications")
