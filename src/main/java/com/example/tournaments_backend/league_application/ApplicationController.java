@@ -3,7 +3,6 @@ package com.example.tournaments_backend.league_application;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.exception.ErrorDetails;
-import com.example.tournaments_backend.game_stat.GameStatDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class ApplicationController {
     @Operation(summary = "Update an application", description = "Returns the updated application")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates application", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApplicationDTO.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - application request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",

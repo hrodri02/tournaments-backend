@@ -69,10 +69,11 @@ public class ApplicationService {
         // if the application is accepted
         if (status == ApplicationStatus.ACCEPTED) {
             // add team to league
-            Team team = application.getTeam();
             League league = application.getLeague();
+            Team team = application.getTeam();
             league.addTeam(team);
         }
+
         return applicationRepository.save(application);
     }
 
