@@ -139,6 +139,8 @@ public class TeamService {
     }
 
     private List<TeamDTO> getTeamDTOsWithInvites(List<Team> teams) {
+        if (teams.size() == 0) return List.of();
+        
         // get team ids
         List<Long> teamIds = teams.stream()
                                 .map(Team::getId)
