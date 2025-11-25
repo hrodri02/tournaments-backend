@@ -12,6 +12,7 @@ import com.example.tournaments_backend.exception.ErrorType;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.JoinLeagueRequest;
 import com.example.tournaments_backend.league.League;
+import com.example.tournaments_backend.league.LeagueDTO;
 import com.example.tournaments_backend.league.LeagueRepository;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamRepository;
@@ -60,20 +61,24 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application updateApplication(Long applicationId, UpdateApplicationRequest request) throws ServiceException {
+    public UpdateApplicationResponse updateApplication(Long applicationId, UpdateApplicationRequest request) throws ServiceException {
         Application application = applicationRepository
                                     .findById(applicationId)
                                     .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Application", "Application with given id not found."));
         ApplicationStatus status = request.getStatus();
         application.setStatus(status);
         // if the application is accepted
+        League league = application.getLeague();
         if (status == ApplicationStatus.ACCEPTED) {
             // add team to league
             Team team = application.getTeam();
-            League league = application.getLeague();
             league.addTeam(team);
         }
-        return applicationRepository.save(application);
+        
+        Application applicationInDB = applicationRepository.save(application);
+        ApplicationDTO updatedApp = new ApplicationDTO(applicationInDB);
+        LeagueDTO updatedLeague = new LeagueDTO(league);
+        return new UpdateApplicationResponse(updatedApp, updatedLeague);
     }
 
     @Transactional

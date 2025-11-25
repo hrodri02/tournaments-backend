@@ -41,7 +41,7 @@ public class ApplicationController {
     @Operation(summary = "Update an application", description = "Returns the updated application")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updates application", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = GameStatDTO.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UpdateApplicationResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid - application request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - not authenticated",
@@ -53,13 +53,12 @@ public class ApplicationController {
     })
     @PutMapping("{applicationId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ApplicationDTO> updateApplication(
+    public ResponseEntity<UpdateApplicationResponse> updateApplication(
         @PathVariable("applicationId") Long applicationId,
         @RequestBody @Valid UpdateApplicationRequest request) 
     {
-        Application application = applicationService.updateApplication(applicationId, request);
-        ApplicationDTO applicationDTO = new ApplicationDTO(application);
-        return ResponseEntity.ok(applicationDTO);
+        UpdateApplicationResponse response = applicationService.updateApplication(applicationId, request);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get applications", description = "Returns the applications")
