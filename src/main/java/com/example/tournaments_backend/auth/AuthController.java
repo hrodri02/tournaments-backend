@@ -183,6 +183,13 @@ public class AuthController {
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDetails(LocalDateTime.now(), ex.getMessage()));
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        return ResponseEntity
+            .status(status)
+            .body(new ErrorDetails(
+                status,
+                ex.getMessage(),
+                LocalDateTime.now()
+            ));
     }
 }
