@@ -1,9 +1,9 @@
 package com.example.tournaments_backend.exception;
 
-public enum ErrorType {
-    NOT_FOUND,
-    FORBIDDEN,
+public enum ClientErrorKey {
     TOKEN_EXPIRED,
+    INVALID_TOKEN,
+    MISSING_TOKEN,
     ALREADY_EXISTS,
     EMAIL_ALREADY_CONFIRMED,
     PASSWORD_ALREADY_RESET,
