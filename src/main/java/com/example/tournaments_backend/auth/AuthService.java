@@ -3,6 +3,7 @@ package com.example.tournaments_backend.auth;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -18,8 +19,7 @@ import com.example.tournaments_backend.auth.tokens.confirmationToken.Confirmatio
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
-import com.example.tournaments_backend.exception.ErrorDetails;
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.security.JwtService;
@@ -82,15 +82,32 @@ public class AuthService {
     public String confirmToken(String token) throws ServiceException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
-            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
+            .orElseThrow(
+                () -> new ServiceException(
+                            // 404 NOT_FOUND for a resource (token) not found
+                            HttpStatus.NOT_FOUND,
+                            ClientErrorKey.CONFIRMATION_TOKEN_NOT_FOUND, 
+                            "Auth", 
+                            "Token not found."
+            ));
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
+            throw new ServiceException(
+                        // 400 BAD_REQUEST for a business logic violation
+                        HttpStatus.BAD_REQUEST,
+                        ClientErrorKey.EMAIL_ALREADY_CONFIRMED, 
+                        "App user",
+                        "Email is already confirmed.");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new confirmation email.");
+            throw new ServiceException(
+                // 401 UNAUTHORIZED for an expired token
+                HttpStatus.UNAUTHORIZED,
+                ClientErrorKey.TOKEN_EXPIRED, 
+                "Auth", 
+                "Token expired. Please request a new confirmation email.");
         }
 
         confirmationTokenService.setConfirmedAt(token);
@@ -108,7 +125,11 @@ public class AuthService {
     public void resendEmail(String email) throws UsernameNotFoundException {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         if (appUser.isEnabled()) {
-            throw new ServiceException(ErrorType.EMAIL_ALREADY_CONFIRMED, "App user","Email is already confirmed.");
+            throw new ServiceException(
+                HttpStatus.BAD_REQUEST,
+                ClientErrorKey.EMAIL_ALREADY_CONFIRMED, 
+                "App user",
+                "Email is already confirmed.");
         }
         else {
             String token = appUserService.generateNewTokenForUser(appUser);
@@ -122,20 +143,14 @@ public class AuthService {
     }
 
     public void sendResetPasswordEmail(String email) {
-        try {
-            AppUser appUser = appUserService.getAppUserByEmail(email);
-            String resetToken = appUserService.generateNewResetTokenForUser(appUser);
-            String link = "http://localhost:8080/api/v1/auth/reset-password?token=" + resetToken + "&email=" + email;
-            emailSender.send(
-                "Reset password",
-                email, 
-                buildResetPasswordEmail(appUser.getFirstName(), link)
-            );
-        }
-        catch (UsernameNotFoundException ex) {
-            ErrorDetails err = new ErrorDetails(LocalDateTime.now(), ex.getMessage());
-            System.err.println(err);
-        }
+        AppUser appUser = appUserService.getAppUserByEmail(email);
+        String resetToken = appUserService.generateNewResetTokenForUser(appUser);
+        String link = "http://localhost:8080/api/v1/auth/reset-password?token=" + resetToken + "&email=" + email;
+        emailSender.send(
+            "Reset password",
+            email, 
+            buildResetPasswordEmail(appUser.getFirstName(), link)
+        );
     }
 
     @Transactional
@@ -143,15 +158,28 @@ public class AuthService {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         ResetToken resetToken = resetTokenService
             .getToken(token, appUser)
-            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Auth", "Token not found."));
+            .orElseThrow(() -> new ServiceException(
+                HttpStatus.NOT_FOUND, 
+                ClientErrorKey.RESET_TOKEN_NOT_FOUND, 
+                "Auth", 
+                "Token not found."
+            ));
 
         if (resetToken.getResetAt() != null) {
-            throw new ServiceException(ErrorType.PASSWORD_ALREADY_RESET, "App user","Your password was already reset.");
+            throw new ServiceException(
+                HttpStatus.BAD_REQUEST,
+                ClientErrorKey.PASSWORD_ALREADY_RESET, 
+                "App user",
+                "Your password was already reset.");
         }
 
         LocalDateTime expiredAt = resetToken.getExpiresAt();
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new ServiceException(ErrorType.TOKEN_EXPIRED, "Auth", "Token expired. Please request a new reset password email.");
+            throw new ServiceException(
+                HttpStatus.UNAUTHORIZED, 
+                ClientErrorKey.TOKEN_EXPIRED, 
+                "Auth", 
+                "Token expired. Please request a new reset password email.");
         }
     }
 
