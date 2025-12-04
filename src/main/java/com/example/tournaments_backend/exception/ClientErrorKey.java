@@ -2,6 +2,8 @@ package com.example.tournaments_backend.exception;
 
 public enum ClientErrorKey {
     INVALID_CREDENTIALS,
+    DISABLED_ACCOUNT,
+    LOCKED_ACCOUNT,
     TOKEN_EXPIRED,
     INVALID_TOKEN,
     MISSING_TOKEN,
