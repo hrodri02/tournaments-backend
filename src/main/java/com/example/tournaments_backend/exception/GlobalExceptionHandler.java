@@ -10,6 +10,9 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -57,13 +60,49 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({SignatureException.class, MalformedJwtException.class, UnsupportedJwtException.class})
-    public ResponseEntity<?> handleAuthenticationException(JwtException ex) {
+    public ResponseEntity<?> handleInvalidTokenException(JwtException ex) {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         return ResponseEntity
                 .status(status)
                 .body(new ErrorDetails(
                     status, 
                     ClientErrorKey.INVALID_TOKEN.name(), 
+                    LocalDateTime.now()
+                ));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleAuthenticationException(BadCredentialsException  ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorDetails(
+                    status, 
+                    ClientErrorKey.INVALID_CREDENTIALS.name(), 
+                    LocalDateTime.now()
+                ));
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<?> handleDisabledException(DisabledException  ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorDetails(
+                    status, 
+                    ClientErrorKey.DISABLED_ACCOUNT.name(), 
+                    LocalDateTime.now()
+                ));
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<?> handleLockedException(LockedException  ex) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+        return ResponseEntity
+                .status(status)
+                .body(new ErrorDetails(
+                    status, 
+                    ClientErrorKey.LOCKED_ACCOUNT.name(), 
                     LocalDateTime.now()
                 ));
     }
