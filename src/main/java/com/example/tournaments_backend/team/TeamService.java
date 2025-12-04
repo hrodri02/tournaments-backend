@@ -7,10 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
@@ -22,7 +24,6 @@ import com.example.tournaments_backend.team_invite.TeamInviteService;
 import com.example.tournaments_backend.team_invite.TeamInviteStatus;
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserService;
-import com.example.tournaments_backend.exception.ErrorType;
 
 @Service
 @AllArgsConstructor
@@ -63,7 +64,7 @@ public class TeamService {
         team.addPlayer(owner);
         Team teamInDB = teamRepository.save(team);
 
-        // get all the players by id
+        // get all the players by email
         List<String> playerEmails = teamRequest.getPlayersToInvite();
         List<Player> players = playerService.getAllPlayersByEmail(playerEmails);
         // create a team invitation for each player
@@ -85,12 +86,17 @@ public class TeamService {
     public Team getTeamById(Long id) throws ServiceException {
         Team team = teamRepository
                         .findById(id)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_NOT_FOUND, 
+                            "Team", 
+                            "Team with given id not found."
+                        ));
         return team;
     }
 
     @Transactional
-    public Team deleteTeamById(Long id) {
+    public Team deleteTeamById(Long id) throws ServiceException {
         Team team = getTeamById(id);
         for (League league : team.getLeagues()) {
             league.getTeams().remove(team);
@@ -106,7 +112,12 @@ public class TeamService {
     public Team updateTeam(Long id, TeamRequest teamRequest) throws ServiceException {
         Team oldTeam = teamRepository
                         .findById(id)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_NOT_FOUND, 
+                            "Team",
+                            "Team with given id not found."
+                        ));
         oldTeam.setName(teamRequest.getName());
         
         return teamRepository.save(oldTeam);
@@ -115,10 +126,14 @@ public class TeamService {
     @Transactional
     public TeamDTO addPlayerToTeam(Long playerId, Long teamId) throws ServiceException {
         Player player = playerService.getPlayerById(playerId);
-        Team team = 
-            teamRepository
+        Team team = teamRepository
                 .findById(teamId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team",
+                    "Team with given id not found."
+                ));
         team.addPlayer(player);
         Team teamInDB = teamRepository.save(team);
         TeamDTO teamDTO = new TeamDTO(teamInDB);
@@ -128,10 +143,14 @@ public class TeamService {
     @Transactional
     public TeamDTO deletePlayerFromTeam(Long playerId, Long teamId) throws ServiceException {
         Player player = playerService.getPlayerById(playerId);
-        Team team = 
-            teamRepository
+        Team team = teamRepository
                 .findById(teamId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team","Team with given id not found."));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team",
+                    "Team with given id not found."
+                ));
         team.deletePlayer(player);
         Team teamInDB = teamRepository.save(team);
         TeamDTO teamDTO = new TeamDTO(teamInDB);
