@@ -2,12 +2,13 @@ package com.example.tournaments_backend.player;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.AllArgsConstructor;
 
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 
 @Service
@@ -20,27 +21,39 @@ public class PlayerService {
     }
 
     public PlayerDTO getPlayerDTOById(Long id) throws ServiceException {
-        Player player = 
-            playerRepository
+        Player player = playerRepository
                 .findById(id)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.USER_NOT_FOUND, 
+                    "Player", 
+                    "Player with given id not found."
+                ));
         PlayerDTO playerDTO = new PlayerDTO(player);
         return playerDTO;
     }
 
     public Player getPlayerById(Long id) throws ServiceException {
-        Player player = 
-            playerRepository
+        Player player = playerRepository
                 .findById(id)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.USER_NOT_FOUND, 
+                    "Player", 
+                    "Player with given id not found."
+                ));
         return player;
     }
 
     public Player getPlayerByEmail(String email) throws ServiceException {
-        Player player = 
-            playerRepository
+        Player player = playerRepository
                 .findByEmail(email)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.USER_NOT_FOUND, 
+                    "Player", 
+                    "Player with given email not found."
+                ));
         return player;
     }
 
@@ -50,11 +63,15 @@ public class PlayerService {
 
     @Transactional
     public PlayerDTO updatePlayer(Long id, PlayerDTO updatedPlayer) throws ServiceException {
-        Player player = 
-            playerRepository
+        Player player = playerRepository
                 .findById(id)
                 .orElseThrow(() ->
-                    new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found.")
+                    new ServiceException(
+                        HttpStatus.NOT_FOUND, 
+                        ClientErrorKey.USER_NOT_FOUND, 
+                        "Player", 
+                        "Player with given id not found."
+                    )
                 );
         player.setFirstName(updatedPlayer.getFirstName());
         player.setLastName(updatedPlayer.getLastName());
