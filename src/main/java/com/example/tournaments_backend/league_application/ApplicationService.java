@@ -58,7 +58,7 @@ public class ApplicationService {
                             .findById(leagueId)
                             .orElseThrow(() -> new ServiceException(
                                 HttpStatus.NOT_FOUND, 
-                                ClientErrorKey.INVALID_INPUT, 
+                                ClientErrorKey.LEAGUE_NOT_FOUND, 
                                 "League", 
                                 "League with id = " + leagueId + " not found."
                             ));
