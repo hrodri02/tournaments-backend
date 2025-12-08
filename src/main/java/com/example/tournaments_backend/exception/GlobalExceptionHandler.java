@@ -2,7 +2,9 @@ package com.example.tournaments_backend.exception;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +29,31 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
-        }
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorDetails> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        // 1. Extract and map FieldError to the new DTO
+        List<ValidationErrorDetail> errorDetails = ex.getBindingResult().getFieldErrors().stream()
+            .map(error -> ValidationErrorDetail.builder()
+                // Get the field name
+                .field(error.getField()) 
+                // Get the first error code (which is the constraint name, e.g., NotNull, Size)
+                .errorKey(error.getCode()) 
+                // Get the default message (useful for development logs)
+                .message(error.getDefaultMessage()) 
+                .build())
+            .collect(Collectors.toList());
+
+        // 2. Create the unified response object
+        ErrorDetails response = new ErrorDetails(
+            HttpStatus.BAD_REQUEST,
+            // Use a general key for validation failure
+            ClientErrorKey.VALIDATION_FAILED.name(), 
+            errorDetails 
+        );
+        
+        // Set the list of errors in the response (if not done in the constructor)
+        response.setValidationErrors(errorDetails);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
