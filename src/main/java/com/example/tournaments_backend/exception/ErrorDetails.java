@@ -5,12 +5,15 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class ErrorDetails {
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private HttpStatus status;
     private String errorKey;
     private LocalDateTime timestamp;
