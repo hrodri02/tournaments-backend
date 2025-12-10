@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.tournaments_backend.exception.ErrorType;
+
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamService;
@@ -28,7 +30,13 @@ public class LeagueService {
     public League addTeamToLeague(Long leagueId, Long teamId) throws ServiceException {
         League league = leagueRepository
                             .findById(leagueId)
-                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id was not found."));
+                            .orElseThrow(() -> new ServiceException(
+                                HttpStatus.NOT_FOUND, 
+                                ClientErrorKey.LEAGUE_NOT_FOUND, 
+                                "League", 
+                                "League with given id was not found."
+                            ));
+                        
         Team team = teamService.getTeamById(teamId);
         league.addTeam(team);
         League leagueInDB = leagueRepository.save(league);
@@ -41,13 +49,13 @@ public class LeagueService {
         if (optionalStatus.isPresent()) {
             LeagueStatus status = optionalStatus.get();
             switch (status) {
-                case LeagueStatus.NOT_STARTED:
+                case NOT_STARTED:
                     leagues = leagueRepository.findByStartDateAfter(today);
                     break;
-                case LeagueStatus.IN_PROGRESS:
+                case IN_PROGRESS:
                     leagues = leagueRepository.findInProgressLeagues(today);
                     break;
-                case LeagueStatus.ENDED:
+                case ENDED:
                     leagues = leagueRepository.findEndedLeagues(today);
                     break;
                 default:
@@ -63,7 +71,12 @@ public class LeagueService {
     public League getLeagueById(Long id) throws ServiceException {
         League league = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League","The league with the given id was not found."));
+                            .orElseThrow(() -> new ServiceException(
+                                HttpStatus.NOT_FOUND, 
+                                ClientErrorKey.LEAGUE_NOT_FOUND, 
+                                "League",
+                                "The league with the given id was not found."
+                            ));
         return league;
     }
 
@@ -78,7 +91,12 @@ public class LeagueService {
     public League updateLeague(Long id, LeagueRequest leagueRequest) throws ServiceException {
         League oldLeague = leagueRepository
                             .findById(id)
-                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League","The league with the given id was not found."));
+                            .orElseThrow(() -> new ServiceException(
+                                HttpStatus.NOT_FOUND, 
+                                ClientErrorKey.LEAGUE_NOT_FOUND, 
+                                "League",
+                                "The league with the given id was not found."
+                            ));
         oldLeague.setName(leagueRequest.getName());
         oldLeague.setStartDate(leagueRequest.getStartDate());
         oldLeague.setDurationInWeeks(leagueRequest.getDurationInWeeks());

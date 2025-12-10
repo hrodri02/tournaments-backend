@@ -1,20 +1,23 @@
 package com.example.tournaments_backend.exception;
+import org.springframework.http.HttpStatus;
 
+import lombok.Getter;
+
+@Getter
 public class ServiceException extends RuntimeException {
-    private final ErrorType errorType;
+    private final HttpStatus status;
+    private final ClientErrorKey errorKey;
     private final String resourceName;
     
-    public ServiceException(ErrorType errorType, String resourceName, String message) {
+    public ServiceException(
+        HttpStatus status,
+        ClientErrorKey errorKey, 
+        String resourceName, 
+        String message) 
+    {
         super(message);
-        this.errorType = errorType;
+        this.status = status;
+        this.errorKey = errorKey;
         this.resourceName = resourceName;
-    }
-
-    public ErrorType getErrorType() {
-        return this.errorType;
-    }
-
-    public String getResourceName() {
-        return this.resourceName;
     }
 }

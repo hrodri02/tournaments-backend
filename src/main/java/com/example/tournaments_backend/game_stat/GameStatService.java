@@ -8,11 +8,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.tournaments_backend.exception.ServiceException;
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.game.Game;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.game.GameRepository;
@@ -31,25 +32,40 @@ public class GameStatService {
     public GameStat addGameStat(GameStatRequest gameStatRequest) throws ServiceException {
         GameStat gameStat = new GameStat(gameStatRequest);
         Long gameId = gameStatRequest.getGameId();
-        Game game = 
-            gameRepository
+        
+        // 1. Check if Game exists
+        Game game = gameRepository
                 .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND,
+                    // Assuming you have or will add GAME_NOT_FOUND to ClientErrorKey
+                    // If not, use ClientErrorKey.INVALID_INPUT
+                    ClientErrorKey.GAME_NOT_FOUND, 
+                    "Game", 
+                    "Game with id = " + gameId + " not found"
+                ));
 
-        // if the game ended or hasn't started throw exception
+        // 2. Check game status
         if (!game.isActive()) {
             throw new ServiceException(
-                ErrorType.GAME_INACTIVE,
+                HttpStatus.BAD_REQUEST, // State/business rule violation
+                ClientErrorKey.GAME_INACTIVE,
                 "Game",
                 "Game is inactive."
             );
         }
 
+        // 3. Check if Player exists
         Long playerId = gameStatRequest.getPlayerId();
         Player player =
             playerRepository
                 .findById(playerId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with id = " + playerId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.USER_NOT_FOUND, // Using generic key for resource not found
+                    "Player", 
+                    "Player with id = " + playerId + " not found"
+                ));
         gameStat.setGame(game);
         gameStat.setPlayer(player);   
         return gameStatRepository.save(gameStat); 
@@ -61,9 +77,15 @@ public class GameStatService {
         
         if (optionalGameId.isPresent()) {
             Long gameId = optionalGameId.get();
+            // Check if Game exists
             gameRepository
                 .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_NOT_FOUND, // Using generic key for resource not found
+                    "Game", 
+                    "Game with id = " + gameId + " not found"
+                ));
             gameStats = gameStatRepository.findByGame_Id(gameId);
         } 
         else {
@@ -75,21 +97,34 @@ public class GameStatService {
 
     @Transactional
     public GameStat deleteGameStatById(Long id) throws ServiceException {
+        // 1. Check if GameStat exists
         GameStat gameStat = 
             gameStatRepository
                 .findById(id)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_NOT_FOUND, // Using generic key for resource not found
+                    "Game stat", 
+                    "GameStat with id = " + id + " not found"
+                ));
 
         Long gameId = gameStat.getGame().getId();
+        // 2. Check if Game exists
         Game game = 
             gameRepository
                 .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_STAT_NOT_FOUND, // Using generic key for resource not found
+                    "Game", 
+                    "Game with id = " + gameId + " not found"
+                ));
                 
-        // if the game ended or hasn't started throw exception
+        // 3. Check game status
         if (!game.isActive()) {
             throw new ServiceException(
-                ErrorType.GAME_INACTIVE,
+                HttpStatus.BAD_REQUEST, // State/business rule violation
+                ClientErrorKey.GAME_INACTIVE,
                 "Game",
                 "Game is inactive."
             );
@@ -102,30 +137,49 @@ public class GameStatService {
 
     @Transactional
     public GameStat updateGameStatById(Long id, GameStatRequest gameStatRequest) throws ServiceException {
+        // 1. Check if GameStat exists
         GameStat gameStat = 
             gameStatRepository
                 .findById(id)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game stat", "GameStat with id = " + id + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_STAT_NOT_FOUND, // Using generic key for resource not found
+                    "Game stat", 
+                    "GameStat with id = " + id + " not found"
+                ));
+        
         Long gameId = gameStatRequest.getGameId();
-        Game game = 
-            gameRepository
+        // 2. Check if Game exists
+        Game game = gameRepository
                 .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with id = " + gameId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_NOT_FOUND, // Using generic key for resource not found
+                    "Game", 
+                    "Game with id = " + gameId + " not found"
+                ));
 
-        // if the game ended or hasn't started throw exception
+        // 3. Check game status
         if (!game.isActive()) {
             throw new ServiceException(
-                ErrorType.GAME_INACTIVE,
+                HttpStatus.BAD_REQUEST, // State/business rule violation
+                ClientErrorKey.GAME_INACTIVE,
                 "Game",
                 "Game is inactive."
             );
         }
 
+        // 4. Check if Player exists
         Long playerId = gameStatRequest.getPlayerId();
         Player player =
             playerRepository
                 .findById(playerId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with id = " + playerId + " not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.USER_NOT_FOUND, // Using generic key for resource not found
+                    "Player", 
+                    "Player with id = " + playerId + " not found"
+                ));
         gameStat.setGame(game);
         gameStat.setPlayer(player);
         gameStat.setType(gameStatRequest.getType());

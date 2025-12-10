@@ -1,5 +1,6 @@
 package com.example.tournaments_backend.app_user;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,7 +12,7 @@ import com.example.tournaments_backend.auth.tokens.confirmationToken.Confirmatio
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerService;
@@ -88,7 +89,11 @@ public class AppUserService implements UserDetailsService {
             .isPresent();
         
         if (userExists) {
-            throw new ServiceException(ErrorType.ALREADY_EXISTS, "App user","User already exists.");
+            throw new ServiceException(
+                HttpStatus.CONFLICT, 
+                ClientErrorKey.USER_ALREADY_EXISTS, 
+                "App user",
+                "User already exists.");
         }
 
         String encodedPassword = bCryptPasswordEncoder.encode(appUser.getPassword());

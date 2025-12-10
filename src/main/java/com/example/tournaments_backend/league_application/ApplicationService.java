@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.JoinLeagueRequest;
 import com.example.tournaments_backend.league.League;
@@ -34,24 +35,44 @@ public class ApplicationService {
         Long teamId = request.getTeamId();
         Team team = teamRepository
                         .findById(teamId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_NOT_FOUND, 
+                            "Team", 
+                            "Team with id = " + teamId + " not found."
+                        ));
         
         String currentUserEmail = authentication.getName();
         String ownerEmail = team.getOwner().getEmail();
         // check if current user owns the team
         if (!currentUserEmail.equals(ownerEmail)) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "League Application", "Current user does not own this team.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.NOT_TEAM_OWNER, 
+                "League Application", 
+                "Current user does not own this team."
+            );
         }
 
         League league = leagueRepository
                             .findById(leagueId)
-                            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id not found."));
+                            .orElseThrow(() -> new ServiceException(
+                                HttpStatus.NOT_FOUND, 
+                                ClientErrorKey.LEAGUE_NOT_FOUND, 
+                                "League", 
+                                "League with id = " + leagueId + " not found."
+                            ));
         // check if team is already part of the league
         Set<Team> teamsInLeague = league.getTeams();
         if (teamsInLeague.contains(team)) {
             String teamName = team.getName();
             String leagueName = league.getName();
-            throw new ServiceException(ErrorType.ALREADY_EXISTS, "League Application", teamName + " is already part of " + leagueName + ".");
+            throw new ServiceException(
+                HttpStatus.CONFLICT, 
+                ClientErrorKey.TEAM_IN_LEAGUE, 
+                "League Application", 
+                teamName + " is already part of " + leagueName + "."
+            );
         }
         
         Application application = 
@@ -63,7 +84,12 @@ public class ApplicationService {
     public Application updateApplication(Long applicationId, UpdateApplicationRequest request) throws ServiceException {
         Application application = applicationRepository
                                     .findById(applicationId)
-                                    .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Application", "Application with given id not found."));
+                                    .orElseThrow(() -> new ServiceException(
+                                        HttpStatus.NOT_FOUND, 
+                                        ClientErrorKey.APPLICATION_NOT_FOUND, 
+                                        "Application", 
+                                        "Application with id = " + applicationId + " not found."
+                                    ));
         ApplicationStatus status = request.getStatus();
         application.setStatus(status);
         // if the application is accepted
@@ -82,19 +108,29 @@ public class ApplicationService {
         Optional<Long> optionalTeamId,
         Optional<Long> optionalLeagueId,
         Authentication authentication
-    ) 
+    ) throws ServiceException
     {
         List<Application> applications;
         if (optionalTeamId.isPresent()) {
             Long teamId = optionalTeamId.get();
             Team team = teamRepository
                         .findById(teamId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_NOT_FOUND, 
+                            "Team", 
+                            "Team with id = " + teamId + " not found."
+                        ));
             // check if client owns the team they want to retrieve the applications for
             String currentUserEmail = authentication.getName();
             String ownerEmail = team.getOwner().getEmail();
             if (!currentUserEmail.equals(ownerEmail)) {
-                throw new ServiceException(ErrorType.FORBIDDEN, "League Application", "Current user does not own this team.");
+                throw new ServiceException(
+                    HttpStatus.FORBIDDEN, 
+                    ClientErrorKey.NOT_TEAM_OWNER, 
+                    "League Application", 
+                    "Current user does not own this team."
+                );
             }
             applications = applicationRepository.findAllByTeamId(teamId);
         }

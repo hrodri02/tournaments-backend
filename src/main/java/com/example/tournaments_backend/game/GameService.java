@@ -3,10 +3,11 @@ package com.example.tournaments_backend.game;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.league.LeagueRepository;
@@ -28,18 +29,32 @@ public class GameService {
         Long homeTeamId = gameRequest.getHomeTeamId();
         Long awayTeamId = gameRequest.getAwayTeamId();
         Long leagueId = gameRequest.getLeagueId();
-        Team homeTeam = 
-            teamRepository
+
+        Team homeTeam = teamRepository
                 .findById(homeTeamId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
-        Team awayTeam = 
-            teamRepository
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team", 
+                    "Home Team with id = " + homeTeamId + " not found"
+                ));
+        Team awayTeam = teamRepository
                 .findById(awayTeamId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team", 
+                    "Away Team with id = " + awayTeamId + " not found"
+                ));
         League league = 
             leagueRepository
                 .findById(leagueId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.LEAGUE_NOT_FOUND, 
+                    "League", 
+                    "League with id = " + leagueId + " not found"
+                ));
         game.setHomeTeam(homeTeam);
         game.setAwayTeam(awayTeam);
         game.setLeague(league);
@@ -55,10 +70,14 @@ public class GameService {
     }
 
     public Game getGameById(Long gameId) throws ServiceException {
-        Game game =
-            gameRepository
+        Game game = gameRepository
                 .findById(gameId)
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Game", "Game with given id not found"));
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.GAME_NOT_FOUND, 
+                    "Game", 
+                    "Game with id = " + gameId + " not found"
+                ));
         return game;
     }
 
@@ -75,18 +94,37 @@ public class GameService {
         gameInDB.setAddress(updatedGame.getAddress());
         gameInDB.setDurationInMinutes(updatedGame.getDurationInMinutes());
         gameInDB.setGameDateTime(updatedGame.getGameDateTime());
-        Team homeTeam = 
-            teamRepository
-                .findById(updatedGame.getHomeTeamId())
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
-        Team awayTeam = 
-            teamRepository
-                .findById(updatedGame.getAwayTeamId())
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found"));
-        League league = 
-            leagueRepository
-                .findById(updatedGame.getLeagueId())
-                .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "League", "League with given id not found"));
+
+        Long homeTeamId = updatedGame.getHomeTeamId();
+        Team homeTeam = teamRepository
+                .findById(homeTeamId)
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team", 
+                    "Home Team with id = " + homeTeamId + " not found"
+                ));
+        
+        Long awayTeamId = updatedGame.getAwayTeamId();
+        Team awayTeam = teamRepository
+                .findById(awayTeamId)
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.TEAM_NOT_FOUND, 
+                    "Team", 
+                    "Away Team with id = " + awayTeamId + " not found"
+                ));
+        
+        Long leagueId = updatedGame.getLeagueId();
+        League league = leagueRepository
+                .findById(leagueId)
+                .orElseThrow(() -> new ServiceException(
+                    HttpStatus.NOT_FOUND, 
+                    ClientErrorKey.LEAGUE_NOT_FOUND, 
+                    "League", 
+                    "League with id = " + leagueId + " not found"
+                ));
+        
         gameInDB.setHomeTeam(homeTeam);
         gameInDB.setAwayTeam(awayTeam);
         gameInDB.setLeague(league);

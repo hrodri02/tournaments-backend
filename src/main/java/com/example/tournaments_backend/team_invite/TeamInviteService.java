@@ -2,13 +2,14 @@ package com.example.tournaments_backend.team_invite;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.tournaments_backend.email.EmailSender;
-import com.example.tournaments_backend.exception.ErrorType;
+import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerRepository;
@@ -28,21 +29,40 @@ public class TeamInviteService {
 
     @Transactional
     public TeamInvite addTeamInvite(CreateTeamInviteRequest request, Long teamId, Authentication authentication) throws ServiceException {
+        // 1. Check if Team exists
         Team team = teamRepository
                         .findById(teamId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team", "Team with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_NOT_FOUND, 
+                            "Team", 
+                            "Team with given id not found."
+                        ));
 
+        // 2. Check if Player (invitee) exists
         String playerEmail = request.getEmail();
         Player player = playerRepository
                         .findByEmail(playerEmail)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.USER_NOT_FOUND, 
+                            "Player", 
+                            "Player with given email not found."
+                        ));
 
+        // 3. Check if current user is the team owner
         String currentUserEmail = authentication.getName();
         String ownerEmail = team.getOwner().getEmail();
         if (!currentUserEmail.equals(ownerEmail)) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user does not own this team.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.NOT_TEAM_OWNER, 
+                "Team Invite", 
+                "Current user does not own this team."
+            );
         }
 
+        // 4. Create or update invite
         TeamInvite invite = teamInviteRepository
                                 .findByTeamIdAndInviteeId(teamId, player.getId())
                                 .orElse(new TeamInvite());
@@ -52,6 +72,8 @@ public class TeamInviteService {
         invite.setCreatedAt(request.getCreatedAt());
 
         TeamInvite inviteInDB = teamInviteRepository.save(invite);
+        
+        // 5. Send email notification
         Long inviteId = inviteInDB.getId();
         String acceptLink = "http://localhost:8080/api/v1/team-invites/" + inviteId + "/accept";
         String declineLink = "http://localhost:8080/api/v1/team-invites/" + inviteId + "/decline";
@@ -70,23 +92,42 @@ public class TeamInviteService {
     }
 
     @Transactional
-    public AcceptTeamInviteResponse accepInvite(Long inviteId, Authentication authentication) {
+    public AcceptTeamInviteResponse accepInvite(Long inviteId, Authentication authentication) throws ServiceException {
+        // 1. Check if Invite exists
         TeamInvite invite = teamInviteRepository
                         .findById(inviteId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_INVITE_NOT_FOUND, 
+                            "Team Invite", 
+                            "Team Invite with given id not found."
+                        ));
 
+        // 2. Check invite status (if revoked)
         if (invite.getStatus() == TeamInviteStatus.REVOKED) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite to join team was revoked.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.TEAM_INVITE_REVOKED, 
+                "Team Invite", 
+                "Invite to join team was revoked."
+            );
         }
 
         Player player = invite.getInvitee();
         String currentUserEmail = authentication.getName();
         String inviteeEmail = player.getEmail();
 
+        // 3. Check if current user is the invitee
         if (!currentUserEmail.equals(inviteeEmail)) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user was not invited to join this team.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.USER_NOT_INVITED_TO_TEAM, 
+                "Team Invite", 
+                "Current user was not invited to join this team."
+            );
         }
 
+        // 4. Accept invite
         Team team = invite.getTeam();
         team.addPlayer(player);
         invite.setStatus(TeamInviteStatus.ACCEPTED);
@@ -100,55 +141,105 @@ public class TeamInviteService {
     }
 
     @Transactional
-    public TeamInvite declineInvite(Long inviteId, Authentication authentication) {
+    public TeamInvite declineInvite(Long inviteId, Authentication authentication) throws ServiceException {
+        // 1. Check if Invite exists
         TeamInvite invite = teamInviteRepository
                         .findById(inviteId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_INVITE_NOT_FOUND, 
+                            "Team Invite", 
+                            "Team Invite with given id not found."
+                        ));
 
+        // 2. Check invite status (if revoked)
         if (invite.getStatus() == TeamInviteStatus.REVOKED) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite to join team was revoked.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.TEAM_INVITE_REVOKED, 
+                "Team Invite", 
+                "Invite to join team was revoked."
+            );
         }
 
         Player player = invite.getInvitee();
         String currentUserEmail = authentication.getName();
         String inviteeEmail = player.getEmail();
 
+        // 3. Check if current user is the invitee
         if (!currentUserEmail.equals(inviteeEmail)) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user was not invited to join this team.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.USER_NOT_INVITED_TO_TEAM, 
+                "Team Invite", 
+                "Current user was not invited to join this team."
+            );
         }
 
+        // 4. Decline invite
         invite.setStatus(TeamInviteStatus.DECLINED);
         return teamInviteRepository.save(invite);
     }
 
     @Transactional
-    public TeamInvite revokeInvite(@PathVariable Long inviteId, Authentication authentication) {
+    public TeamInvite revokeInvite(@PathVariable Long inviteId, Authentication authentication) throws ServiceException {
+        // 1. Check if Invite exists
         TeamInvite invite = teamInviteRepository
                         .findById(inviteId)
-                        .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Team Invite", "Team Invite with given id not found."));
+                        .orElseThrow(() -> new ServiceException(
+                            HttpStatus.NOT_FOUND, 
+                            ClientErrorKey.TEAM_INVITE_NOT_FOUND, 
+                            "Team Invite", 
+                            "Team Invite with given id not found."
+                        ));
 
         TeamInviteStatus status = invite.getStatus();
+        // 2. Check if invite status prevents revocation
         if (status == TeamInviteStatus.ACCEPTED || status == TeamInviteStatus.DECLINED) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Invite was already accepted/declined.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.TEAM_INVITE_ALREADY_ACCEPTED_OR_DENIED, 
+                "Team Invite", 
+                "Invite was already accepted/declined."
+            );
         }
 
+        // 3. Check if current user is the team owner
         String currentUserEmail = authentication.getName();
         String ownerEmail = invite.getTeam().getOwner().getEmail();
         if (!currentUserEmail.equals(ownerEmail)) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Team Invite", "Current user does not own this team.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.NOT_TEAM_OWNER, 
+                "Team Invite", 
+                "Current user does not own this team."
+            );
         }
 
+        // 4. Revoke invite
         invite.setStatus(TeamInviteStatus.REVOKED);
         return teamInviteRepository.save(invite);
     }
 
     public List<TeamInvite> getAllInvitesByPlayerId(Long playerId, Authentication authentication) throws ServiceException {
+        // 1. Check if Player exists
         Player player = playerRepository
             .findById(playerId)
-            .orElseThrow(() -> new ServiceException(ErrorType.NOT_FOUND, "Player", "Player with given id not found."));
+            .orElseThrow(() -> new ServiceException(
+                HttpStatus.NOT_FOUND, 
+                ClientErrorKey.USER_NOT_FOUND, 
+                "Player", 
+                "Player with given id not found."
+            ));
 
+        // 2. Check if current user matches the player ID
         if (!authentication.getName().equals(player.getEmail())) {
-            throw new ServiceException(ErrorType.FORBIDDEN, "Player", "Current user does not match playerId.");
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.UNAUTHORIZED_TO_ACCESS_TEAM_INVITES, 
+                "Player", 
+                "Current user does not match playerId."
+            );
         }
 
         return teamInviteRepository.findAllByInviteeId(playerId);
