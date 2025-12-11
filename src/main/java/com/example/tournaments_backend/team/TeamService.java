@@ -119,6 +119,7 @@ public class TeamService {
                             "Team with given id not found."
                         ));
         oldTeam.setName(teamRequest.getName());
+        oldTeam.setLogoUrl(teamRequest.getLogoUrl());
         
         return teamRepository.save(oldTeam);
     }
