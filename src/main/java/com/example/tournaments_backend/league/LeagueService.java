@@ -100,6 +100,7 @@ public class LeagueService {
         oldLeague.setName(leagueRequest.getName());
         oldLeague.setStartDate(leagueRequest.getStartDate());
         oldLeague.setDurationInWeeks(leagueRequest.getDurationInWeeks());
+        oldLeague.setLogoUrl(leagueRequest.getLogoUrl());
         return leagueRepository.save(oldLeague);
     }
 }

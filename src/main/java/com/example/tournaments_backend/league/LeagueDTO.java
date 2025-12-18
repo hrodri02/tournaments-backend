@@ -17,6 +17,7 @@ public class LeagueDTO {
     private LeagueStatus status;
     private LocalDate startDate;
     private Integer durationInWeeks;
+    private String logoUrl;
     private List<TeamDTO> teams;
 
     public LeagueDTO(League league) {
@@ -24,6 +25,7 @@ public class LeagueDTO {
         this.name = league.getName();
         this.startDate = league.getStartDate();
         this.durationInWeeks = league.getDurationInWeeks();
+        this.logoUrl = league.getLogoUrl();
         setStatus();
         Set<Team> teamsSet = league.getTeams();
         if (teamsSet != null) {

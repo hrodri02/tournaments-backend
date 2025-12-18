@@ -25,4 +25,5 @@ public class LeagueRequest {
     @NotNull
     @Min(value = 4, message = "League duration must be at least 4 weeks long.")
     private final Integer durationInWeeks;
+    private final String logoUrl;
 }
