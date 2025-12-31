@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.groups.Default;
 
 @RestController
 @RequestMapping(path="/api/v1/leagues")
@@ -54,7 +56,10 @@ public class LeagueController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PostMapping
-    public ResponseEntity<LeagueDTO> addLeague(@RequestBody @Valid LeagueRequest leagueRequest) {
+    public ResponseEntity<LeagueDTO> addLeague(
+        @Validated({LeagueRequest.OnCreate.class, Default.class})
+        @RequestBody LeagueRequest leagueRequest) 
+    {
         League leagueInDB = leagueService.addLeague(leagueRequest);
         LeagueDTO leagueDTO = new LeagueDTO(leagueInDB);
         return ResponseEntity.ok().body(leagueDTO);
@@ -142,7 +147,11 @@ public class LeagueController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @PutMapping("{leagueId}")
-    public ResponseEntity<LeagueDTO> updateLeague(@PathVariable("leagueId") Long leagueId, @RequestBody @Valid LeagueRequest leagueRequest) throws ServiceException {
+    public ResponseEntity<LeagueDTO> updateLeague(
+        @PathVariable("leagueId") Long leagueId, 
+        @Validated(Default.class)
+        @RequestBody LeagueRequest leagueRequest) throws ServiceException 
+    {
         League leagueInDB = leagueService.updateLeague(leagueId, leagueRequest);
         LeagueDTO leagueDTO = new LeagueDTO(leagueInDB);
         return ResponseEntity.ok(leagueDTO);

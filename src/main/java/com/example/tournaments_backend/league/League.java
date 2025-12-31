@@ -47,6 +47,8 @@ public class League {
     private LocalDate startDate;
     @Column(name = "duration_in_weeks")
     private Integer durationInWeeks;
+    @Column(name = "logo_url")
+    private String logoUrl;
     @ManyToMany
     @JoinTable(
         name = "league_team",
