@@ -1,7 +1,8 @@
 package com.example.tournaments_backend.security;
 
 import static com.example.tournaments_backend.security.SecurityConstants.AUTHORIZATION_HEADER;
-import static com.example.tournaments_backend.security.SecurityConstants.EXPIRATION_TIME;
+import static com.example.tournaments_backend.security.SecurityConstants.ACCESS_TOKEN_EXPIRATION_TIME;
+import static com.example.tournaments_backend.security.SecurityConstants.REFRESH_TOKEN_EXPIRATION_TIME;
 import static com.example.tournaments_backend.security.SecurityConstants.SECRET;
 import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
@@ -21,12 +22,25 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 public class JwtService {
-    public String createToken(String username, AppUserRole role) {
+    public String createAccessToken(String username, AppUserRole role) {
       Date now = new Date();
-      Date validity = new Date(now.getTime() + EXPIRATION_TIME);
+      Date validity = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION_TIME);
+      
       return Jwts.builder()
          .subject(username)
          .claim("auth", role.name())
+         .issuedAt(now)
+         .expiration(validity)
+         .signWith(getSignInKey())
+         .compact();
+   }
+
+   public String createRefreshToken(String username) {
+      Date now = new Date();
+      Date validity = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_TIME); 
+
+      return Jwts.builder()
+         .subject(username)
          .issuedAt(now)
          .expiration(validity)
          .signWith(getSignInKey())
