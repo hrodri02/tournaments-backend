@@ -29,6 +29,14 @@ public class UserDTO {
     @NotNull
     private AppUserRole appUserRole;
 
+    public UserDTO(AppUser appUser) {
+        this.id = appUser.getId();
+        this.firstName = appUser.getFirstName();
+        this.lastName = appUser.getLastName();
+        this.email = appUser.getEmail();
+        this.appUserRole = appUser.getAppUserRole();
+    }
+
     public UserDTO(Long id, String firstName, String lastName, String email, AppUserRole appUserRole) {
         this.id = id;
         this.firstName = firstName;
