@@ -16,6 +16,8 @@ import com.example.tournaments_backend.app_user.AppUserRole;
 import com.example.tournaments_backend.app_user.AppUserService;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshTokenService;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
@@ -30,6 +32,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthService {
     private final AppUserService appUserService;
+    private final RefreshTokenService refreshTokenService;
     private final ConfirmationTokenService confirmationTokenService;
     private final ResetTokenService resetTokenService;
     private JwtService jwtService;
@@ -79,7 +82,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws ServiceException {
+    public AppUser confirmToken(String token) throws ServiceException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
             .orElseThrow(
@@ -113,13 +116,23 @@ public class AuthService {
         confirmationTokenService.setConfirmedAt(token);
         AppUser user = confirmationToken.getAppUser();
         appUserService.enableAppUser(user.getEmail());
-
-        // create jwt with username and user roles
-        return generateJWS(user);
+        return user;
     }
 
-    public String generateJWS(AppUser user) {
-        return jwtService.createToken(user.getEmail(), user.getAppUserRole());
+    public String generateAccessToken(AppUser user) {
+        return jwtService.createAccessToken(user.getEmail(), user.getAppUserRole());
+    }
+
+    public String generateRefreshToken(AppUser user) {
+        return jwtService.createRefreshToken(user.getEmail());
+    }
+
+    public void saveRefreshToken(RefreshToken refreshToken) {
+        refreshTokenService.save(refreshToken);
+    }
+
+    public Long getExpirationTime(String compactJws) {
+        return jwtService.getExpirationTime(compactJws);
     }
 
     public void resendEmail(String email) throws UsernameNotFoundException {
