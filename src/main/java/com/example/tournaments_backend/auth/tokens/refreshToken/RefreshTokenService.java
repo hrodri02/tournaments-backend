@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public void saveRefreshToken(RefreshToken token) {
+    public void save(RefreshToken token) {
         refreshTokenRepository.save(token);
     }
 }
