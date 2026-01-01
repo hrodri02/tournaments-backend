@@ -1,7 +1,5 @@
 package com.example.tournaments_backend.auth.tokens.refreshToken;
 
-import java.time.LocalDateTime;
-
 import com.example.tournaments_backend.app_user.AppUser;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -11,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,25 +33,22 @@ public class RefreshToken {
     private Long id;
     @Column(nullable = false)
     private String token;
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
-    @JoinColumn(
-        name = "app_user_id", 
-        nullable = false
-    )
+    @Column(name = "expires_in", nullable = false)
+    private Long expiresIn;
+    @ManyToOne
+    @JoinColumn(name = "app_user_id", nullable = false)
     @JsonBackReference
     private AppUser appUser;
     private Boolean revoked;
 
     public RefreshToken(
         String token, 
-        LocalDateTime expiresAt, 
-        AppUser appUser,
-        Boolean revoked
+        Long expiresIn, 
+        AppUser appUser
     ) {
         this.token = token;
-        this.expiresAt = expiresAt;
+        this.expiresIn = expiresIn;
         this.appUser = appUser;
-        this.revoked = revoked;
+        this.revoked = false;
     }
 }
