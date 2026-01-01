@@ -35,6 +35,16 @@ public class JwtService {
          .compact();
    }
 
+   public Long getExpirationTime(String compactJws) {
+      return Jwts.parser()
+                  .verifyWith(getSignInKey())
+                  .build()
+                  .parseSignedClaims(compactJws)
+                  .getPayload()
+                  .getExpiration()
+                  .getTime();
+   }
+
    public String createRefreshToken(String username) {
       Date now = new Date();
       Date validity = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_TIME); 
