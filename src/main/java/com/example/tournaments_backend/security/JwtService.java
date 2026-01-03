@@ -6,6 +6,8 @@ import static com.example.tournaments_backend.security.SecurityConstants.REFRESH
 import static com.example.tournaments_backend.security.SecurityConstants.SECRET;
 import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
@@ -23,36 +25,36 @@ import jakarta.servlet.http.HttpServletRequest;
 @Service
 public class JwtService {
     public String createAccessToken(String username, AppUserRole role) {
-      Date now = new Date();
-      Date validity = new Date(now.getTime() + ACCESS_TOKEN_EXPIRATION_TIME);
+      Instant now = Instant.now();
+      Instant expiry = now.plus(ACCESS_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
       
       return Jwts.builder()
          .subject(username)
          .claim("auth", role.name())
-         .issuedAt(now)
-         .expiration(validity)
+         .issuedAt(Date.from(now))
+         .expiration(Date.from(expiry))
          .signWith(getSignInKey())
          .compact();
    }
 
    public Long getExpirationTime(String compactJws) {
-      return Jwts.parser()
-                  .verifyWith(getSignInKey())
-                  .build()
-                  .parseSignedClaims(compactJws)
-                  .getPayload()
-                  .getExpiration()
-                  .getTime();
+      Date expirationDate = Jwts.parser()
+         .verifyWith(getSignInKey())
+         .build()
+         .parseSignedClaims(compactJws)
+         .getPayload()
+         .getExpiration();
+      return expirationDate.toInstant().getEpochSecond();
    }
 
    public String createRefreshToken(String username) {
-      Date now = new Date();
-      Date validity = new Date(now.getTime() + REFRESH_TOKEN_EXPIRATION_TIME); 
+      Instant now = Instant.now();
+      Instant expiry = now.plus(REFRESH_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
 
       return Jwts.builder()
          .subject(username)
-         .issuedAt(now)
-         .expiration(validity)
+         .issuedAt(Date.from(now))
+         .expiration(Date.from(expiry))
          .signWith(getSignInKey())
          .compact();
    }
