@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.auth;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRole;
 import com.example.tournaments_backend.app_user.AppUserService;
+import com.example.tournaments_backend.auth.tokens.TokensDTO;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshTokenService;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetToken;
 import com.example.tournaments_backend.auth.tokens.resetToken.ResetTokenService;
 import com.example.tournaments_backend.email.EmailSender;
@@ -23,6 +27,7 @@ import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.security.JwtService;
+import com.example.tournaments_backend.security.SecurityConstants;
 
 import lombok.AllArgsConstructor;
 
@@ -30,6 +35,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthService {
     private final AppUserService appUserService;
+    private final RefreshTokenService refreshTokenService;
     private final ConfirmationTokenService confirmationTokenService;
     private final ResetTokenService resetTokenService;
     private JwtService jwtService;
@@ -79,7 +85,7 @@ public class AuthService {
     }
 
     @Transactional
-    public String confirmToken(String token) throws ServiceException {
+    public AppUser confirmToken(String token) throws ServiceException {
         ConfirmationToken confirmationToken = confirmationTokenService
             .getToken(token)
             .orElseThrow(
@@ -113,13 +119,23 @@ public class AuthService {
         confirmationTokenService.setConfirmedAt(token);
         AppUser user = confirmationToken.getAppUser();
         appUserService.enableAppUser(user.getEmail());
-
-        // create jwt with username and user roles
-        return generateJWS(user);
+        return user;
     }
 
-    public String generateJWS(AppUser user) {
-        return jwtService.createToken(user.getEmail(), user.getAppUserRole());
+    public String generateAccessToken(AppUser user) {
+        return jwtService.createAccessToken(user.getEmail(), user.getAppUserRole());
+    }
+
+    public String generateRefreshToken(AppUser user) {
+        return jwtService.createRefreshToken(user.getEmail());
+    }
+
+    public void saveRefreshToken(RefreshToken refreshToken) {
+        refreshTokenService.save(refreshToken);
+    }
+
+    public Long getExpirationTime(String compactJws) {
+        return jwtService.getExpirationTime(compactJws);
     }
 
     public void resendEmail(String email) throws UsernameNotFoundException {
@@ -140,6 +156,62 @@ public class AuthService {
                 buildEmail(appUser.getFirstName(), link)
             );
         }
+    }
+
+    @Transactional
+    public TokensDTO refresh(String refreshToken) throws ServiceException {
+        // 1. JWT Signature/Expiration check
+        boolean isRefreshTokenValid = jwtService.isTokenValid(refreshToken);
+        if (refreshToken == null || !isRefreshTokenValid) {
+            throw new ServiceException(
+                // 401 UNAUTHORIZED for an expired token
+                HttpStatus.UNAUTHORIZED,
+                ClientErrorKey.INVALID_TOKEN, 
+                "Refresh Token", 
+                "Invalid refresh token. Please login into your account again.");
+        }
+
+        // 2. Database existence check
+        Optional<RefreshToken> dbToken = refreshTokenService.findByToken(refreshToken);
+        if (dbToken.isEmpty()) {
+            throw new ServiceException(
+                HttpStatus.NOT_FOUND,
+                ClientErrorKey.REFRESH_TOKEN_NOT_FOUND, 
+                "Refresh Token", 
+                "Refresh token not found.");
+        }
+
+        // 3. Revocation / Security check
+        RefreshToken tokenEntity = dbToken.get();
+        if (tokenEntity.getRevoked()) {
+            // Clear all sessions for this user for safety
+            refreshTokenService.revokeAllForUser(tokenEntity.getAppUser());
+            throw new ServiceException(
+                HttpStatus.FORBIDDEN, 
+                ClientErrorKey.REUSE_DETECTED, 
+                "Security Alert", 
+                "Session compromised. Please login again.");
+        }
+
+        // 4. revoke old refresh token
+        tokenEntity.setRevoked(true);
+
+        // 5. Issue new ones
+        AppUser user = tokenEntity.getAppUser();
+        String newAccess = generateAccessToken(user);
+        Long expiresIn = getExpirationTime(newAccess);
+        String newRefresh = generateRefreshToken(user);
+        Long refreshTokenExpiresIn = getExpirationTime(newAccess);
+        TokensDTO tokensDTO = new TokensDTO(
+                newAccess, 
+                SecurityConstants.TOKEN_TYPE, 
+                newRefresh, 
+                expiresIn
+            );
+
+        // 6. Save the new refresh token to DB
+        refreshTokenService.save(new RefreshToken(newRefresh, refreshTokenExpiresIn, user));
+        return tokensDTO;
     }
 
     // TODO: - test this method since the try catch block was removed

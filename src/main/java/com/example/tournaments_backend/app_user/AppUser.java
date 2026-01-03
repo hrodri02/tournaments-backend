@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -63,6 +64,9 @@ public class AppUser implements UserDetails {
     @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<ConfirmationToken> confirmationTokens; 
+    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<RefreshToken> refreshTokens; 
 
     public AppUser(String firstName,
                   String lastName, 

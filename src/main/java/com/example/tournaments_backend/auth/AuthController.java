@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.UserDTO;
+import com.example.tournaments_backend.auth.tokens.TokensDTO;
+import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
 import com.example.tournaments_backend.exception.ErrorDetails;
 import com.example.tournaments_backend.exception.ServiceException;
+import com.example.tournaments_backend.security.SecurityConstants;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,9 +23,6 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import jakarta.validation.Valid;
 
 import java.util.Map;
-
-import static com.example.tournaments_backend.security.SecurityConstants.AUTHORIZATION_HEADER;
-import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
 import java.time.LocalDateTime;
 
@@ -60,11 +60,10 @@ public class AuthController {
         return ResponseEntity.ok(resBody);
     }
 
-    @Operation(summary = "Logs in a user", description = "Returns the authenticated user")
+    @Operation(summary = "Logs in a user", description = "Returns the authenticated user, access token, refresh token, and expiration time of access token")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully authenticates a user", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDTO.class)),
-            headers = @Header(name = HttpHeaders.AUTHORIZATION, description = "JWT Token", schema = @Schema(type = "string"))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthDTO.class))
         ),
         @ApiResponse(responseCode = "400", description = "Invalid - authentication request is not valid",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
@@ -72,51 +71,66 @@ public class AuthController {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),
     })
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> authenticate(@RequestBody @Valid AuthenticationRequest authRequest) throws AuthenticationException {
+    public ResponseEntity<AuthDTO> authenticate(@RequestBody @Valid AuthenticationRequest authRequest) throws AuthenticationException {
         AppUser authenticatedUser = authService.authenticate(authRequest);
 
         if (!authenticatedUser.getEnabled()) {
             throw new DisabledException("Account is not enabled. Please verify your email.");
         }
 
-        // if user's account is verified
-        String jws = authService.generateJWS(authenticatedUser);
+        // if user's account is verified, generate access token and refresh token
+        String accessToken = authService.generateAccessToken(authenticatedUser);
+        Long expiresIn = authService.getExpirationTime(accessToken);
+        String refreshToken = authService.generateRefreshToken(authenticatedUser);
+        Long refreshTokenExpiresIn = authService.getExpirationTime(refreshToken);
+        RefreshToken token = new RefreshToken(refreshToken, refreshTokenExpiresIn, authenticatedUser);
+        // save refresh token in DB
+        authService.saveRefreshToken(token);
 
-        UserDTO resBody = new UserDTO(
-            authenticatedUser.getId(), 
-            authenticatedUser.getFirstName(),
-            authenticatedUser.getLastName(),
-            authenticatedUser.getEmail(),
-            authenticatedUser.getAppUserRole());
-        
-        // send user json to client with auth token
-        return ResponseEntity
-                .ok()
-                .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + jws)
-                .body(resBody);
+        UserDTO userDTO = new UserDTO(authenticatedUser);
+        TokensDTO tokensDTO = new TokensDTO(
+                accessToken, 
+                SecurityConstants.TOKEN_TYPE, 
+                refreshToken, 
+                expiresIn
+            );
+        AuthDTO authDTO = new AuthDTO(userDTO, tokensDTO);
+        return ResponseEntity.ok(authDTO);
     }
 
-    @Operation(summary = "Enables a user account", description = "Returns a confirmation message along with JWT")
+    @Operation(summary = "Enables a user account", description = "Returns the user along with the access and refresh tokens.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully enables a user's account", 
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthResponse.class)),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthDTO.class)),
             headers = @Header(name = HttpHeaders.AUTHORIZATION, description = "JWT Token", schema = @Schema(type = "string"))
         ),
         @ApiResponse(responseCode = "404", description = "Not found - cofirmation token not found or it expired",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))
     })
     @GetMapping("/confirm")
-    public ResponseEntity<AuthResponse> confirm(
+    public ResponseEntity<AuthDTO> confirm(
         @Parameter(description = "Confirmation token with 15 minute expiration")
         @RequestParam("token") String token) throws ServiceException 
     {
-        String jws = authService.confirmToken(token);
+        AppUser user = authService.confirmToken(token);
 
-        AuthResponse resBody = new AuthResponse("Account verified!");
-        return ResponseEntity
-                .ok()
-                .header(AUTHORIZATION_HEADER, TOKEN_PREFIX + jws)
-                .body(resBody);
+        String accessToken = authService.generateAccessToken(user);
+        Long expiresIn = authService.getExpirationTime(accessToken);
+        String refreshTokenString = authService.generateRefreshToken(user);
+        Long refreshTokenExpiresIn = authService.getExpirationTime(refreshTokenString);
+        
+        UserDTO userDTO = new UserDTO(user);
+        TokensDTO tokensDTO = new TokensDTO(
+                accessToken, 
+                SecurityConstants.TOKEN_TYPE, 
+                refreshTokenString, 
+                expiresIn
+            );
+        AuthDTO authDTO = new AuthDTO(userDTO, tokensDTO);
+        // save refresh token
+        RefreshToken refreshToken = new RefreshToken(refreshTokenString, refreshTokenExpiresIn, user);
+        authService.saveRefreshToken(refreshToken);
+        return ResponseEntity.ok(authDTO);
     }
 
     @Operation(summary = "Resends confirmation link to user's email", description = "Returns a confirmation message")
@@ -135,6 +149,28 @@ public class AuthController {
         authService.resendEmail(email);
         AuthResponse resBody = new AuthResponse("A new confirmation email has been sent.");
         return ResponseEntity.ok(resBody);
+    }
+
+    @Operation(summary = "Refreshes the client's tokens", description = "Returns a new access token, refresh token, access token type, and access token expiration time.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully returns tokens and metadata to client.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokensDTO.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "Invalid or missing refresh token.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+        @ApiResponse(responseCode = "403", description = "Reuse token detected. Session compromised.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "Refresh token not found in database.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<TokensDTO> refresh(@RequestBody RefreshRequest request) {
+        String refreshToken = request.refreshToken();
+        TokensDTO tokens = authService.refresh(refreshToken);
+        return ResponseEntity.ok(tokens);
     }
 
     @Operation(summary = "Sends password reset instructions to user's email", description = "Returns a confirmation message")

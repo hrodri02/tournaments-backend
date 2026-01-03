@@ -43,7 +43,6 @@ public class AppUserService implements UserDetailsService {
         AppUser appUser = appUserRepository
                             .findAppUserByEmail(email)
                             .orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        System.out.println("person service " + appUser);
         return appUser;
     }
 
