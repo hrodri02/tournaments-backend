@@ -151,6 +151,28 @@ public class AuthController {
         return ResponseEntity.ok(resBody);
     }
 
+    @Operation(summary = "Refreshes the client's tokens", description = "Returns a new access token, refresh token, access token type, and access token expiration time.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully returns tokens and metadata to client.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokensDTO.class))
+        ),
+        @ApiResponse(responseCode = "401", description = "Invalid or missing refresh token.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+        @ApiResponse(responseCode = "403", description = "Reuse token detected. Session compromised.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "Refresh token not found in database.", 
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))
+        ),
+    })
+    @PostMapping("/refresh")
+    public ResponseEntity<TokensDTO> refresh(@RequestBody RefreshRequest request) {
+        String refreshToken = request.refreshToken();
+        TokensDTO tokens = authService.refresh(refreshToken);
+        return ResponseEntity.ok(tokens);
+    }
+
     @Operation(summary = "Sends password reset instructions to user's email", description = "Returns a confirmation message")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully sends password reset instructions to user's email", 
