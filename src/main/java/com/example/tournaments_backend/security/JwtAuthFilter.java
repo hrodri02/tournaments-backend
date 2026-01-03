@@ -2,8 +2,6 @@ package com.example.tournaments_backend.security;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,8 +12,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.example.tournaments_backend.app_user.AppUserService;
-import com.example.tournaments_backend.exception.ClientErrorKey;
-import com.example.tournaments_backend.exception.ServiceException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
