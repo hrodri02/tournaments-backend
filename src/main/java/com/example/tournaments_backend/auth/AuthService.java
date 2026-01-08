@@ -73,7 +73,7 @@ public class AuthService {
         return token;
     }
 
-    public AppUser authenticate(AuthenticationRequest authRequest)  throws AuthenticationException, UsernameNotFoundException {
+    public AppUser authenticate(AuthenticationRequest authRequest) throws AuthenticationException, UsernameNotFoundException {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     authRequest.getEmail(),
