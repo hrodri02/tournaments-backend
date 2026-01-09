@@ -44,7 +44,7 @@ public class AuthService {
 
     public String signUp(RegistrationRequest request) throws ServiceException {
         AppUser newUser;
-        if (request.getRole().equals(AppUserRole.PLAYER)) {
+        if (AppUserRole.PLAYER.equals(request.getRole())) {
             newUser = new Player(
                         request.getFirstName(), 
                         request.getLastName(),
