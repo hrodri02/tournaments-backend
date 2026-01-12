@@ -5,18 +5,25 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRole;
 import com.example.tournaments_backend.app_user.AppUserService;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenService;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.Position;
+import com.example.tournaments_backend.security.JwtService;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,8 +47,8 @@ public class AuthServiceTests {
     private AuthenticationManager authenticationManager;
     @Mock
     private ConfirmationTokenService confirmationTokenService;
-    // ... add mocks for the rest of the constructor fields
-
+    @Mock
+    private JwtService jwtService;
     @InjectMocks
     private AuthService authService;
 
@@ -186,4 +193,138 @@ public class AuthServiceTests {
         // VERIFY: Ensure appUserService was NEVER called because the manager failed
         verify(appUserService, never()).getAppUserByEmail(any());
     }    
+
+    @Test
+    void confirmToken_ShouldReturnUser_WhenTokenIsValid() {
+        String mockToken = "generated-uuid-token";
+        LocalDateTime createdAt = LocalDateTime.now();
+        AppUser user = new AppUser(
+            "John", 
+            "Doe", 
+            "jdoe@example.com", 
+            "securepass1",
+            AppUserRole.PLAYER
+        );
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+            mockToken, 
+            createdAt, 
+            createdAt.plusMinutes(15), 
+            user
+        );
+
+        when(confirmationTokenService.getToken(mockToken)).thenReturn(Optional.of(confirmationToken));
+
+        AppUser result = authService.confirmToken(mockToken);
+
+        // assert the state
+        assertThat(result).isEqualTo(user);
+        
+        // verify the behavior
+        verify(confirmationTokenService).setConfirmedAt(mockToken);
+        verify(appUserService).enableAppUser(user.getEmail());
+    }
+
+    @Test
+    void confirmToken_ShouldReturnException_WhenTokenNotFound() {
+        String mockToken = "generated-uuid-token";
+
+        when(confirmationTokenService.getToken(mockToken))
+            .thenReturn(Optional.empty());
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> {
+            authService.confirmToken(mockToken);
+        });
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        assertEquals(ClientErrorKey.CONFIRMATION_TOKEN_NOT_FOUND, ex.getErrorKey());
+        assertEquals("Token not found.", ex.getMessage());
+
+        verify(confirmationTokenService, never()).setConfirmedAt(any());
+        verify(appUserService, never()).enableAppUser(any());
+    }
+
+    @Test
+    void confirmToken_ShouldReturnException_WhenTokenAlreadyConfirmed() {
+        String mockToken = "generated-uuid-token";
+
+        AppUser user = new AppUser(
+            "John",
+            "Doe",
+            "jdoe@example.com",
+            "securepass1",
+            AppUserRole.PLAYER
+        );
+        LocalDateTime now = LocalDateTime.now();
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+            mockToken, 
+            now,
+            now.plusMinutes(15), 
+            user
+        );
+        confirmationToken.setConfirmedAt(now.plusMinutes(5));
+        when(confirmationTokenService.getToken(mockToken))
+            .thenReturn(Optional.of(confirmationToken));
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> {
+            authService.confirmToken(mockToken);
+        });
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        assertEquals(ClientErrorKey.EMAIL_ALREADY_CONFIRMED, ex.getErrorKey());
+        assertEquals("Email is already confirmed.", ex.getMessage());
+
+        verify(confirmationTokenService, never()).setConfirmedAt(any());
+        verify(appUserService, never()).enableAppUser(any());
+    }
+
+    @Test
+    void confirmToken_ShouldReturnException_WhenTokenExpired() {
+        String mockToken = "generated-uuid-token";
+
+        AppUser user = new AppUser(
+            "John",
+            "Doe",
+            "jdoe@example.com",
+            "securepass1",
+            AppUserRole.PLAYER
+        );
+        LocalDateTime past = LocalDateTime.now().minusMinutes(20);
+        ConfirmationToken confirmationToken = new ConfirmationToken(
+            mockToken, 
+            past,
+            past.plusMinutes(15), 
+            user
+        );
+
+        when(confirmationTokenService.getToken(mockToken))
+            .thenReturn(Optional.of(confirmationToken));
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> {
+            authService.confirmToken(mockToken);
+        });
+
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatus());
+        assertEquals(ClientErrorKey.TOKEN_EXPIRED, ex.getErrorKey());
+        assertEquals("Token expired. Please request a new confirmation email.", ex.getMessage());
+
+        verify(confirmationTokenService, never()).setConfirmedAt(any());
+        verify(appUserService, never()).enableAppUser(any());
+    }
+
+    @Test
+    void generateAccessToken_ShouldReturnAccessToken_WhenUsernameAndEmailAreValid() {
+        String mockToken = "generated-uuid-token";
+        AppUser user = new AppUser(
+            "John", 
+            "Doe", 
+            "jdoe@example.com",
+            "securepass1",
+            AppUserRole.PLAYER);        
+
+        when(jwtService.createAccessToken(user.getEmail(), user.getAppUserRole()))
+            .thenReturn(mockToken);
+        
+        String result = authService.generateAccessToken(user);
+        assertEquals(mockToken, result);
+    }
 }
