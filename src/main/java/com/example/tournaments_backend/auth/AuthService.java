@@ -44,7 +44,7 @@ public class AuthService {
 
     public String signUp(RegistrationRequest request) throws ServiceException {
         AppUser newUser;
-        if (request.getRole().equals(AppUserRole.PLAYER)) {
+        if (AppUserRole.PLAYER.equals(request.getRole())) {
             newUser = new Player(
                         request.getFirstName(), 
                         request.getLastName(),
@@ -73,7 +73,7 @@ public class AuthService {
         return token;
     }
 
-    public AppUser authenticate(AuthenticationRequest authRequest)  throws AuthenticationException, UsernameNotFoundException {
+    public AppUser authenticate(AuthenticationRequest authRequest) throws AuthenticationException, UsernameNotFoundException {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     authRequest.getEmail(),
@@ -214,7 +214,6 @@ public class AuthService {
         return tokensDTO;
     }
 
-    // TODO: - test this method since the try catch block was removed
     public void sendResetPasswordEmail(String email) {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         String resetToken = appUserService.generateNewResetTokenForUser(appUser);
