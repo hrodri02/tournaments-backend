@@ -214,7 +214,6 @@ public class AuthService {
         return tokensDTO;
     }
 
-    // TODO: - test this method since the try catch block was removed
     public void sendResetPasswordEmail(String email) {
         AppUser appUser = appUserService.getAppUserByEmail(email);
         String resetToken = appUserService.generateNewResetTokenForUser(appUser);

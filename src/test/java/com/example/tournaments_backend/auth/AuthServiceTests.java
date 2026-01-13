@@ -1,6 +1,7 @@
 package com.example.tournaments_backend.auth;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRole;
@@ -35,6 +37,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceTests {
@@ -326,5 +329,57 @@ public class AuthServiceTests {
         
         String result = authService.generateAccessToken(user);
         assertEquals(mockToken, result);
+    }
+
+    @Test
+    void sendResetPasswordEmail_ShouldSendEmail_WithCorrectLinkAndUser() {
+        String email = "jdoe@example.com";
+        AppUser user = new AppUser(
+            "John",
+            "Doe",
+            "jdoe@example.com",
+            "securepass1",
+            AppUserRole.PLAYER
+        );
+        when(appUserService.getAppUserByEmail(email))
+            .thenReturn(user);
+        
+        String mockToken = "mockToken";
+        when(appUserService.generateNewResetTokenForUser(user))
+            .thenReturn(mockToken);
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
+
+        authService.sendResetPasswordEmail(email);
+
+        // Verify interactions were precise
+        verify(appUserService).getAppUserByEmail(email);
+        verify(appUserService).generateNewResetTokenForUser(user);
+        verify(emailSender).send(eq("Reset password"), eq(email), bodyCaptor.capture());
+
+        String capturedBody = bodyCaptor.getValue();
+        // Ensure the link is constructed correctly
+        assertTrue(capturedBody.contains("token=" + mockToken));
+        assertTrue(capturedBody.contains("email=" + email));
+        
+        // Ensure the greeting is personalized
+        assertTrue(capturedBody.contains("John"));
+    }
+    
+    @Test
+    void sendResetPasswordEmail_ShouldReturnException_WhenUsernameNotFound() {
+        String email = "jdoe@example.com";
+        String errMsg = "User with username " + email + " not found.";
+        when(appUserService.getAppUserByEmail(email))
+            .thenThrow(new UsernameNotFoundException(errMsg));
+
+        UsernameNotFoundException ex = assertThrows(UsernameNotFoundException.class, () -> {
+            authService.sendResetPasswordEmail(email);
+        });
+
+        assertEquals(errMsg, ex.getMessage());
+
+        verify(appUserService, never()).generateNewResetTokenForUser(any());
+        verify(emailSender, never()).send(anyString(), eq(email), anyString());
     }
 }
