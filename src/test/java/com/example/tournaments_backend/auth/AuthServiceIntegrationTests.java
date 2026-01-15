@@ -2,26 +2,38 @@ package com.example.tournaments_backend.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRepository;
 import com.example.tournaments_backend.app_user.AppUserRole;
+import com.example.tournaments_backend.app_user.AppUserService;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
+import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationTokenRepository;
 import com.example.tournaments_backend.email.EmailSender;
 import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ServiceException;
@@ -33,6 +45,12 @@ import com.example.tournaments_backend.player.Position;
 public class AuthServiceIntegrationTests {
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private ConfirmationTokenRepository confirmationTokenRepository;
+
+    @SpyBean // This wraps the real bean so we can force a failure
+    private AppUserService appUserService;
 
     @Autowired
     private AppUserRepository userRepository; // Use your actual repository
@@ -170,5 +188,159 @@ public class AuthServiceIntegrationTests {
 
         assertNotNull(result);
         assertEquals(user.getEmail(), result.getEmail());
-    }    
+    }
+
+    @Test
+    void authenticate_ShouldThrowException_WhenCredentialsAreInvalid() {
+        AuthenticationRequest request = new AuthenticationRequest(
+            "admin@example.com",
+            "admin12"
+        );
+
+        BadCredentialsException ex = assertThrows(BadCredentialsException.class, () ->
+            authService.authenticate(request)
+        );
+
+        assertEquals("Bad credentials", ex.getMessage());
+    }   
+
+    @Test
+    void confirmToken_ShouldReturnAppUser_WhenTokenIsValid() {
+        AppUser user = new AppUser(
+            "Heriberto", 
+            "Rodriguez",
+            "hrodriguez@example.com",
+            passwordEncoder.encode("securespass"),
+            AppUserRole.PLAYER
+        );
+        userRepository.save(user);
+        
+        LocalDateTime now = LocalDateTime.now();
+        String mockToken = "mockToken";
+        ConfirmationToken token = new ConfirmationToken(
+            mockToken, 
+            now,
+            now.plusMinutes(15), 
+        user);
+        confirmationTokenRepository.save(token);
+
+        AppUser result = authService.confirmToken(mockToken);
+        
+        
+        assertNotNull(result);
+        assertEquals(user.getEmail(), result.getEmail());
+
+        AppUser userInDb = userRepository.findAppUserByEmail(user.getEmail()).get();
+        assertEquals(true, userInDb.isEnabled());
+
+        Optional<ConfirmationToken> tokenInDB = confirmationTokenRepository.findByToken(mockToken);
+        if (tokenInDB.isPresent()) {
+            assertNotNull(tokenInDB.get().getConfirmedAt());
+        }
+    }
+
+    @Test
+    void confirmToken_ShouldReturnRollback_WhenEnablingUserAccountFails() {
+        AppUser user = new AppUser(
+            "Heriberto", 
+            "Rodriguez",
+            "hrodriguez@example.com",
+            passwordEncoder.encode("securespass"),
+            AppUserRole.PLAYER
+        );
+        userRepository.save(user);
+        
+        LocalDateTime now = LocalDateTime.now();
+        String mockToken = "mockToken";
+        ConfirmationToken token = new ConfirmationToken(
+            mockToken, 
+            now,
+            now.plusMinutes(15), 
+        user);
+        confirmationTokenRepository.save(token);
+
+        // FORCE COMMIT the setup so it survives the future rollback
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        // 2. Start a NEW transaction for the "Act" part
+        TestTransaction.start();
+        
+        doThrow(new RuntimeException("Database Connection Failed"))
+            .when(appUserService)
+            .enableAppUser(eq("hrodriguez@example.com"));
+
+        assertThrows(RuntimeException.class, () -> 
+            authService.confirmToken(mockToken)
+        );
+
+        TestTransaction.flagForRollback();
+        TestTransaction.end();
+        
+        // Start a new transaction to read the clean state
+        TestTransaction.start();
+
+        ConfirmationToken tokenInDB = confirmationTokenRepository.findByToken(mockToken).get();
+        assertNull(tokenInDB.getConfirmedAt());
+    }
+
+    @Test
+    void resendEmail_ShouldSendEmail_WhenUsersAccountIsNotEnabled() {
+        AppUser user = new AppUser(
+            "Heriberto",
+            "Rodriguez",
+            "hrodriguez@example.com",
+            "securepass",
+            AppUserRole.PLAYER
+        );
+        userRepository.save(user);
+
+        authService.resendEmail("hrodriguez@example.com");
+
+        List<ConfirmationToken> tokens = confirmationTokenRepository
+            .findByAppUserAndConfirmedAtIsNull(user);
+
+        assertEquals(1, tokens.size());
+
+        verify(emailSender)
+            .send(
+                eq("Confirm email"),
+                eq("hrodriguez@example.com"),
+                anyString()
+            );
+    }
+
+    @Test
+    void resendEmail_ShouldThrowException_WhenUsersEmailIsAlreadyConfirmed() {
+        String email = "hrodriguez@example.com";
+        AppUser user = new AppUser(
+            "Heriberto",
+            "Rodriguez",
+            email,
+            "securepass",
+            AppUserRole.PLAYER
+        );
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> {
+            authService.resendEmail(email);
+        }); 
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        assertEquals(ClientErrorKey.EMAIL_ALREADY_CONFIRMED, ex.getErrorKey());
+        assertEquals("Email is already confirmed.", ex.getMessage());
+
+        List<ConfirmationToken> tokens = confirmationTokenRepository
+            .findByAppUserAndConfirmedAtIsNull(user);
+
+        assertEquals(0, tokens.size());
+
+        verify(emailSender, never())
+            .send(
+                anyString(),
+                anyString(),
+                anyString()
+            );      
+    }
 }
