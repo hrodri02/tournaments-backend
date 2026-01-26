@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,7 +13,6 @@ import lombok.Data;
 public class ErrorDetails {
     private int status;
     private String errorKey;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
     private List<ValidationErrorDetail> validationErrors;
 
