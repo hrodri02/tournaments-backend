@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.savedrequest.NullRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 
 import com.example.tournaments_backend.app_user.AppUserService;
 import com.example.tournaments_backend.security.JwtAuthFilter;
@@ -29,6 +31,7 @@ public class SecurityConfig {
     private final AppUserService appUserService;
     private final JwtAuthFilter jwtAuthFilter;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +39,16 @@ public class SecurityConfig {
 
         http.sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint(unauthorizedHandler) // Add this line
         );
+
+        RequestCache nullRequestCache = new NullRequestCache();
+        http
+            .requestCache((cache) -> cache
+                .requestCache(nullRequestCache)
+            );
 
         http
             .authorizeHttpRequests(authorize -> authorize
@@ -52,6 +64,7 @@ public class SecurityConfig {
 
         http
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

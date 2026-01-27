@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -55,8 +56,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                     // This links additional details from the HTTP request (such as IP address, session ID) to the authentication token
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // create a new context to avoid race conditions across multiple threads
+                    SecurityContext context = SecurityContextHolder.createEmptyContext();
                     // marks the request as authenticated
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    context.setAuthentication(authToken);
                 }    
             }
             filterChain.doFilter(request, response);
