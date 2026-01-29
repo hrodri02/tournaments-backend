@@ -123,11 +123,11 @@ public class AuthService {
     }
 
     public String generateAccessToken(AppUser user) {
-        return jwtService.createAccessToken(user.getEmail(), user.getAppUserRole());
+        return jwtService.createAccessToken(user);
     }
 
     public String generateRefreshToken(AppUser user) {
-        return jwtService.createRefreshToken(user.getEmail());
+        return jwtService.createRefreshToken(user);
     }
 
     public void saveRefreshToken(RefreshToken refreshToken) {
