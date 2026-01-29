@@ -209,7 +209,7 @@ public class AuthServiceIntegrationTests {
         AppUser user = new AppUser(
             "Heriberto", 
             "Rodriguez",
-            "hrodriguez@example.com",
+            "hrod@example.com",
             passwordEncoder.encode("securespass"),
             AppUserRole.PLAYER
         );
