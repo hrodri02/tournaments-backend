@@ -19,6 +19,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
+import com.example.tournaments_backend.app_user.AppUser;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +32,18 @@ public class JwtService {
    JwtEncoder encoder;
    JwtDecoder decoder;   
 
-   public String createAccessToken(Authentication authentication) {
+   public String createAccessToken(AppUser user) {
       Instant now = Instant.now();
       Instant expiry = now.plus(ACCESS_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
 
-		String scope = authentication.getAuthorities().stream()
+		String scope = user.getAuthorities().stream()
          .map(GrantedAuthority::getAuthority)
          .collect(Collectors.joining(" "));
 		JwtClaimsSet claims = JwtClaimsSet.builder()
          .issuer("self")
          .issuedAt(now)
          .expiresAt(expiry)
-         .subject(authentication.getName())
+         .subject(user.getUsername())
          .claim("scope", scope)
          .build();
 		return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
@@ -59,18 +61,18 @@ public class JwtService {
       }
    }
 
-   public String createRefreshToken(Authentication authentication) {
+   public String createRefreshToken(AppUser user) {
       Instant now = Instant.now();
       Instant expiry = now.plus(REFRESH_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
 
-      String scope = authentication.getAuthorities().stream()
+      String scope = user.getAuthorities().stream()
          .map(GrantedAuthority::getAuthority)
          .collect(Collectors.joining(" "));
 		JwtClaimsSet claims = JwtClaimsSet.builder()
          .issuer("self")
          .issuedAt(now)
          .expiresAt(expiry)
-         .subject(authentication.getName())
+         .subject(user.getUsername())
          .claim("scope", scope)
          .build();
 		return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
