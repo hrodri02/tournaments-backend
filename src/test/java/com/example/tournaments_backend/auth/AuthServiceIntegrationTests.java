@@ -312,7 +312,7 @@ public class AuthServiceIntegrationTests {
 
     @Test
     void resendEmail_ShouldThrowException_WhenUsersEmailIsAlreadyConfirmed() {
-        String email = "hrodriguez@example.com";
+        String email = "resent-test@example.com";
         AppUser user = new AppUser(
             "Heriberto",
             "Rodriguez",
