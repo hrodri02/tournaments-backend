@@ -113,7 +113,6 @@ public class AuthController {
         @RequestParam("token") String token) throws ServiceException 
     {
         AppUser user = authService.confirmToken(token);
-
         String accessToken = authService.generateAccessToken(user);
         Long expiresIn = authService.getExpirationTime(accessToken);
         String refreshTokenString = authService.generateRefreshToken(user);

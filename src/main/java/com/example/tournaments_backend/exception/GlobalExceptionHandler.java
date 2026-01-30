@@ -13,12 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
-import io.jsonwebtoken.UnsupportedJwtException;
-
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -53,18 +47,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<?> handleExpiredTokenException(ExpiredJwtException ex) {
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
-        return ResponseEntity
-                .status(status)
-                .body(new ErrorDetails(
-                    status, 
-                    ClientErrorKey.TOKEN_EXPIRED.name(), 
-                    LocalDateTime.now()
-                ));
-    }
-
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> handleMissingTokenException(IllegalArgumentException ex) {
         HttpStatus status = HttpStatus.UNAUTHORIZED;
@@ -73,18 +55,6 @@ public class GlobalExceptionHandler {
                 .body(new ErrorDetails(
                     status, 
                     ClientErrorKey.MISSING_TOKEN.name(), 
-                    LocalDateTime.now()
-                ));
-    }
-
-    @ExceptionHandler({SignatureException.class, MalformedJwtException.class, UnsupportedJwtException.class})
-    public ResponseEntity<?> handleInvalidTokenException(JwtException ex) {
-        HttpStatus status = HttpStatus.UNAUTHORIZED;
-        return ResponseEntity
-                .status(status)
-                .body(new ErrorDetails(
-                    status, 
-                    ClientErrorKey.INVALID_TOKEN.name(), 
                     LocalDateTime.now()
                 ));
     }

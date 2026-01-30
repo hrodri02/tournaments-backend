@@ -209,7 +209,7 @@ public class AuthServiceIntegrationTests {
         AppUser user = new AppUser(
             "Heriberto", 
             "Rodriguez",
-            "hrodriguez@example.com",
+            "hrod@example.com",
             passwordEncoder.encode("securespass"),
             AppUserRole.PLAYER
         );
@@ -286,16 +286,17 @@ public class AuthServiceIntegrationTests {
 
     @Test
     void resendEmail_ShouldSendEmail_WhenUsersAccountIsNotEnabled() {
+        String email = "uniqueEmail1@example.com";
         AppUser user = new AppUser(
             "Heriberto",
             "Rodriguez",
-            "hrodriguez@example.com",
+            email,
             "securepass",
             AppUserRole.PLAYER
         );
         userRepository.save(user);
 
-        authService.resendEmail("hrodriguez@example.com");
+        authService.resendEmail(email);
 
         List<ConfirmationToken> tokens = confirmationTokenRepository
             .findByAppUserAndConfirmedAtIsNull(user);
@@ -305,14 +306,14 @@ public class AuthServiceIntegrationTests {
         verify(emailSender)
             .send(
                 eq("Confirm email"),
-                eq("hrodriguez@example.com"),
+                eq(email),
                 anyString()
             );
     }
 
     @Test
     void resendEmail_ShouldThrowException_WhenUsersEmailIsAlreadyConfirmed() {
-        String email = "hrodriguez@example.com";
+        String email = "resend-test@example.com";
         AppUser user = new AppUser(
             "Heriberto",
             "Rodriguez",

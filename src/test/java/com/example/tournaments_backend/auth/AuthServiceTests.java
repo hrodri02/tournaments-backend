@@ -324,7 +324,7 @@ public class AuthServiceTests {
             "securepass1",
             AppUserRole.PLAYER);        
 
-        when(jwtService.createAccessToken(user.getEmail(), user.getAppUserRole()))
+        when(jwtService.createAccessToken(user))
             .thenReturn(mockToken);
         
         String result = authService.generateAccessToken(user);

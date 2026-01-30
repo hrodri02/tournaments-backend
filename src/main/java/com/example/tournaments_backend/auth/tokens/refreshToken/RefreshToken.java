@@ -31,7 +31,7 @@ public class RefreshToken {
         generator = "refresh_token_sequence"
     )
     private Long id;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String token;
     @Column(name = "expires_in", nullable = false)
     private Long expiresIn;

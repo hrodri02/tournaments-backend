@@ -3,75 +3,83 @@ package com.example.tournaments_backend.security;
 import static com.example.tournaments_backend.security.SecurityConstants.AUTHORIZATION_HEADER;
 import static com.example.tournaments_backend.security.SecurityConstants.ACCESS_TOKEN_EXPIRATION_TIME;
 import static com.example.tournaments_backend.security.SecurityConstants.REFRESH_TOKEN_EXPIRATION_TIME;
-import static com.example.tournaments_backend.security.SecurityConstants.SECRET;
 import static com.example.tournaments_backend.security.SecurityConstants.TOKEN_PREFIX;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.stream.Collectors;
 
-import javax.crypto.SecretKey;
-
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 
-import com.example.tournaments_backend.app_user.AppUserRole;
+import com.example.tournaments_backend.app_user.AppUser;
 
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@AllArgsConstructor
+@Slf4j
 public class JwtService {
-    public String createAccessToken(String username, AppUserRole role) {
+   JwtEncoder encoder;
+   JwtDecoder decoder;   
+
+   public String createAccessToken(AppUser user) {
       Instant now = Instant.now();
       Instant expiry = now.plus(ACCESS_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
-      
-      return Jwts.builder()
-         .subject(username)
-         .claim("auth", role.name())
-         .issuedAt(Date.from(now))
-         .expiration(Date.from(expiry))
-         .signWith(getSignInKey())
-         .compact();
+
+		String scope = user.getAuthorities().stream()
+         .map(GrantedAuthority::getAuthority)
+         .collect(Collectors.joining(" "));
+		JwtClaimsSet claims = JwtClaimsSet.builder()
+         .issuer("self")
+         .issuedAt(now)
+         .expiresAt(expiry)
+         .subject(user.getUsername())
+         .claim("scope", scope)
+         .build();
+		return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
    }
 
    public Long getExpirationTime(String compactJws) {
-      Date expirationDate = Jwts.parser()
-         .verifyWith(getSignInKey())
-         .build()
-         .parseSignedClaims(compactJws)
-         .getPayload()
-         .getExpiration();
-      return expirationDate.toInstant().getEpochSecond();
+      try {
+         Jwt jwt = this.decoder.decode(compactJws);
+         Instant expirationInstant = jwt.getExpiresAt();
+         return (expirationInstant != null)? expirationInstant.getEpochSecond() : null;
+      }
+      catch (JwtException ex) {
+         log.warn("Invalid Jwt: " + ex.getLocalizedMessage());
+         return null;
+      }
    }
 
-   public String createRefreshToken(String username) {
+   public String createRefreshToken(AppUser user) {
       Instant now = Instant.now();
       Instant expiry = now.plus(REFRESH_TOKEN_EXPIRATION_TIME, ChronoUnit.SECONDS);
 
-      return Jwts.builder()
-         .subject(username)
-         .issuedAt(Date.from(now))
-         .expiration(Date.from(expiry))
-         .signWith(getSignInKey())
-         .compact();
-   }
-
-   private SecretKey getSignInKey() {
-      byte[] keyBytes = Decoders.BASE64.decode(SECRET);
-      return Keys.hmacShaKeyFor(keyBytes);
+      String scope = user.getAuthorities().stream()
+         .map(GrantedAuthority::getAuthority)
+         .collect(Collectors.joining(" "));
+		JwtClaimsSet claims = JwtClaimsSet.builder()
+         .issuer("self")
+         .issuedAt(now)
+         .expiresAt(expiry)
+         .subject(user.getUsername())
+         .claim("scope", scope)
+         .build();
+		return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
    }
 
    public String getUsername(String compactJws) {
-      return Jwts
-               .parser()
-               .verifyWith(getSignInKey())
-               .build()
-               .parseSignedClaims(compactJws)
-               .getPayload()
-               .getSubject();
+      Jwt jwt = this.decoder.decode(compactJws);
+      return jwt.getSubject();
    }
 
    public String resolveToken(HttpServletRequest req) {
@@ -88,12 +96,12 @@ public class JwtService {
 
    public boolean isTokenValid(String compactJws) {
       try {
-         Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(compactJws);;
-         return true;
-      } catch (JwtException ex) {
-         System.out.println(ex.getMessage());
-         return false;
-      }
+        // This triggers signature verification and expiration checks
+        this.decoder.decode(compactJws);
+        return true;
+    } catch (JwtException e) {
+        // This covers signature failure, expiration, and malformed tokens
+        return false;
+    }
    }
-    
 }
