@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -35,7 +36,7 @@ import lombok.Setter;
 @Table(name = "app_user")
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 public class AppUser implements UserDetails {
@@ -49,11 +50,13 @@ public class AppUser implements UserDetails {
         strategy = GenerationType.SEQUENCE,
         generator = "app_user_sequence"
     )
+    @EqualsAndHashCode.Include
     private Long id;
     @Column(name = "first_name")
     private String firstName;
     @Column(name = "last_name")
     private String lastName;
+    @EqualsAndHashCode.Include
     private String email;
     private String password;
     @Column(name = "app_user_role")
