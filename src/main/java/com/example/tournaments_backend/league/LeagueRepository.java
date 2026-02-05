@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LeagueRepository extends JpaRepository<League, Long> {
-    @EntityGraph(attributePaths = {"teams", "teams.players", "teams.owner"})
+    @EntityGraph(attributePaths = {"teams", "teams.players"})
     @NonNull
     List<League> findAll();
 
