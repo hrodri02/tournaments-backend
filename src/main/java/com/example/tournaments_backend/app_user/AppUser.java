@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.tournaments_backend.auth.tokens.confirmationToken.ConfirmationToken;
 import com.example.tournaments_backend.auth.tokens.refreshToken.RefreshToken;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
