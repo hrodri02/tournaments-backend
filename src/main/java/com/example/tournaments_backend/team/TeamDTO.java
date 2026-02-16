@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.PlayerDTO;
 import com.example.tournaments_backend.team_invite.TeamInviteDTO;
