@@ -55,10 +55,4 @@ public class Player extends AppUser {
         super(firstName, lastName, email, password, appUserRole);
         this.position = position;
     }
-
-    @EqualsAndHashCode.Include
-    @Override
-    public Long getId() {
-        return super.getId();
-    }
 }
