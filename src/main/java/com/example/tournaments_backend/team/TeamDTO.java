@@ -20,7 +20,6 @@ public class TeamDTO {
     private String name;
     private String logoUrl;
     private Long ownerId;
-    private List<Long> leagueIds;
     private List<PlayerDTO> playerDTOs;
     private List<TeamInviteDTO> invites;
     private List<PlayerDTO> invitees;
@@ -31,11 +30,6 @@ public class TeamDTO {
         this.name = team.getName();
         this.logoUrl = team.getLogoUrl();
         this.ownerId = team.getOwner().getId();
-        this.leagueIds = 
-            team.getLeagues()
-                .stream()
-                .map(League::getId)
-                .collect(Collectors.toList());
         Set<Player> players = team.getPlayers();
         if (players != null) {
             this.playerDTOs = players.stream()
