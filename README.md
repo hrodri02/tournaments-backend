@@ -8,13 +8,31 @@ This is a Spring Boot application that provides a RESTful API for managing tourn
 
 - Java 23
 - Maven
-- PostgreSQL
+- Docker (recommended)
+
+### Local dependencies (recommended)
+
+The backend depends on **PostgreSQL** and **MailDev** for local development.
+
+For setup and usage instructions, see:
+
+- [`devops/local/README.md`](devops/local/README.md)
 
 ### Installation
 
 1. Clone the repository
-2. Configure your PostgreSQL database in `application.properties`
+2. Start local dependencies by following:
+   - [`devops/local/README.md`](devops/local/README.md)
+
 3. Run the application using Maven:
+
+```bash
+./mvnw spring-boot:run
+```
+
+### Alternative (without Docker)
+
+Install PostgreSQL and MailDev locally, configure values in `application.properties`, and run:
 
 ```bash
 ./mvnw spring-boot:run
