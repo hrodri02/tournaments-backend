@@ -1,0 +1,45 @@
+# Local development dependencies for tournaments-backend
+#
+# How to use this file:
+# 1) Start services:
+#    docker compose -f devops/local/docker-compose.yml up -d
+#
+# 2) Stop services:
+#    docker compose -f devops/local/docker-compose.yml down
+#
+# 3) View logs:
+#    docker compose -f devops/local/docker-compose.yml logs -f
+#
+# Services included:
+# - postgres: application database on localhost:5432
+# - maildev : local SMTP server on localhost:1025 and UI on localhost:1080
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tournaments-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tournaments
+      POSTGRES_USER: heri
+      POSTGRES_PASSWORD: 0Nepunch1
+    ports:
+      - "5432:5432"
+    volumes:
+      - tournaments-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U heri -d tournaments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  maildev:
+    image: maildev/maildev:2.2.1
+    container_name: tournaments-maildev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "1080:1080"
+
+volumes:
+  tournaments-postgres-data:
