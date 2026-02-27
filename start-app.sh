@@ -21,7 +21,7 @@ else
     if command -v systemctl >/dev/null 2>&1 && ! systemctl is-active --quiet postgresql; then
         sudo systemctl start postgresql
     fi
-fi
 
-echo "[start-app] Starting tournaments backend app..."
-java -jar target/tournaments-backend-0.0.1-SNAPSHOT.jar &
+    echo "[start-app] Starting tournaments backend app..."
+    java -jar target/tournaments-backend-0.0.1-SNAPSHOT.jar &
+fi
