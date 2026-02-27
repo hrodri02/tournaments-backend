@@ -33,3 +33,10 @@ build/
 .vscode/
 
 src/main/resources/app.key
+
+# Ignore all environment files
+.env
+.env.*
+
+# But do NOT ignore the example file so others know what variables to use
+!.env.example
