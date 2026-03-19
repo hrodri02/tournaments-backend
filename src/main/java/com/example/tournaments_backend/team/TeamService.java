@@ -79,7 +79,7 @@ public class TeamService {
         }
         // save the team invitations
         List<TeamInvite> invitesInDB = teamInviteService.addAll(invites);
-        TeamDTO teamDTO = new TeamDTO(teamInDB, invitesInDB);
+        TeamDTO teamDTO = TeamDTO.fromEntity(teamInDB, invitesInDB);
         return teamDTO;
     }
 
@@ -96,7 +96,7 @@ public class TeamService {
     }
 
     @Transactional
-    public Team deleteTeamById(Long id) throws ServiceException {
+    public TeamDTO deleteTeamById(Long id) throws ServiceException {
         Team team = getTeamById(id);
         for (League league : team.getLeagues()) {
             league.getTeams().remove(team);
@@ -105,7 +105,11 @@ public class TeamService {
             player.getTeams().remove(team);
         }
         teamRepository.deleteById(id);
-        return team;
+        TeamDTO teamDTO = TeamDTO.builder()
+                            .id(team.getId())
+                            .name(team.getName())
+                            .build();
+        return teamDTO;
     }
 
     @Transactional
