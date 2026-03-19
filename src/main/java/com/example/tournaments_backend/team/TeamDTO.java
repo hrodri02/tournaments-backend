@@ -1,55 +1,43 @@
 package com.example.tournaments_backend.team;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.example.tournaments_backend.player.Player;
+import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.player.PlayerDTO;
-import com.example.tournaments_backend.team_invite.TeamInviteDTO;
 import com.example.tournaments_backend.team_invite.TeamInvite;
+import com.example.tournaments_backend.team_invite.TeamInviteDTO;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-public class TeamDTO {
-    private Long id;
-    private String name;
-    private String logoUrl;
-    private Long ownerId;
+@SuperBuilder
+public class TeamDTO extends TeamBaseDTO {
     private List<Long> leagueIds;
-    private List<PlayerDTO> playerDTOs;
-    private List<TeamInviteDTO> invites;
-    private List<PlayerDTO> invitees;
 
     // Constructor to map from Team entity
     public TeamDTO(Team team) {
-        this.id = team.getId();
-        this.name = team.getName();
-        this.logoUrl = team.getLogoUrl();
-        this.ownerId = team.getOwner().getId();
-        Set<Player> players = team.getPlayers();
-        if (players != null) {
-            this.playerDTOs = players.stream()
-                                .map(PlayerDTO::new)
-                                .collect(Collectors.toList());
-        } 
+        super(team);
+        this.leagueIds = League.getIdsFromLeagues(team.getLeagues());
     }
 
-    public TeamDTO(Team team, List<TeamInvite> invites) {
-        this(team);
-        this.invites = TeamInviteDTO.convert(invites);
+    public static TeamDTO fromEntity(Team team, List<TeamInvite> invites) {
+        return TeamDTO.builder()
+                .id(team.getId())
+                .name(team.getName())
+                .logoUrl(team.getLogoUrl())
+                .ownerId(team.getOwner().getId())
+                .playerDTOs(PlayerDTO.convert(team.getPlayers()))
+                .invites(TeamInviteDTO.convert(invites))
+                .leagueIds(new ArrayList<>())
+                .build();
     }
 
-
-    public TeamDTO(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public static List<TeamDTO> convert(List<Team> teams) {
+    public static List<TeamBaseDTO> convert(List<Team> teams) {
         return teams.stream()
                     .map(TeamDTO::new)
                     .collect(Collectors.toList());
