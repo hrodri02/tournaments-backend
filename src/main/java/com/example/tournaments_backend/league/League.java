@@ -21,8 +21,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -75,5 +78,12 @@ public class League {
     public void addTeam(Team team) {
         teams.add(team);
         team.getLeagues().add(this);
+    }
+
+    public static List<Long> getIdsFromLeagues(Collection<League> leagues) {
+        if (leagues == null || leagues.isEmpty()) return List.of();
+        return leagues.stream()
+                .map(League::getId)
+                .collect(Collectors.toList());
     }
 }
