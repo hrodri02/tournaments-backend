@@ -123,8 +123,7 @@ public class TeamController {
     public ResponseEntity<TeamDTO> deleteTeam(
         @Parameter(description = "The team id", required = true) @PathVariable("teamId") Long teamId) throws ServiceException 
     {
-        Team deletedTeam = teamService.deleteTeamById(teamId);
-        TeamDTO teamDTO = new TeamDTO(deletedTeam.getId(), deletedTeam.getName());
+        TeamDTO teamDTO = teamService.deleteTeamById(teamId);
         return ResponseEntity.ok(teamDTO);
     }
 

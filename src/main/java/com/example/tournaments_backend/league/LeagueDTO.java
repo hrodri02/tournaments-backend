@@ -2,11 +2,9 @@ package com.example.tournaments_backend.league;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.example.tournaments_backend.team.Team;
-import com.example.tournaments_backend.team.TeamDTO;
+import com.example.tournaments_backend.team.TeamBaseDTO;
 
 import lombok.Getter;
 
@@ -18,7 +16,7 @@ public class LeagueDTO {
     private LocalDate startDate;
     private Integer durationInWeeks;
     private String logoUrl;
-    private List<TeamDTO> teams;
+    private List<TeamBaseDTO> teams;
 
     public LeagueDTO(League league) {
         this.id = league.getId();
@@ -26,14 +24,8 @@ public class LeagueDTO {
         this.startDate = league.getStartDate();
         this.durationInWeeks = league.getDurationInWeeks();
         this.logoUrl = league.getLogoUrl();
+        this.teams = TeamBaseDTO.convert(league.getTeams());
         setStatus();
-        Set<Team> teamsSet = league.getTeams();
-        if (teamsSet != null) {
-            this.teams = teamsSet
-                    .stream()
-                    .map(TeamDTO::new)
-                    .collect(Collectors.toList());
-        }
     }
 
     public LeagueDTO(Long id, String name, LocalDate startDate, Integer durationInWeeks) {

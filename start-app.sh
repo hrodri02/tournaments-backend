@@ -6,7 +6,7 @@ COMPOSE_FILE="devops/local/docker-compose.yml"
 
 if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     echo "[start-app] Starting PostgreSQL + MailDev with Docker Compose..."
-    docker compose -f "$COMPOSE_FILE" up -d
+    docker compose -f "$COMPOSE_FILE" up -d --build
 else
     echo "[start-app] Docker Compose not available. Falling back to local services..."
 
