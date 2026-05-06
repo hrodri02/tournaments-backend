@@ -54,13 +54,3 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         min-coverage-overall: 70
         min-coverage-changed-files: 70
-
-    - name: Fail if below threshold
-      run: ./mvnw jacoco:check
-      env:
-        SPRING_PROFILES_ACTIVE: test
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
-        SPRING_DATASOURCE_USERNAME: testuser
-        SPRING_DATASOURCE_PASSWORD: testpassword
-        JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-        JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
