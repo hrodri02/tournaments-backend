@@ -13,9 +13,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: heri
-          POSTGRES_PASSWORD: 0Nepunch1
-          POSTGRES_DB: tournaments
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
         # We map the container port 5432 to the runner's port 5432
         ports:
           - 5432:5432
@@ -41,6 +41,6 @@ jobs:
       run: ./mvnw clean test
       env:
         # Override your application.properties values to match the service above
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/tournaments
-        SPRING_DATASOURCE_USERNAME: heri
-        SPRING_DATASOURCE_PASSWORD: ONepunch1
+        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+        SPRING_DATASOURCE_USERNAME: testuser
+        SPRING_DATASOURCE_PASSWORD: testpassword
