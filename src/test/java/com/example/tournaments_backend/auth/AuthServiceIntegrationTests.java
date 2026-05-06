@@ -24,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,6 +43,7 @@ import com.example.tournaments_backend.player.Position;
 
 @SpringBootTest
 @Transactional // Rolls back DB changes after each test
+@ActiveProfiles("test")
 public class AuthServiceIntegrationTests {
     @Autowired
     private AuthService authService;
