@@ -42,4 +42,21 @@ public class LeagueServiceTests {
         assertThat(result).containsExactlyInAnyOrder(league1, league2);
         verify(leagueRepository).findAll();
     }
+
+    @Test
+    void getLeagues_ShouldReturnNotStartedLeagues_WhenNoStatusIsNotStarted() {
+        // 1. Arrange
+        League league1 = new League("League A", LocalDate.now().plusWeeks(1), 4);
+
+        when(leagueRepository.findByStartDateAfter(LocalDate.now())).thenReturn(List.of(league1));
+
+        // 2. Act
+        Optional<LeagueStatus> status = Optional.of(LeagueStatus.NOT_STARTED);
+        List<League> result = leagueService.getLeagues(status);
+
+        // 3. Assert
+        assertThat(result).hasSize(1);
+        assertThat(result).containsExactlyInAnyOrder(league1);
+        verify(leagueRepository).findByStartDateAfter(LocalDate.now());
+    }
 }
