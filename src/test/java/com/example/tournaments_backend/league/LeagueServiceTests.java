@@ -1,11 +1,19 @@
 package com.example.tournaments_backend.league;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import com.example.tournaments_backend.exception.ClientErrorKey;
+import com.example.tournaments_backend.exception.ServiceException;
+
+import org.springframework.http.HttpStatus;
 
 import com.example.tournaments_backend.team.TeamService;
 
@@ -23,6 +31,61 @@ public class LeagueServiceTests {
     private LeagueRepository leagueRepository;
     @InjectMocks
     private LeagueService leagueService;
+
+    @Test
+    void addLeague_ShouldSaveAndReturnLeague_WhenRequestIsValid() {
+        // 1. Arrange
+        LeagueRequest request = new LeagueRequest("League A", LocalDate.now().plusWeeks(1), 4, null);
+        League savedLeague = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.save(any(League.class))).thenReturn(savedLeague);
+
+        // 2. Act
+        League result = leagueService.addLeague(request);
+
+        // 3. Assert
+        assertThat(result).isEqualTo(savedLeague);
+        verify(leagueRepository).save(any(League.class));
+    }
+
+    @Test
+    void getLeagueById_ShouldReturnLeague_WhenLeagueExists() {
+        // 1. Arrange
+        League league = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.findById(1L)).thenReturn(Optional.of(league));
+
+        // 2. Act
+        League result = leagueService.getLeagueById(1L);
+
+        // 3. Assert
+        assertThat(result).isEqualTo(league);
+        verify(leagueRepository).findById(1L);
+    }
+
+    @Test
+    void getLeagueById_ShouldThrowServiceException_WhenLeagueDoesNotExist() {
+        // 1. Arrange
+        when(leagueRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // 2. Act & Assert
+        assertThatThrownBy(() -> leagueService.getLeagueById(1L))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(ex -> {
+                    ServiceException serviceException = (ServiceException) ex;
+                    assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.LEAGUE_NOT_FOUND);
+                });
+        verify(leagueRepository).findById(1L);
+    }
 
     @Test
     void getLeagues_ShouldReturnAllLeagues_WhenNoStatusIsProvided() {
