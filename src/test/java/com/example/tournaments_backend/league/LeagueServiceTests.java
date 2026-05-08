@@ -28,8 +28,16 @@ public class LeagueServiceTests {
     @Test
     void getLeagues_ShouldReturnAllLeagues_WhenNoStatusIsProvided() {
         // 1. Arrange
-        League league1 = new League("League A", LocalDate.now().plusWeeks(1), 4);
-        League league2 = new League("League B", LocalDate.now().minusWeeks(1), 6);
+        League league1 = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+        League league2 = League.builder()
+                .name("League B")
+                .startDate(LocalDate.now().minusWeeks(1))
+                .durationInWeeks(6)
+                .build();
         List<League> allLeagues = List.of(league1, league2);
 
         when(leagueRepository.findAll()).thenReturn(allLeagues);
@@ -46,7 +54,11 @@ public class LeagueServiceTests {
     @Test
     void getLeagues_ShouldReturnNotStartedLeagues_WhenNoStatusIsNotStarted() {
         // 1. Arrange
-        League league1 = new League("League A", LocalDate.now().plusWeeks(1), 4);
+        League league1 = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
 
         when(leagueRepository.findByStartDateAfter(LocalDate.now())).thenReturn(List.of(league1));
 
