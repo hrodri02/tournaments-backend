@@ -56,6 +56,18 @@ Application: Team → League membership workflow (PENDING → APPROVED/REJECTED)
 - Lombok is used heavily; ensure annotation processing is enabled in your IDE.
 - `ServiceException` (wraps an HTTP status + error key) is the standard way to signal domain errors; `GlobalExceptionHandler` converts them to structured `ErrorDetails` responses.
 - Builder pattern via `@Builder` (and dedicated `*Builder` classes for complex entities like `Team`) is preferred over setters in service code.
+- When method chaining calls more than 3 methods, place each method call on its own line:
+  ```java
+  // correct
+  League.builder()
+      .name("League A")
+      .startDate(LocalDate.now().plusWeeks(1))
+      .durationInWeeks(4)
+      .build();
+
+  // incorrect — too many chained calls on one line
+  League.builder().name("League A").startDate(LocalDate.now().plusWeeks(1)).durationInWeeks(4).build();
+  ```
 - Static factory methods like `TeamDTO.from(Collection<Team>)` are used for mapping to DTOs.
 
 ## Local Services
