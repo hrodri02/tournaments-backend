@@ -52,7 +52,7 @@ public class LeagueServiceTests {
     }
 
     @Test
-    void getLeagues_ShouldReturnNotStartedLeagues_WhenNoStatusIsNotStarted() {
+    void getLeagues_ShouldReturnNotStartedLeagues_WhenStatusIsNotStarted() {
         // 1. Arrange
         League league1 = League.builder()
                 .name("League A")
@@ -70,5 +70,47 @@ public class LeagueServiceTests {
         assertThat(result).hasSize(1);
         assertThat(result).containsExactlyInAnyOrder(league1);
         verify(leagueRepository).findByStartDateAfter(LocalDate.now());
+    }
+
+    @Test
+    void getLeagues_ShouldReturnInProgressLeagues_WhenStatusIsInProgress() {
+        // 1. Arrange
+        League league1 = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().minusWeeks(2))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.findInProgressLeagues(LocalDate.now())).thenReturn(List.of(league1));
+
+        // 2. Act
+        Optional<LeagueStatus> status = Optional.of(LeagueStatus.IN_PROGRESS);
+        List<League> result = leagueService.getLeagues(status);
+
+        // 3. Assert
+        assertThat(result).hasSize(1);
+        assertThat(result).containsExactlyInAnyOrder(league1);
+        verify(leagueRepository).findInProgressLeagues(LocalDate.now());
+    }
+
+    @Test
+    void getLeagues_ShouldReturnEndedLeagues_WhenStatusIsEnded() {
+        // 1. Arrange
+        League league1 = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().minusWeeks(10))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.findEndedLeagues(LocalDate.now())).thenReturn(List.of(league1));
+
+        // 2. Act
+        Optional<LeagueStatus> status = Optional.of(LeagueStatus.ENDED);
+        List<League> result = leagueService.getLeagues(status);
+
+        // 3. Assert
+        assertThat(result).hasSize(1);
+        assertThat(result).containsExactlyInAnyOrder(league1);
+        verify(leagueRepository).findEndedLeagues(LocalDate.now());
     }
 }
