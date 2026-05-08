@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import com.example.tournaments_backend.team.TeamService;
 
@@ -43,7 +42,7 @@ public class LeagueServiceTests {
         when(leagueRepository.findAll()).thenReturn(allLeagues);
 
         // 2. Act
-        List<League> result = leagueService.getLeagues(Optional.empty());
+        List<League> result = leagueService.getLeagues();
 
         // 3. Assert
         assertThat(result).hasSize(2);
@@ -63,8 +62,7 @@ public class LeagueServiceTests {
         when(leagueRepository.findByStartDateAfter(LocalDate.now())).thenReturn(List.of(league1));
 
         // 2. Act
-        Optional<LeagueStatus> status = Optional.of(LeagueStatus.NOT_STARTED);
-        List<League> result = leagueService.getLeagues(status);
+        List<League> result = leagueService.getLeagues(LeagueStatus.NOT_STARTED);
 
         // 3. Assert
         assertThat(result).hasSize(1);
@@ -84,8 +82,7 @@ public class LeagueServiceTests {
         when(leagueRepository.findInProgressLeagues(LocalDate.now())).thenReturn(List.of(league1));
 
         // 2. Act
-        Optional<LeagueStatus> status = Optional.of(LeagueStatus.IN_PROGRESS);
-        List<League> result = leagueService.getLeagues(status);
+        List<League> result = leagueService.getLeagues(LeagueStatus.IN_PROGRESS);
 
         // 3. Assert
         assertThat(result).hasSize(1);
@@ -105,8 +102,7 @@ public class LeagueServiceTests {
         when(leagueRepository.findEndedLeagues(LocalDate.now())).thenReturn(List.of(league1));
 
         // 2. Act
-        Optional<LeagueStatus> status = Optional.of(LeagueStatus.ENDED);
-        List<League> result = leagueService.getLeagues(status);
+        List<League> result = leagueService.getLeagues(LeagueStatus.ENDED);
 
         // 3. Assert
         assertThat(result).hasSize(1);
