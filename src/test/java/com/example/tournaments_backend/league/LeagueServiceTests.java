@@ -15,6 +15,7 @@ import com.example.tournaments_backend.exception.ServiceException;
 
 import org.springframework.http.HttpStatus;
 
+import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamService;
 
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ public class LeagueServiceTests {
     private LeagueService leagueService;
 
     @Test
+    @SuppressWarnings("null")
     void addLeague_ShouldSaveAndReturnLeague_WhenRequestIsValid() {
         // 1. Arrange
         LeagueRequest request = new LeagueRequest("League A", LocalDate.now().plusWeeks(1), 4, null);
@@ -151,6 +153,71 @@ public class LeagueServiceTests {
         assertThat(result).hasSize(1);
         assertThat(result).containsExactlyInAnyOrder(league1);
         verify(leagueRepository).findInProgressLeagues(LocalDate.now());
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void addTeamToLeague_ShouldAddTeamAndReturnLeague_WhenLeagueAndTeamExist() {
+        // 1. Arrange
+        League league = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+        Team team = new Team("Team A");
+
+        when(leagueRepository.findById(1L)).thenReturn(Optional.of(league));
+        when(teamService.getTeamById(2L)).thenReturn(team);
+        when(leagueRepository.save(any(League.class))).thenReturn(league);
+
+        // 2. Act
+        League result = leagueService.addTeamToLeague(1L, 2L);
+
+        // 3. Assert
+        assertThat(result.getTeams()).contains(team);
+    }
+
+    @Test
+    void addTeamToLeague_ShouldThrowServiceException_WhenLeagueDoesNotExist() {
+        // 1. Arrange
+        when(leagueRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // 2. Act & Assert
+        assertThatThrownBy(() -> leagueService.addTeamToLeague(1L, 2L))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(ex -> {
+                    ServiceException serviceException = (ServiceException) ex;
+                    assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.LEAGUE_NOT_FOUND);
+                });
+    }
+
+    @Test
+    void addTeamToLeague_ShouldThrowServiceException_WhenTeamDoesNotExist() {
+        // 1. Arrange
+        League league = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.findById(1L)).thenReturn(Optional.of(league));
+        when(teamService.getTeamById(2L)).thenThrow(new ServiceException(
+                HttpStatus.NOT_FOUND,
+                ClientErrorKey.TEAM_NOT_FOUND,
+                "Team",
+                "Team with given id not found."
+        ));
+
+        // 2. Act & Assert
+        assertThatThrownBy(() -> leagueService.addTeamToLeague(1L, 2L))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(ex -> {
+                    ServiceException serviceException = (ServiceException) ex;
+                    assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.TEAM_NOT_FOUND);
+                });
+        verify(leagueRepository).findById(1L);
     }
 
     @Test
