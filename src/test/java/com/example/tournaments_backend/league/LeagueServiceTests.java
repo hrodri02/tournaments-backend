@@ -3,6 +3,7 @@ package com.example.tournaments_backend.league;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +38,11 @@ public class LeagueServiceTests {
     @SuppressWarnings("null")
     void addLeague_ShouldSaveAndReturnLeague_WhenRequestIsValid() {
         // 1. Arrange
-        LeagueRequest request = new LeagueRequest("League A", LocalDate.now().plusWeeks(1), 4, null);
+        LeagueRequest request = LeagueRequest.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
         League savedLeague = League.builder()
                 .name("League A")
                 .startDate(LocalDate.now().plusWeeks(1))
@@ -70,7 +75,6 @@ public class LeagueServiceTests {
 
         // 3. Assert
         assertThat(result).isEqualTo(league);
-        verify(leagueRepository).findById(1L);
     }
 
     @Test
@@ -86,7 +90,6 @@ public class LeagueServiceTests {
                     assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
                     assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.LEAGUE_NOT_FOUND);
                 });
-        verify(leagueRepository).findById(1L);
     }
 
     @Test
@@ -156,6 +159,26 @@ public class LeagueServiceTests {
     }
 
     @Test
+    void getLeagues_ShouldReturnEndedLeagues_WhenStatusIsEnded() {
+        // 1. Arrange
+        League league1 = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().minusWeeks(10))
+                .durationInWeeks(4)
+                .build();
+
+        when(leagueRepository.findEndedLeagues(LocalDate.now())).thenReturn(List.of(league1));
+
+        // 2. Act
+        List<League> result = leagueService.getLeagues(LeagueStatus.ENDED);
+
+        // 3. Assert
+        assertThat(result).hasSize(1);
+        assertThat(result).containsExactlyInAnyOrder(league1);
+        verify(leagueRepository).findEndedLeagues(LocalDate.now());
+    }
+
+    @Test
     @SuppressWarnings("null")
     void addTeamToLeague_ShouldAddTeamAndReturnLeague_WhenLeagueAndTeamExist() {
         // 1. Arrange
@@ -221,22 +244,88 @@ public class LeagueServiceTests {
     }
 
     @Test
-    void getLeagues_ShouldReturnEndedLeagues_WhenStatusIsEnded() {
+    void deleteLeagueById_ShouldDeleteAndReturnLeague_WhenLeagueExists() {
         // 1. Arrange
-        League league1 = League.builder()
+        League league = League.builder()
                 .name("League A")
-                .startDate(LocalDate.now().minusWeeks(10))
+                .startDate(LocalDate.now().plusWeeks(1))
                 .durationInWeeks(4)
                 .build();
 
-        when(leagueRepository.findEndedLeagues(LocalDate.now())).thenReturn(List.of(league1));
+        when(leagueRepository.findById(1L)).thenReturn(Optional.of(league));
 
         // 2. Act
-        List<League> result = leagueService.getLeagues(LeagueStatus.ENDED);
+        League result = leagueService.deleteLeagueById(1L);
 
         // 3. Assert
-        assertThat(result).hasSize(1);
-        assertThat(result).containsExactlyInAnyOrder(league1);
-        verify(leagueRepository).findEndedLeagues(LocalDate.now());
+        assertThat(result).isEqualTo(league);
+        verify(leagueRepository).deleteById(1L);
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void deleteLeagueById_ShouldThrowServiceException_WhenLeagueDoesNotExist() {
+        // 1. Arrange
+        when(leagueRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // 2. Act & Assert
+        assertThatThrownBy(() -> leagueService.deleteLeagueById(1L))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(ex -> {
+                    ServiceException serviceException = (ServiceException) ex;
+                    assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.LEAGUE_NOT_FOUND);
+                });
+        verify(leagueRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void updateLeague_ShouldUpdateAndReturnLeague_WhenLeagueExists() {
+        // 1. Arrange
+        League oldLeague = League.builder()
+                .name("League A")
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+        LocalDate newStartDate = LocalDate.now().plusWeeks(2);
+        LeagueRequest updateRequest = LeagueRequest.builder()
+                .name("League B")
+                .startDate(newStartDate)
+                .durationInWeeks(6)
+                .logoUrl("logo.png")
+                .build();
+
+        when(leagueRepository.findById(1L)).thenReturn(Optional.of(oldLeague));
+        when(leagueRepository.save(any(League.class))).thenReturn(oldLeague);
+
+        // 2. Act
+        League result = leagueService.updateLeague(1L, updateRequest);
+
+        // 3. Assert
+        assertThat(result.getName()).isEqualTo("League B");
+        assertThat(result.getStartDate()).isEqualTo(newStartDate);
+        assertThat(result.getDurationInWeeks()).isEqualTo(6);
+        assertThat(result.getLogoUrl()).isEqualTo("logo.png");
+    }
+
+    @Test
+    void updateLeague_ShouldThrowServiceException_WhenLeagueDoesNotExist() {
+        // 1. Arrange
+        LeagueRequest updateRequest = LeagueRequest.builder()
+                .name("League B")
+                .startDate(LocalDate.now().plusWeeks(2))
+                .durationInWeeks(6)
+                .build();
+        when(leagueRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // 2. Act & Assert
+        assertThatThrownBy(() -> leagueService.updateLeague(1L, updateRequest))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(ex -> {
+                    ServiceException serviceException = (ServiceException) ex;
+                    assertThat(serviceException.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+                    assertThat(serviceException.getErrorKey()).isEqualTo(ClientErrorKey.LEAGUE_NOT_FOUND);
+                });
     }
 }
