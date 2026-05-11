@@ -94,7 +94,9 @@ public class LeagueController {
         @RequestParam("status") Optional<LeagueStatus> optionalStatus
     )
     {
-        List<League> leagues = leagueService.getLeagues(optionalStatus);
+        List<League> leagues = optionalStatus.isPresent()
+                ? leagueService.getLeagues(optionalStatus.get())
+                : leagueService.getLeagues();
         List<LeagueDTO> leagueDTOs = LeagueDTO.convertLeagues(leagues);
         return ResponseEntity.ok().body(leagueDTOs);
     }

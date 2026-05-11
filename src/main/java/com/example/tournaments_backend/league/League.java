@@ -15,6 +15,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -63,6 +64,7 @@ public class League {
     @JsonManagedReference
     private Set<Game> games;
 
+    @Builder
     public League(String name, LocalDate startDate, Integer durationInWeeks) {
         this.name = name;
         this.startDate = startDate;
