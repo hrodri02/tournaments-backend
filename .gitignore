@@ -40,3 +40,5 @@ src/main/resources/app.key
 
 # But do NOT ignore the example file so others know what variables to use
 !.env.example
+
+./sbx
