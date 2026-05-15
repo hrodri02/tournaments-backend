@@ -19,16 +19,15 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.authentication.BadCredentialsException;
 
+import com.example.tournaments_backend.AbstractIntegrationTest;
 import com.example.tournaments_backend.app_user.AppUser;
 import com.example.tournaments_backend.app_user.AppUserRepository;
 import com.example.tournaments_backend.app_user.AppUserRole;
@@ -41,10 +40,9 @@ import com.example.tournaments_backend.exception.ServiceException;
 import com.example.tournaments_backend.player.Player;
 import com.example.tournaments_backend.player.Position;
 
-@SpringBootTest
-@Transactional // Rolls back DB changes after each test
-@ActiveProfiles("test")
-public class AuthServiceIntegrationTests {
+@Transactional
+public class AuthServiceIntegrationTests extends AbstractIntegrationTest {
+
     @Autowired
     private AuthService authService;
 

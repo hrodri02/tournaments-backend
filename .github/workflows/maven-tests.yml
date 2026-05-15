@@ -8,24 +8,6 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    # This spins up Postgres before your tests run
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: testdb
-        # We map the container port 5432 to the runner's port 5432
-        ports:
-          - 5432:5432
-        # Wait until Postgres is healthy before starting the job
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -40,10 +22,4 @@ jobs:
     - name: Build and Run Tests
       run: ./mvnw clean test
       env:
-        # Override your application.properties values to match the service above
         SPRING_PROFILES_ACTIVE: test
-        SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
-        SPRING_DATASOURCE_USERNAME: testuser
-        SPRING_DATASOURCE_PASSWORD: testpassword
-        JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-        JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
