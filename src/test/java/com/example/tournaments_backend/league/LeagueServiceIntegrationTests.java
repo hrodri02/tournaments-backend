@@ -58,12 +58,14 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     // ─── getLeagueById ────────────────────────────────────────────────────────
 
     @Test
+    @SuppressWarnings("null")
     void getLeagueById_ShouldReturnLeague_WhenLeagueExists() {
-        League saved = leagueRepository.save(League.builder()
+        League leagueB = League.builder()
                 .name("Liga B")
-                .startDate(LocalDate.now().plusWeeks(2))
-                .durationInWeeks(6)
-                .build());
+                .startDate(LocalDate.now().plusWeeks(1))
+                .durationInWeeks(4)
+                .build();
+        League saved = leagueRepository.save(leagueB);
 
         League result = leagueService.getLeagueById(saved.getId());
 
@@ -84,6 +86,7 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     // ─── getLeagues() ─────────────────────────────────────────────────────────
 
     @Test
+    @SuppressWarnings("null")
     void getLeagues_ShouldReturnAllLeagues_WhenMultipleLeaguesExist() {
         League league1 = leagueRepository.save(League.builder()
                 .name("Liga C")
@@ -104,6 +107,7 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     // ─── getLeagues(LeagueStatus) ─────────────────────────────────────────────
 
     @Test
+    @SuppressWarnings("null")
     void getLeagues_ShouldReturnOnlyNotStartedLeagues_WhenStatusIsNotStarted() {
         League notStarted = leagueRepository.save(League.builder()
                 .name("NOT_STARTED")
@@ -123,6 +127,7 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void getLeagues_ShouldReturnOnlyInProgressLeagues_WhenStatusIsInProgress() {
         League inProgress = leagueRepository.save(League.builder()
                 .name("IN_PROGRESS")
@@ -142,6 +147,7 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void getLeagues_ShouldReturnOnlyEndedLeagues_WhenStatusIsEnded() {
         League ended = leagueRepository.save(League.builder()
                 .name("ENDED")
@@ -163,6 +169,7 @@ public class LeagueServiceIntegrationTests extends AbstractIntegrationTest {
     // ─── addTeamToLeague ──────────────────────────────────────────────────────
 
     @Test
+    @SuppressWarnings("null")
     void addTeamToLeague_ShouldPopulateJoinTable_WhenLeagueAndTeamExist() {
         Player owner = playerRepository.save(new Player(
                 "Jane", "Doe", "jane@test.com", "password", AppUserRole.PLAYER, Position.STRIKER));
