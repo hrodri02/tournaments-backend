@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xxd)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git pull *)",
+      "Bash(gh issue *)",
+      "Bash(git checkout *)",
+      "Bash(./mvnw test *)",
+      "Bash(xargs ls)",
+      "Bash(git fetch *)",
+      "Bash(gh project *)",
+      "Bash(xargs cat -n)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/local/bin/node \"/Users/gonzalorodriguez/Documents/Software Development/Projects/tournaments-backend/hooks/read_hook.js\""
+          }
+        ]
+      }
+    ]
+  }
+}
