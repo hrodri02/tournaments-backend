@@ -11,8 +11,10 @@
 #    docker compose -f devops/local/docker-compose.yml logs -f
 #
 # Services included:
-# - postgres: application database on localhost:5432
-# - maildev : local SMTP server on localhost:1025 and UI on localhost:1080
+# - postgres : application database on localhost:5432
+# - maildev  : local SMTP server on localhost:1025 and UI on localhost:1080
+# - backend  : Spring Boot app (internal only — not published to the host)
+# - nginx    : reverse proxy + rate limiter; public entry point on http://localhost
 
 services:
   postgres:
@@ -41,10 +43,8 @@ services:
       - "1025:1025"
       - "1080:1080"
 
-  backend: 
+  backend:
     build: ../../.
-    ports:
-      - "8080:8080"
     environment:
       # This overrides the localhost setting in your application.properties
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
@@ -53,6 +53,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy  # Wait until Postgres is actually ready
+
+  nginx:
+    image: nginx:alpine
+    container_name: tournaments-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - RATE_LIMIT=${RATE_LIMIT}
+      - RATE_BURST=${RATE_BURST}
+      # Restrict envsubst to only RATE_LIMIT and RATE_BURST so nginx runtime vars are preserved.
+      - NGINX_ENVSUBST_FILTER=RATE_LIMIT|RATE_BURST
+    depends_on:
+      - backend
 
 volumes:
   tournaments-postgres-data:

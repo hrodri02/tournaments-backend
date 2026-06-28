@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Start infrastructure (PostgreSQL + MailDev) — required before running the app
+# Start infrastructure (PostgreSQL + MailDev + nginx) — required before running the app
 docker compose -f devops/local/docker-compose.yml up -d
 
 # Run the application
@@ -74,6 +74,6 @@ Application: Team → League membership workflow (PENDING → APPROVED/REJECTED)
 
 | Service | URL |
 |---|---|
-| API | http://localhost:8080 |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
+| API (via nginx) | http://localhost |
+| Swagger UI | http://localhost/swagger-ui.html |
 | MailDev (email UI) | http://localhost:1080 |

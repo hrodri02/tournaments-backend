@@ -12,7 +12,9 @@
       "Bash(xargs ls)",
       "Bash(git fetch *)",
       "Bash(gh project *)",
-      "Bash(xargs cat -n)"
+      "Bash(xargs cat -n)",
+      "Bash(openspec status *)",
+      "Bash(openspec instructions *)"
     ]
   },
   "hooks": {

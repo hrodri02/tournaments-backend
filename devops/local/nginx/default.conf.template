@@ -1,0 +1,15 @@
+limit_req_zone $binary_remote_addr zone=api_limit:10m rate=${RATE_LIMIT};
+limit_req_status 429;
+
+server {
+    listen 80;
+
+    location / {
+        limit_req zone=api_limit burst=${RATE_BURST} nodelay;
+
+        proxy_pass http://backend:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
