@@ -6,7 +6,6 @@ URL="$HOST/api/v1/auth/login"
 PAYLOAD='{"email":"admin@example.com","password":"admin123"}'
 
 RATE=10
-BURST=20
 COOLDOWN=3
 
 FAILURES=0
@@ -48,8 +47,8 @@ codes=$(flood 50)
 total=$(count '' "$codes")
 blocked=$(count '429' "$codes")
 passed=$((total - blocked))
-echo "sent=$total passed=$passed blocked=$blocked (expect passed>=$((BURST + 1)), blocked>=5)"
-if [ "$passed" -ge "$((BURST + 1))" ] && [ "$blocked" -ge 5 ]; then
+echo "sent=$total passed=$passed blocked=$blocked (expect passed<=$((RATE)), blocked>=40)"
+if [ "$passed" -le "$((RATE))" ] && [ "$blocked" -ge 40 ]; then
   pass "burst honored and limiter engaged"
 else
   fail "unexpected burst behavior"
