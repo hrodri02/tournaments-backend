@@ -13,6 +13,9 @@
 # Services included:
 # - postgres: application database on localhost:5432
 # - maildev : local SMTP server on localhost:1025 and UI on localhost:1080
+# - redis   : rate-limiter store (internal network only)
+# - backend : the Spring Boot app (internal network only — reach it via nginx)
+# - nginx   : reverse proxy and the only host-facing entry point on localhost:8080
 
 services:
   postgres:
@@ -41,18 +44,46 @@ services:
       - "1025:1025"
       - "1080:1080"
 
-  backend: 
+  redis:
+    image: redis:7-alpine
+    container_name: tournaments-redis
+    restart: unless-stopped
+    # No host port published — only the backend (internal network) talks to Redis.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
     build: ../../.
-    ports:
-      - "8080:8080"
+    # Port intentionally NOT published to the host: clients reach the app only
+    # through nginx, which overwrites X-Forwarded-For so the rate limiter can
+    # trust the client IP. Exposed to other compose services on the internal network.
+    expose:
+      - "8080"
     environment:
       # This overrides the localhost setting in your application.properties
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis
     depends_on:
       postgres:
         condition: service_healthy  # Wait until Postgres is actually ready
+      redis:
+        condition: service_healthy  # Wait until Redis is actually ready
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: tournaments-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
 
 volumes:
   tournaments-postgres-data:

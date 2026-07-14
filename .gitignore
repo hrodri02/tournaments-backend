@@ -42,3 +42,7 @@ src/main/resources/app.key
 !.env.example
 
 ./sbx
+
+# Local AI / process tooling — per-developer, never committed
+openspec/
+.claude/
