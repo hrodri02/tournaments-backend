@@ -24,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
+import com.example.tournaments_backend.instance.InstanceIdFilter;
 import com.example.tournaments_backend.ratelimit.RateLimitFilter;
 
 import com.nimbusds.jose.jwk.JWK;
@@ -44,11 +45,17 @@ public class SecurityConfig {
 	RSAPrivateKey priv;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, RateLimitFilter rateLimitFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            RateLimitFilter rateLimitFilter,
+            InstanceIdFilter instanceIdFilter) throws Exception {
         http
             // Rate limiter runs before authentication so floods are rejected
             // before any auth work, and every route (including permitAll) is covered.
             .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+            // Instance id is stamped first so every response — including
+            // rate-limited and auth-rejected ones — carries it.
+            .addFilterBefore(instanceIdFilter, RateLimitFilter.class)
             .csrf(csrf -> csrf.disable())
             .httpBasic(Customizer.withDefaults())
             .oauth2ResourceServer((jwt) -> jwt.jwt(Customizer.withDefaults()))
