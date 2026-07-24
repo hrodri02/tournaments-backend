@@ -40,6 +40,10 @@ public class AppUserConfig {
             GameStatRepository gameStatRepository,
             BCryptPasswordEncoder passwordEncoder) {
         return args -> {
+            if (appUserRepository.count() > 0) {
+                return;
+            }
+
             // Create and save users
             AppUser user = new AppUser(
                 "User",
