@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import com.example.tournaments_backend.game.GameRepository;
 import com.example.tournaments_backend.game_stat.GameStat;
 import com.example.tournaments_backend.game_stat.GameStatRepository;
 import com.example.tournaments_backend.game_stat.GameStatType;
+import com.example.tournaments_backend.instance.InstanceIdFilter;
 import com.example.tournaments_backend.league.League;
 import com.example.tournaments_backend.league.LeagueRepository;
 import com.example.tournaments_backend.player.Player;
@@ -30,17 +32,26 @@ import com.example.tournaments_backend.team.TeamRepository;
 @Configuration
 public class AppUserConfig {
 
+    // Multiple backend instances can start concurrently against the same
+    // shared Postgres database. Restricting seeding to a single designated
+    // instance avoids the check-then-act race a bare count()>0 guard can't
+    // close (two instances can both observe count()==0 before either commits).
+    private static final String SEEDER_INSTANCE_ID = "backend-1";
+
     @Bean
     CommandLineRunner commandLineRunner(
-            AppUserRepository appUserRepository, 
+            AppUserRepository appUserRepository,
             PlayerRepository playerRepository,
             LeagueRepository leagueRepository,
             TeamRepository teamRepository,
             GameRepository gameRepository,
             GameStatRepository gameStatRepository,
-            BCryptPasswordEncoder passwordEncoder) {
+            BCryptPasswordEncoder passwordEncoder,
+            @Value("${INSTANCE_ID:" + InstanceIdFilter.DEFAULT_INSTANCE_ID + "}") String instanceId) {
         return args -> {
-            if (appUserRepository.count() > 0) {
+            boolean isSeederInstance = instanceId.equals(SEEDER_INSTANCE_ID)
+                    || instanceId.equals(InstanceIdFilter.DEFAULT_INSTANCE_ID);
+            if (!isSeederInstance || appUserRepository.count() > 0) {
                 return;
             }
 
