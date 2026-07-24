@@ -44,6 +44,7 @@ services:
     image: postgres:18-alpine
     container_name: tournaments-postgres
     restart: unless-stopped
+    mem_limit: 200m
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -62,6 +63,7 @@ services:
     image: maildev/maildev:2.2.1
     container_name: tournaments-maildev
     restart: unless-stopped
+    mem_limit: 100m
     ports:
       - "1025:1025"
       - "1080:1080"
@@ -70,6 +72,7 @@ services:
     image: redis:7-alpine
     container_name: tournaments-redis
     restart: unless-stopped
+    mem_limit: 50m
     # No host port published — only the backend (internal network) talks to Redis.
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -79,12 +82,14 @@ services:
 
   backend-1:
     <<: *backend-common
+    mem_limit: 450m
     environment:
       <<: *backend-env
       INSTANCE_ID: backend-1
 
   backend-2:
     <<: *backend-common
+    mem_limit: 450m
     environment:
       <<: *backend-env
       INSTANCE_ID: backend-2
@@ -93,6 +98,7 @@ services:
     image: nginx:1.27-alpine
     container_name: tournaments-nginx
     restart: unless-stopped
+    mem_limit: 30m
     ports:
       - "80:80"
     volumes:
