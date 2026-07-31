@@ -14,10 +14,16 @@
 # - postgres : application database on localhost:5432
 # - maildev  : local SMTP server on localhost:1025 and UI on localhost:1080
 # - redis    : rate-limiter store (internal network only)
+# - db-init  : one-shot seeder; owns the schema and mock data, then exits
 # - backend-1/backend-2: two Spring Boot app instances (internal network only —
 #   reach them via nginx), distinguished by INSTANCE_ID and load-balanced with
 #   nginx consistent hashing
-# - nginx    : reverse proxy and the only host-facing entry point on localhost:8080
+# - nginx    : reverse proxy and the only host-facing entry point on localhost:80
+
+# All three app services run the same image, built once and reused.
+x-app-image: &app-image
+  build: ../../.
+  image: tournaments-backend:local
 
 x-backend-env: &backend-env
   # This overrides the localhost setting in your application.properties
@@ -25,17 +31,21 @@ x-backend-env: &backend-env
   SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
   SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
   SPRING_DATA_REDIS_HOST: redis
+  # The schema belongs to db-init. Serving instances must never issue DDL:
+  # with two instances on one database, whichever booted last would drop and
+  # recreate every table underneath the other.
+  SPRING_JPA_HIBERNATE_DDL_AUTO: validate
 
 x-backend-common: &backend-common
-  build: ../../.
+  <<: *app-image
   # Port intentionally NOT published to the host: clients reach the app only
   # through nginx, which overwrites X-Forwarded-For so the rate limiter can
   # trust the client IP. Exposed to other compose services on the internal network.
   expose:
     - "8080"
   depends_on:
-    postgres:
-      condition: service_healthy  # Wait until Postgres is actually ready
+    db-init:
+      condition: service_completed_successfully  # Schema + seed data are in place
     redis:
       condition: service_healthy  # Wait until Redis is actually ready
 
@@ -54,7 +64,9 @@ services:
     volumes:
       - tournaments-postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U heri -d tournaments"]
+      # db-init and both backends gate on this, so it must follow .env rather
+      # than hardcode a user/database that a changed .env would invalidate.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,6 +91,35 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Sole owner of the schema and the mock data. Runs the same image as the
+  # backends with the `seed` profile and no web server, so it boots Spring,
+  # creates the schema, seeds, and exits 0. Making this a separate one-shot
+  # container is what removes the seeding race structurally — there is exactly
+  # one seeder by construction, rather than by an instance-id check in app code.
+  db-init:
+    <<: *app-image
+    container_name: tournaments-db-init
+    mem_limit: 450m
+    environment:
+      <<: *backend-env
+      SPRING_PROFILES_ACTIVE: seed
+      # `update` creates the schema on a fresh database and is a no-op on an
+      # existing one, which makes a re-run harmless. Compose restarts this
+      # service whenever a backend that depends on it is restarted, so:
+      #   - `create-drop` would drop the schema when this JVM exits.
+      #   - `create` would drop and recreate every table underneath the OTHER
+      #     backend, which is still serving traffic.
+      # Paired with the count()>0 guard in AppUserConfig, a re-run does nothing.
+      # Use `docker compose down -v` for a genuinely clean slate.
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+    depends_on:
+      postgres:
+        condition: service_healthy  # Wait until Postgres is actually ready
+      redis:
+        condition: service_healthy  # Wait until Redis is actually ready
+    restart: "no"
 
   backend-1:
     <<: *backend-common
