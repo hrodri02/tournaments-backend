@@ -12,6 +12,7 @@ import java.util.Set;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.example.tournaments_backend.game.Game;
@@ -27,12 +28,17 @@ import com.example.tournaments_backend.player.Position;
 import com.example.tournaments_backend.team.Team;
 import com.example.tournaments_backend.team.TeamRepository;
 
+// Seeding runs only under the `seed` profile, which the one-shot db-init
+// container activates (see devops/local/docker-compose.yml). Serving instances
+// never activate it, so no instance-id guard is needed to keep two backends
+// from racing each other into the same shared database.
+@Profile("seed")
 @Configuration
 public class AppUserConfig {
 
     @Bean
     CommandLineRunner commandLineRunner(
-            AppUserRepository appUserRepository, 
+            AppUserRepository appUserRepository,
             PlayerRepository playerRepository,
             LeagueRepository leagueRepository,
             TeamRepository teamRepository,
@@ -40,6 +46,12 @@ public class AppUserConfig {
             GameStatRepository gameStatRepository,
             BCryptPasswordEncoder passwordEncoder) {
         return args -> {
+            // Keeps a hand-run seed profile from duplicating data in a database
+            // that already has it.
+            if (appUserRepository.count() > 0) {
+                return;
+            }
+
             // Create and save users
             AppUser user = new AppUser(
                 "User",
