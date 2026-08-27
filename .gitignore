@@ -43,6 +43,14 @@ src/main/resources/app.key
 
 ./sbx
 
-# Local AI / process tooling — per-developer, never committed
-openspec/
+# openspec/ is the versioned record of development: the living specs and each
+# change's decision prose (proposal.md + design.md) are committed. Only the
+# execution scaffolding below is ignored.
+# Execution scaffolding: never versioned, in any state.
+openspec/changes/**/tasks.md
+openspec/changes/**/.openspec.yaml
+# An archived change's deltas already live fused into openspec/specs/.
+openspec/changes/archive/*/specs/
+
+# Local AI tooling — per-developer, never committed
 .claude/
