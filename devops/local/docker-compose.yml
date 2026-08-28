@@ -31,6 +31,9 @@ x-backend-env: &backend-env
   SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
   SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
   SPRING_DATA_REDIS_HOST: redis
+  # `localhost` inside a backend container is the container itself, so the
+  # SMTP host has to name the maildev service on the compose network.
+  SPRING_MAIL_HOST: maildev
   # The schema belongs to db-init. Serving instances must never issue DDL:
   # with two instances on one database, whichever booted last would drop and
   # recreate every table underneath the other.
