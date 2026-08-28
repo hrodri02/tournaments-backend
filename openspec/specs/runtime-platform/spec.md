@@ -1,4 +1,10 @@
-## ADDED Requirements
+# runtime-platform Specification
+
+## Purpose
+
+Keep the framework baseline and the build's version governance coherent, so that upgrading Spring Boot is a single deliberate edit rather than a hunt through scattered pins. The Spring Boot parent version is the one place a managed version is expressed; the declared patch release is one that officially supports the JDK the container image runs; tooling that binds to framework internals — notably springdoc, which fails at application startup rather than at compile time — tracks that baseline; and the Java language level is declared once so the build cannot claim a level the parent does not know about.
+
+## Requirements
 
 ### Requirement: Spring Boot baseline
 
