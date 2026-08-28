@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Keep the framework baseline and the build's version governance coherent, so that upgrading Spring Boot is a single deliberate edit rather than a hunt through scattered pins. The Spring Boot parent version is the one place a managed version is expressed; the declared patch release is one that officially supports the JDK the container image runs; tooling that binds to framework internals — notably springdoc, which fails at application startup rather than at compile time — tracks that baseline; the JSON binding layer's package roots are recorded so that a Jackson major bump is known to land on mapper construction rather than on domain annotations; and the Java language level is declared once so the build cannot claim a level the parent does not know about.
+Keep the framework baseline and the build's version governance coherent, so that upgrading Spring Boot is a single deliberate edit rather than a hunt through scattered pins. The Spring Boot parent version is the one place a managed version is expressed; the declared patch release is one that officially supports the JDK the container image runs; tooling that binds to framework internals — notably springdoc, which fails at application startup rather than at compile time — tracks that baseline; the JSON binding layer's package roots are recorded so that a Jackson major bump is known to land on mapper construction rather than on domain annotations; a library whose internals the code reaches past its abstraction to touch is re-verified behaviorally when its major version moves, because a clean compile does not establish that its runtime contract held; and the Java language level is declared once so the build cannot claim a level the parent does not know about.
 
 ## Requirements
 
 ### Requirement: Spring Boot baseline
 
-The application SHALL build and run against a Spring Boot 4.0.x release, declared as the `spring-boot-starter-parent` version in `pom.xml`. The declared patch version SHALL be one that officially supports the JDK used by the container image, so the deployed runtime is never on an unsupported JVM.
+The application SHALL build and run against a Spring Boot 4.1.x release, declared as the `spring-boot-starter-parent` version in `pom.xml`. The declared patch version SHALL be one that officially supports the JDK used by the container image, so the deployed runtime is never on an unsupported JVM.
 
 #### Scenario: Application starts on the declared baseline
 - **WHEN** the application is built and started against the declared Spring Boot parent version
@@ -19,7 +19,7 @@ The application SHALL build and run against a Spring Boot 4.0.x release, declare
 - **THEN** the declared Spring Boot patch version is one that officially supports that JDK
 
 #### Scenario: Java language level is unaffected by the major upgrade
-- **WHEN** the Spring Boot baseline moves to 4.0.x
+- **WHEN** the Spring Boot baseline moves within the 4.x line
 - **THEN** the declared `java.version` is unchanged, because the Boot 4 baseline is Java 17
 
 ### Requirement: Single source of truth for managed dependency versions
@@ -40,7 +40,7 @@ Any dependency whose version is managed by the Spring Boot BOM SHALL NOT declare
 
 ### Requirement: OpenAPI tooling tracks the Spring Boot baseline
 
-The `springdoc-openapi` version SHALL be one built against the declared Spring Boot baseline — the 3.0.x line for Boot 4.0.x. Because springdoc binds to Spring MVC internals, a mismatch fails at application startup rather than at compile time, so a passing test suite is not sufficient evidence of compatibility.
+The `springdoc-openapi` version SHALL be one built against the declared Spring Boot baseline — the 3.1.x line for Boot 4.1.x. Because springdoc binds to Spring MVC internals, a mismatch fails at application startup rather than at compile time, so a passing test suite is not sufficient evidence of compatibility.
 
 #### Scenario: Swagger UI serves after a Spring Boot upgrade
 - **WHEN** the Spring Boot parent version is changed and the application is started
@@ -62,6 +62,19 @@ The application SHALL use the Jackson 3.x binding layer, whose databind and core
 #### Scenario: Mappers are constructed through the builder
 - **WHEN** application or test code needs a configured `ObjectMapper`
 - **THEN** it is obtained through the Jackson 3 builder API rather than by mutating a constructed mapper
+
+### Requirement: Driver-level contracts are re-verified across a driver major version
+
+Where application code depends on a client library's internals — an exception type referenced by name, or the reply shape of a raw protocol command — a change to that library's major version SHALL be verified behaviorally against the capability the code implements, not only by a successful compile and a passing happy-path suite.
+
+#### Scenario: Fail-closed stance survives a Redis driver major upgrade
+- **WHEN** the Redis client library's major version changes and the Redis store is then made unreachable
+- **THEN** requests receive HTTP `503` with `errorKey` `RATE_LIMIT_UNAVAILABLE`, as the rate-limiting capability requires
+- **AND** the limiter does not allow requests through under infrastructure failure
+
+#### Scenario: Raw command reply still deserializes
+- **WHEN** the Redis client library's major version changes and the sliding-window Lua script is executed
+- **THEN** the reply's positional values are read without a cast failure and the limiter returns a correct decision
 
 ### Requirement: Java compilation target is declared once
 
