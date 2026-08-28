@@ -11,7 +11,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.tournaments_backend.exception.ClientErrorKey;
 import com.example.tournaments_backend.exception.ErrorDetails;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
