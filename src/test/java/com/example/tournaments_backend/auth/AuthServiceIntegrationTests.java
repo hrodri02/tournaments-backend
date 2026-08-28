@@ -19,11 +19,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +49,7 @@ public class AuthServiceIntegrationTests extends AbstractIntegrationTest {
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
 
-    @SpyBean // This wraps the real bean so we can force a failure
+    @MockitoSpyBean // This wraps the real bean so we can force a failure
     private AppUserService appUserService;
 
     @Autowired
@@ -58,7 +58,7 @@ public class AuthServiceIntegrationTests extends AbstractIntegrationTest {
     @Autowired
     BCryptPasswordEncoder passwordEncoder;
 
-    @MockBean
+    @MockitoBean
     private EmailSender emailSender; // Mocked so we don't send real emails
 
     @Test

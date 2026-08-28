@@ -14,8 +14,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.example.tournaments_backend.exception.ClientErrorKey;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import jakarta.servlet.FilterChain;
 
@@ -36,7 +37,9 @@ class RateLimitFilterTest {
         ipResolver = mock(ClientIpResolver.class);
         properties = new RateLimitProperties();
         properties.setEnabled(true);
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        // Jackson 3 mappers are immutable after construction and java.time support
+        // lives in databind core, so there is no module to register.
+        ObjectMapper objectMapper = JsonMapper.builder().build();
         filter = new RateLimitFilter(limiter, ipResolver, properties, objectMapper);
 
         request = new MockHttpServletRequest();
