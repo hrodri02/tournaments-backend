@@ -20,7 +20,7 @@ public abstract class AbstractIntegrationTest {
      * hand. Every subclass shares one context, and therefore one container.
      */
     @TestConfiguration(proxyBeanMethods = false)
-    static class ContainerConfig {
+    public static class ContainerConfig {
 
         @Bean
         @ServiceConnection
