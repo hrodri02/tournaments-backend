@@ -22,6 +22,13 @@ docker compose -f devops/local/docker-compose.yml up -d
 
 # Build
 ./mvnw clean package
+
+# MCP server (separate deployable in mcp-server/, NOT covered by the commands above)
+./mvnw -f mcp-server/pom.xml test
+./mvnw -f mcp-server/pom.xml clean package
+
+# End-to-end check of the MCP server, with the compose stack running
+./devops/local/mcp/test-http.sh
 ```
 
 ## Architecture
@@ -70,6 +77,22 @@ Application: Team → League membership workflow (PENDING → APPROVED/REJECTED)
   ```
 - Static factory methods like `TeamDTO.from(Collection<Team>)` are used for mapping to DTOs.
 
+## MCP server (`mcp-server/`)
+
+A separate Spring Boot application that exposes tournament data to MCP clients. It is not a
+Maven module of the root project — it builds and runs on its own, and `./mvnw test` at the
+root does not cover it.
+
+It holds **no datasource and no JWT keys**. Tools reach data only through the backend's REST
+API, carrying the caller's own bearer token: `McpTransportConfig` lifts the `Authorization`
+header of the `/mcp` request into the MCP transport context, tools receive that context as a
+method parameter, and `TournamentsBackendClient` replays the header on the outbound call. The
+backend therefore remains the only place that authenticates anyone, and a tool can see exactly
+what its caller could see through the API.
+
+Configure a client against `http://localhost/mcp` with a header of
+`Authorization: Bearer <jwt>`, using a token from `POST /api/v1/auth/login`.
+
 ## Local Services
 
 | Service | URL |
@@ -77,3 +100,4 @@ Application: Team → League membership workflow (PENDING → APPROVED/REJECTED)
 | API | http://localhost:8080 |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
 | MailDev (email UI) | http://localhost:1080 |
+| MCP endpoint | http://localhost/mcp |

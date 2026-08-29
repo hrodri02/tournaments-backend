@@ -18,6 +18,8 @@
 # - backend-1/backend-2: two Spring Boot app instances (internal network only —
 #   reach them via nginx), distinguished by INSTANCE_ID and load-balanced with
 #   nginx consistent hashing
+# - mcp-server: MCP server in its own process; reaches tournament data only
+#   through the REST API, and is reached by MCP clients at localhost/mcp
 # - nginx    : reverse proxy and the only host-facing entry point on localhost:80
 
 # All three app services run the same image, built once and reused.
@@ -138,6 +140,35 @@ services:
       <<: *backend-env
       INSTANCE_ID: backend-2
 
+  # MCP server for the tournaments API, in its own process.
+  #
+  # Note what is absent: no SPRING_DATASOURCE_*, no Redis, no mail. This service
+  # has no way to reach the database and holds no credentials for it -- it calls
+  # /api/v1 with the token its own caller supplied, and can therefore see
+  # exactly what that caller could see. That is the whole point of running the
+  # MCP server here rather than inside the backend.
+  mcp-server:
+    build:
+      context: ../../
+      dockerfile: mcp-server/Dockerfile
+    image: tournaments-mcp-server:local
+    container_name: tournaments-mcp-server
+    restart: unless-stopped
+    mem_limit: 300m
+    environment:
+      # Through nginx, so MCP traffic is load balanced like any other client's.
+      # nginx overwrites X-Forwarded-For with the connecting peer, so every call
+      # made here shares one rate-limit bucket in the backend.
+      TOURNAMENTS_API_BASE_URL: http://nginx
+    # Not published: nginx stays the only host-facing entry point, and routes
+    # /mcp here. Deliberately does NOT depend_on nginx -- nginx depends on this
+    # service, and it only calls nginx at request time.
+    expose:
+      - "8080"
+    depends_on:
+      - backend-1
+      - backend-2
+
   nginx:
     image: nginx:1.27-alpine
     container_name: tournaments-nginx
@@ -150,6 +181,10 @@ services:
     depends_on:
       - backend-1
       - backend-2
+      # nginx resolves a literal proxy_pass host once, at config load, and
+      # refuses to start if it cannot. The /mcp route names mcp-server, so that
+      # container has to exist before nginx does.
+      - mcp-server
 
 volumes:
   tournaments-postgres-data:
