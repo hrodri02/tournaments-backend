@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--
+	  Deliberately NOT a module of the root pom. This is a separate deployable: it
+	  builds, versions and runs on its own, and `./mvnw test` at the root keeps
+	  meaning "test the backend". Build it with:
+
+	      ./mvnw -f mcp-server/pom.xml package
+	-->
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.1</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.example</groupId>
+	<artifactId>tournaments-mcp-server</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>tournaments-mcp-server</name>
+	<description>MCP server for the tournaments API, running in its own process</description>
+
+	<properties>
+		<java.version>23</java.version>
+		<spring-ai.version>2.0.0</spring-ai.version>
+	</properties>
+
+	<dependencies>
+		<!--
+		  Web, but no data-jpa and no postgresql driver: this process reaches
+		  tournament data only through the backend's REST API, and holds no
+		  database credentials. That is the whole point of this variant.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<!--
+		  Spring Boot 4 no longer ships RestClient's autoconfiguration with
+		  starter-web; without this there is no RestClient.Builder bean and no
+		  spring.http.client.* timeout support.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+			<version>${spring-ai.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<compilerArgs>
+						<!--
+						  Tool parameter names reach the model: without -parameters
+						  `get_league(Long leagueId)` advertises an argument called
+						  "arg0". The Spring Boot parent sets this already; it is
+						  repeated here because the tool schema depends on it.
+						-->
+						<arg>-parameters</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
