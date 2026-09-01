@@ -25,7 +25,7 @@
 
 	<properties>
 		<java.version>23</java.version>
-		<spring-ai.version>2.0.0</spring-ai.version>
+		<mcp-sdk.version>2.0.0</mcp-sdk.version>
 	</properties>
 
 	<dependencies>
@@ -47,10 +47,22 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-restclient</artifactId>
 		</dependency>
+		<!--
+		  The MCP protocol itself, from the official SDK, with no Spring AI in
+		  between. `mcp` is an aggregator over two jars: `mcp-core`, which holds
+		  the servlet transport, the server and the schema types, and
+		  `mcp-json-jackson3`, which supplies the JSON mapper and the schema
+		  validator the server uses to check tool arguments.
+
+		  Spring AI's starter wraps exactly these. What it added on top was
+		  @McpTool scanning, input schemas generated from method signatures, and
+		  exceptions turned into error results; that is what `tools/ToolCatalog`
+		  and `tools/ToolResults` now do by hand.
+		-->
 		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
-			<version>${spring-ai.version}</version>
+			<groupId>io.modelcontextprotocol.sdk</groupId>
+			<artifactId>mcp</artifactId>
+			<version>${mcp-sdk.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -65,21 +77,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<compilerArgs>
-						<!--
-						  Tool parameter names reach the model: without -parameters
-						  `get_league(Long leagueId)` advertises an argument called
-						  "arg0". The Spring Boot parent sets this already; it is
-						  repeated here because the tool schema depends on it.
-						-->
-						<arg>-parameters</arg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
+			<!--
+			  The Spring AI variant pinned -parameters here explicitly. The Boot
+			  parent sets it either way, so the flag is still on; what changed is
+			  that it no longer matters to the protocol. There, the tool schema
+			  was reflected out of the method, and losing parameter names would
+			  have advertised `get_league`'s argument to the model as "arg0".
+			  Here the argument names are written in the schemas in ToolCatalog,
+			  so nothing a compiler flag controls can change what a client sees.
+			-->
 		</plugins>
 	</build>
 </project>

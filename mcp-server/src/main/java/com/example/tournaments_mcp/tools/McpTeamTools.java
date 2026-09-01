@@ -1,7 +1,5 @@
 package com.example.tournaments_mcp.tools;
 
-import org.springframework.ai.mcp.annotation.McpTool;
-import org.springframework.ai.mcp.annotation.McpTool.McpAnnotations;
 import org.springframework.stereotype.Component;
 
 import com.example.tournaments_mcp.backend.MyTeams;
@@ -30,15 +28,6 @@ public class McpTeamTools {
         this.backend = backend;
     }
 
-    @McpTool(
-            name = "list_my_teams",
-            description = "List the teams the current user plays for, and the teams "
-                    + "they have been invited to join.",
-            annotations = @McpAnnotations(
-                    readOnlyHint = true,
-                    destructiveHint = false,
-                    idempotentHint = true,
-                    openWorldHint = true))
     public MyTeams listMyTeams(McpTransportContext context) {
         return backend.myTeams(CallerToken.from(context));
     }

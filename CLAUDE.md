@@ -83,6 +83,17 @@ A separate Spring Boot application that exposes tournament data to MCP clients. 
 Maven module of the root project — it builds and runs on its own, and `./mvnw test` at the
 root does not cover it.
 
+The protocol comes from the **official MCP Java SDK** (`io.modelcontextprotocol.sdk:mcp`),
+used directly rather than through Spring AI's starter. Nothing autoconfigures the endpoint:
+`McpTransportConfig` builds the `HttpServletStatelessServerTransport`, registers it at `/mcp`
+and binds the tools to it, and `ToolCatalog` declares each tool's JSON schema by hand and
+routes calls to a method. `docs/mcp-spring-ai-vs-official-sdk.md` records why, and what the
+Spring AI variant on `feature/mcp-separate-process` did instead.
+
+One rule that the SDK does not enforce: a tool handler must not let an exception escape, or
+the SDK turns it into a JSON-RPC protocol error instead of a tool result the model can read.
+Route every handler through `ToolResults.of`.
+
 It holds **no datasource and no JWT keys**. Tools reach data only through the backend's REST
 API, carrying the caller's own bearer token: `McpTransportConfig` lifts the `Authorization`
 header of the `/mcp` request into the MCP transport context, tools receive that context as a

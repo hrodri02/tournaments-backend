@@ -2,9 +2,6 @@ package com.example.tournaments_mcp.tools;
 
 import java.util.List;
 
-import org.springframework.ai.mcp.annotation.McpTool;
-import org.springframework.ai.mcp.annotation.McpTool.McpAnnotations;
-import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
 import com.example.tournaments_mcp.backend.LeagueDetail;
@@ -18,12 +15,15 @@ import io.modelcontextprotocol.common.McpTransportContext;
 /**
  * Read-only league tools.
  *
- * <p>The {@link McpTransportContext} parameter is injected by the MCP SDK and
- * is not part of the tool's input schema -- {@code
- * SyncStatelessMcpToolMethodCallback} recognises the type and fills it in
- * rather than looking for an argument of that name. So the model sees
- * {@code get_league(leagueId)}, and the caller's credential arrives beside it
- * without ever being something the model can set.
+ * <p>Plain methods: what makes them tools is {@code ToolCatalog}, which pairs
+ * each one with the schema a client sees and the handler that unpacks a call
+ * into these arguments. On the Spring AI branch the pairing was implicit --
+ * {@code @McpTool} on the method, and a schema reflected out of the signature.
+ *
+ * <p>The {@link McpTransportContext} parameter comes first by convention and is
+ * deliberately absent from the tool's input schema: the caller's credential
+ * arrives beside the model's arguments without ever being something the model
+ * can set.
  */
 @Component
 public class McpLeagueTools {
@@ -34,35 +34,11 @@ public class McpLeagueTools {
         this.backend = backend;
     }
 
-    @McpTool(
-            name = "list_leagues",
-            description = "List tournament leagues, optionally filtered by status. "
-                    + "Returns a summary of each league without its teams; "
-                    + "call get_league for the full roster.",
-            annotations = @McpAnnotations(
-                    readOnlyHint = true,
-                    destructiveHint = false,
-                    idempotentHint = true,
-                    openWorldHint = true))
-    public List<LeagueSummary> listLeagues(
-            McpTransportContext context,
-            @McpToolParam(
-                    description = "Optional filter: NOT_STARTED, IN_PROGRESS, or ENDED",
-                    required = false) LeagueStatus status) {
+    public List<LeagueSummary> listLeagues(McpTransportContext context, LeagueStatus status) {
         return backend.leagues(CallerToken.from(context), status);
     }
 
-    @McpTool(
-            name = "get_league",
-            description = "Get one league by id, including its teams and their players.",
-            annotations = @McpAnnotations(
-                    readOnlyHint = true,
-                    destructiveHint = false,
-                    idempotentHint = true,
-                    openWorldHint = true))
-    public LeagueDetail getLeague(
-            McpTransportContext context,
-            @McpToolParam(description = "The league id", required = true) Long leagueId) {
+    public LeagueDetail getLeague(McpTransportContext context, Long leagueId) {
         return backend.league(CallerToken.from(context), leagueId);
     }
 }
